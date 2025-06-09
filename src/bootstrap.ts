@@ -24,27 +24,26 @@ import { DatabaseType } from './core/db/interfaces/database.interface';
 // middleware
 import { requestLogger } from './core/logging/request-logger.middleware';
 
-// health module
-import { HealthRouter } from './modules/health/router/health.router';
-import { HealthService } from './modules/health/service/health.service';
+// modules
+import { UserModule } from './modules/user/user.module';
+import { HealthModule } from './modules/health/health.module';
+
+// Module loader
+import { getModuleMetadata } from './core/common/di/module.decorator';
+
+// Controllers
+import { UserController } from './modules/user/controller/user.controller';
 import { HealthController } from './modules/health/controller/health.controller';
 
-// user module
+// Routers
 import { UserRouter } from './modules/user/router/user.router';
-import { UserService } from './modules/user/service/user.service';
-import { UserRepository } from './modules/user/repository/user.repository';
-import { UserController } from './modules/user/controller/user.controller';
+import { HealthRouter } from './modules/health/router/health.router';
+import { ModuleLoader } from './core/common/di/module.loader';
 
 // For AWS Lambda
 let isWarm = false;
 
 let dataSource: DataSource;
-
-interface CorsConfig {
-    origin: string | boolean | RegExp | (string | RegExp)[] | ((origin: string, callback: (err: Error | null, allow?: boolean) => void) => void);
-    methods: string | string[];
-    credentials: boolean;
-}
 
 // Initialize application services, database connections, etc.
 export const bootstrap = async (): Promise<{ app: Express; dataSource: DataSource }> => {
@@ -81,41 +80,11 @@ export const bootstrap = async (): Promise<{ app: Express; dataSource: DataSourc
         // Initialize database connection
         const dbConfig = DatabaseFactory.createDatabaseConfig(DatabaseType.POSTGRES);
         dataSource = await dbConfig.initialize();
-
-        // Register the DataSource instance with TypeDI
         Container.set(DataSource, dataSource);
         
-        // Register repositories
-        const userRepository = new UserRepository();
-        Container.set('UserRepository', userRepository);
-        
-        // Initialize and register services
-        const healthService = new HealthService();
-        const userService = new UserService(userRepository);
-        
-        // Register services with the container
-        Container.set(UserService, userService);
-        Container.set(HealthService, healthService);
-        
-        // Initialize and register controllers
-        const userController = new UserController(userService);
-        const healthController = new HealthController(healthService);
-        
-        // Register controllers with the container
-        Container.set(UserController, userController);
-        Container.set(HealthController, healthController);
-        
-        // Initialize and register routers
-        const userRouter = new UserRouter(userController);
-        const healthRouter = new HealthRouter(healthController);
-        
-        // Register routers with the container using their tokens
-        Container.set(UserRouter.Token, userRouter);
-        Container.set(HealthRouter.Token, healthRouter);
-        
-        // Register routers with the router registry
-        routerRegistry.registerRouter(UserRouter.Token);
-        routerRegistry.registerRouter(HealthRouter.Token);
+        // Initialize module loader
+        const moduleLoader = new ModuleLoader(dataSource);
+        await moduleLoader.loadModules([UserModule, HealthModule]);
         
         // Get all registered routers for logging
         const registeredRouters = routerRegistry.getAllRouters();

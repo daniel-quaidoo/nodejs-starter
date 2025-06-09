@@ -1,4 +1,4 @@
-import { Service } from 'typedi';
+import { Inject } from 'typedi';
 import { Request, Response, NextFunction } from 'express';
 
 // models
@@ -7,13 +7,19 @@ import { User } from '../entities/user.entity';
 // service
 import { UserService } from '../service/user.service';
 
-// interfaces
+// interface
 import { ApiResponse } from '../../../core/common/interfaces/route.interface';
+
+// controller
 import { BaseController } from '../../../core/common/controller/base.controller';
 
-@Service()
+// decorator
+import { Component, COMPONENT_TYPE } from "../../../core/common/di/component.decorator";
+
+@Component({ type: COMPONENT_TYPE.CONTROLLER })
 export class UserController extends BaseController<User> {
-    constructor(private userService: UserService) {
+
+    constructor(@Inject() private userService: UserService) {
         super(userService);
     }
 

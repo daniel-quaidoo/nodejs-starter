@@ -8,10 +8,13 @@ import { HealthController } from '../controller/health.controller';
 // interface
 import { IModuleRouter, RouteDefinition } from '../../../core/common/interfaces/route.interface';
 
+// decorator
+import { Component, COMPONENT_TYPE } from "../../../core/common/di/component.decorator";
+
 // HealthRouter token
 const HEALTH_ROUTER_TOKEN = new Token<HealthRouter>('HealthRouter');
 
-@Service()
+@Component({ type: COMPONENT_TYPE.ROUTER })
 export class HealthRouter implements IModuleRouter {
     public router: Router = Router();
     public Token = HEALTH_ROUTER_TOKEN;

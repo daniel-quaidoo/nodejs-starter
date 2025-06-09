@@ -1,4 +1,4 @@
-import { Token } from './token';
+import { Token } from 'typedi';
 
 type ServiceKey<T = any> = string | Token<T> | (new (...args: any[]) => T);
 

@@ -2,17 +2,20 @@
 import { User } from '../entities/user.entity';
 
 // repository
-import { IUserRepository } from '../interfaces/user.interface';
+import { UserRepository } from '../repository/user.repository';
 
 // service
-import { Service } from 'typedi';
 import { BaseService } from '../../../core/common/service/base.service';
+
+// decorator
+import { Component, COMPONENT_TYPE } from "../../../core/common/di/component.decorator";
+
 // exceptions
 import { ConflictException, NotFoundException } from '../../../core/common/exceptions/http.exception';
 
-@Service()
+@Component({ type: COMPONENT_TYPE.SERVICE })
 export class UserService extends BaseService<User> {
-    constructor(private userRepository: IUserRepository) {
+    constructor(private userRepository: UserRepository) {
         super(userRepository);
     }
     
