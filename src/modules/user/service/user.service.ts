@@ -1,5 +1,3 @@
-import { Service } from 'typedi';
-
 // model
 import { User } from '../entities/user.entity';
 
@@ -7,8 +5,8 @@ import { User } from '../entities/user.entity';
 import { IUserRepository } from '../interfaces/user.interface';
 
 // service
+import { Service } from 'typedi';
 import { BaseService } from '../../../core/common/service/base.service';
-
 // exceptions
 import { ConflictException, NotFoundException } from '../../../core/common/exceptions/http.exception';
 

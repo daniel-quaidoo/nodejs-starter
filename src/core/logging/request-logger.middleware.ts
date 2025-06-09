@@ -1,6 +1,8 @@
-import { Request, Response, NextFunction } from 'express';
 import { Container } from 'typedi';
 import { v4 as uuidv4 } from 'uuid';
+import { Response, NextFunction } from 'express';
+
+import { Request } from 'src/types/express'
 
 // logger
 import { LoggerService } from './logger.service';
@@ -10,6 +12,7 @@ import { LoggerService } from './logger.service';
  * Automatically adds a request ID to each request for tracing
  */
 export const requestLogger = (req: Request, res: Response, next: NextFunction) => {
+    const response = res as unknown as Response & { on: (event: string, listener: (...args: any[]) => void) => void };
     const logger = Container.get(LoggerService);
     const requestId = req.headers['x-request-id'] || uuidv4();
     const start = Date.now();
@@ -31,7 +34,7 @@ export const requestLogger = (req: Request, res: Response, next: NextFunction) =
     });
 
     // Capture response finish event to log the response
-    res.on('finish', () => {
+    response.on('finish', () => {
         const duration = Date.now() - start;
         const logData: Record<string, any> = {
             requestId,

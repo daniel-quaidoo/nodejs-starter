@@ -1,8 +1,7 @@
-import cors from 'cors';
 import 'reflect-metadata';
 import { Container } from 'typedi';
 import { DataSource } from 'typeorm';
-import express, { Express } from 'express';
+import express, { Express, Request, Response, NextFunction } from 'express';
 
 // utils
 import { createErrorResponse } from './shared/utils';
@@ -15,7 +14,6 @@ import { LoggerService } from './core/logging/logger.service';
 
 // router registry
 import { routerRegistry } from './core/common/router/router.registry';
-import { serviceRegistry } from './core/common/di/service.registry';
 
 // factory
 import { DatabaseFactory } from './core/db/factory/database.factory';
@@ -42,6 +40,12 @@ let isWarm = false;
 
 let dataSource: DataSource;
 
+interface CorsConfig {
+    origin: string | boolean | RegExp | (string | RegExp)[] | ((origin: string, callback: (err: Error | null, allow?: boolean) => void) => void);
+    methods: string | string[];
+    credentials: boolean;
+}
+
 // Initialize application services, database connections, etc.
 export const bootstrap = async (): Promise<{ app: Express; dataSource: DataSource }> => {
     // Initialize configuration
@@ -55,12 +59,20 @@ export const bootstrap = async (): Promise<{ app: Express; dataSource: DataSourc
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
     
-    // CORS
-    app.use(cors({
-        origin: configService.get('CORS_ORIGIN'),
-        methods: configService.get('CORS_METHODS'),
-        credentials: configService.get('CORS_CREDENTIALS')
-    }));
+    // Enable CORS for all routes
+    app.use((req: Request, res: Response, next: NextFunction) => {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+        
+        // Handle preflight requests
+        if (req.method === 'OPTIONS') {
+            return res.status(200).json({});
+        }
+        
+        next();
+    });
 
     // Request logging
     app.use(requestLogger);
@@ -70,26 +82,38 @@ export const bootstrap = async (): Promise<{ app: Express; dataSource: DataSourc
         const dbConfig = DatabaseFactory.createDatabaseConfig(DatabaseType.POSTGRES);
         dataSource = await dbConfig.initialize();
 
-        // Register core services
-        serviceRegistry.registerService(DataSource, dataSource);
+        // Register the DataSource instance with TypeDI
+        Container.set(DataSource, dataSource);
         
         // Register repositories
         const userRepository = new UserRepository();
-        serviceRegistry.registerService("UserRepository", userRepository);
+        Container.set('UserRepository', userRepository);
         
-        // Register services with dependencies
+        // Initialize and register services
         const healthService = new HealthService();
         const userService = new UserService(userRepository);
-        serviceRegistry.registerService(HealthService, healthService);
-        serviceRegistry.registerService(UserService, userService);
         
-        // Register controllers with their dependencies
+        // Register services with the container
+        Container.set(UserService, userService);
+        Container.set(HealthService, healthService);
+        
+        // Initialize and register controllers
         const userController = new UserController(userService);
         const healthController = new HealthController(healthService);
-        serviceRegistry.registerService(UserController, userController);
-        serviceRegistry.registerService(HealthController, healthController);
         
-        // Register routers with the router registry using their tokens
+        // Register controllers with the container
+        Container.set(UserController, userController);
+        Container.set(HealthController, healthController);
+        
+        // Initialize and register routers
+        const userRouter = new UserRouter(userController);
+        const healthRouter = new HealthRouter(healthController);
+        
+        // Register routers with the container using their tokens
+        Container.set(UserRouter.Token, userRouter);
+        Container.set(HealthRouter.Token, healthRouter);
+        
+        // Register routers with the router registry
         routerRegistry.registerRouter(UserRouter.Token);
         routerRegistry.registerRouter(HealthRouter.Token);
         

@@ -1,6 +1,6 @@
-import { Router } from 'express';
-import { Service, Inject, Token } from 'typedi';
+import { Service, Token, Inject } from 'typedi';
 import { APIGatewayProxyResult } from 'aws-lambda';
+import { NextFunction, Request, Response, Router } from 'express';
 
 // controller
 import { HealthController } from '../controller/health.controller';
@@ -11,7 +11,7 @@ import { IModuleRouter, RouteDefinition } from '../../../core/common/interfaces/
 // HealthRouter token
 const HEALTH_ROUTER_TOKEN = new Token<HealthRouter>('HealthRouter');
 
-@Service({ id: HEALTH_ROUTER_TOKEN })
+@Service()
 export class HealthRouter implements IModuleRouter {
     public router: Router = Router();
     public Token = HEALTH_ROUTER_TOKEN;
@@ -85,10 +85,16 @@ export class HealthRouter implements IModuleRouter {
     private initializeRoutes(): void {
         this.getRoutes().forEach(route => {
             const path = route.path.startsWith('/') ? route.path : `/${route.path}`;
-
-            (this.router as any)[route.method.toLowerCase()](path, (req: any, res: any, next: any) => {
-                return route.handler(req, res, next);
-            });
+            
+            (this.router as any)[route.method.toLowerCase()](path, 
+                async (req: Request, res: Response, next: NextFunction) => {
+                    try {
+                        await this.healthController.checkHealth(req, res, next);
+                    } catch (error) {
+                        next(error);
+                    }
+                }
+            );
         });
     }
 }

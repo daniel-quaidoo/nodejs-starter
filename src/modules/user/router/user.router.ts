@@ -16,7 +16,7 @@ import { IModuleRouter, RouteDefinition } from '../../../core/common/interfaces/
 // UserRouter Token
 const USER_ROUTER_TOKEN = new Token<UserRouter>('UserRouter');
 
-@Service({ id: USER_ROUTER_TOKEN })
+@Service()
 export class UserRouter extends BaseRouter<User> implements IModuleRouter {
     public static Token = USER_ROUTER_TOKEN;
     public Token = USER_ROUTER_TOKEN;
