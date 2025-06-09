@@ -1,0 +1,21 @@
+
+> nodejs-starter@1.0.0 sam
+> NODE_ENV=development npm run build && NODE_ENV=development sam build&& NODE_ENV=development sam local invoke RouteHandlerFunction -e events/post.json
+
+
+> nodejs-starter@1.0.0 build
+> tsc
+
+
+Build Succeeded
+
+Built Artifacts  : .aws-sam/build
+Built Template   : .aws-sam/build/template.yaml
+
+Commands you can use next
+=========================
+[*] Validate SAM template: sam validate
+[*] Invoke Function: sam local invoke
+[*] Test Function in the Cloud: sam sync --stack-name {{stack-name}} --watch
+[*] Deploy: sam deploy --guided
+{"statusCode": 400, "headers": {"Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,HEAD,PATCH", "Access-Control-Allow-Headers": "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token", "Content-Type": "application/json"}, "body": "{\"message\":\"body is not a valid JSON\",\"error\":\"ParseError\"}"}

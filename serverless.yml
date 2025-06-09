@@ -1,0 +1,91 @@
+service: nodejs-starter
+
+frameworkVersion: '3'
+
+plugins:
+  - serverless-offline
+
+package:
+  patterns:
+    - '!**/*'
+    - 'dist/**'
+    - 'node_modules/**'
+    - 'package.json'
+    - 'tsconfig.json'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  stage: ${opt:stage, 'dev'}
+  region: ${env:AWS_REGION, 'us-east-1'}
+  environment:
+    NODE_ENV: development
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - 'logs:CreateLogGroup'
+            - 'logs:CreateLogStream'
+            - 'logs:PutLogEvents'
+          Resource: 'arn:aws:logs:*:*:*'
+  logs:
+    restApi: true
+  httpApi:
+    cors:
+      allowedOrigins:
+        - '*'
+      allowedHeaders:
+        - Content-Type
+        - X-Amz-Date
+        - Authorization
+        - X-Api-Key
+        - X-Amz-Security-Token
+        - X-Amz-User-Agent
+      allowedMethods:
+        - OPTIONS
+        - HEAD
+        - GET
+        - POST
+        - PUT
+        - PATCH
+        - DELETE
+
+functions:
+  api:
+    handler: dist/app.handler
+    description: Main API gateway handler
+    timeout: 30
+    memorySize: 512
+    events:
+      - http:
+          path: /
+          method: ANY
+          cors: true
+      - http:
+          path: /{proxy+}
+          method: ANY
+          cors: true
+    environment:
+      NODE_ENV: development
+      AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
+
+custom:
+  serverless-offline:
+    httpPort: 3000
+    noPrependStageInUrl: true
+    useChildProcesses: false
+    noAuth: true
+    noTimeout: true
+    allowCache: true
+    resourceRoutes: false
+    useWorkerThreads: false
+    dontPrintOutput: false
+    hideStackTraces: false
+    showDuration: true
+    disableCookieValidation: true
+    useDocker: false
+    lambdaPort: 3002
+  prune:
+    automatic: true
+    number: 3

@@ -1,0 +1,44 @@
+{
+    "compilerOptions": {
+        "target": "es2020",
+        "module": "commonjs",
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "strict": true,
+        "esModuleInterop": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "moduleResolution": "node",
+        "resolveJsonModule": true,
+        "sourceMap": true,
+        "typeRoots": [
+            "./node_modules/@types"
+        ],
+        "types": [
+            "node",
+            "express",
+            "jest"
+        ],
+        "baseUrl": ".",
+        "paths": {
+            "@/*": [
+                "src/*"
+            ]
+        },
+        "strictPropertyInitialization": false
+    },
+    "include": [
+        "src/**/*.ts",
+        "src/**/*.d.ts",
+        "../misc/local.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist",
+        "**/node_modules/aws-sdk/**/*",
+        "**/__tests__/**",
+        "**/*.spec.ts"
+    ]
+}

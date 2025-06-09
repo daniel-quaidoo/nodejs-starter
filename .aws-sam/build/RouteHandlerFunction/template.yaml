@@ -1,0 +1,138 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: My Serverless Application
+Parameters:
+  AppStackName:
+    Default: api-gateway
+    Description: Name of an active CloudFormation stack that contains the Application Resources.
+    Type: String
+Globals:
+  Function:
+    Runtime: nodejs18.x
+    Environment:
+      Variables:
+        API: test
+        REGION: eu-west-1
+        ACCESS_KEY_ID: access_key_id
+        SECRET_ACCESS_KEY: secret_access_key
+Resources:
+  MyApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+  RouteHandlerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler:  dist/app.handler
+      Timeout: 100
+      FunctionName: api-gateway
+      MemorySize: 1024
+      CodeUri: .
+      Environment:
+        Variables:
+          NODE_ENV: !Ref NODE_ENV
+          DB_HOST: !Ref DB_HOST
+          DB_PORT: !Ref DB_PORT
+          DB_USERNAME: !Ref DB_USERNAME
+          DB_PASSWORD: !Ref DB_PASSWORD
+          DB_DATABASE: !Ref DB_DATABASE
+          DB_NAME: !Ref DB_NAME
+          JWT_SECRET: !Ref JWT_SECRET
+      Events:
+        AllRoutes:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+            RestApiId:
+              Ref: MyApi
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AmazonSSMReadOnlyAccess
+        - AmazonSQSFullAccess
+  DBConsumer:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: build/apps/api-gateway/src/main.queueHandler
+      FunctionName: queue-handler
+      Timeout: 100
+      MemorySize: 1024
+      CodeUri: .
+      Environment:
+        Variables:
+          NODE_ENV: !Ref NODE_ENV
+          DB_HOST: !Ref DB_HOST
+          DB_PORT: !Ref DB_PORT
+          DB_USERNAME: !Ref DB_USERNAME
+          DB_PASSWORD: !Ref DB_PASSWORD
+          DB_DATABASE: !Ref DB_DATABASE
+          JWT_SECRET: !Ref JWT_SECRET
+      Events:
+        ProcessRequest:
+          Type: SQS
+          Properties:
+            Queue: arn:aws:sqs:eu-west-1:queue_name
+            BatchSize: 10
+      Policies:
+        - AmazonSSMFullAccess
+        - AWSLambdaSQSQueueExecutionRole
+        - AmazonSQSFullAccess
+Metadata:
+  BuildMethod: esbuild
+  BuildProperties:
+    Format: esm
+    OutExtension:
+      - .js=.mjs
+    Target: "es2022"
+    Sourcemap: true
+    bundle: true
+    Banner:
+      - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);(async () => {' --footer:js='})();
+    Minify: true
+    External:
+      - reflect-metadata
+      - "pg-hstore"
+      - pg
+      - aws-sdk
+    EntryPoints:
+      - apps/api-gateway/src/main.ts
+Outputs:
+ Endpoint:
+   Description: "API endpoint"
+   Value: !Sub "https://${MyApi}.execute-api.${AWS::Region}.amazonaws.com/prod/"
+   Export:
+     Name:
+       Fn::Sub: ${AppStackName}-endpoint
+ ApiID:
+   Description: "API ID"
+   Value: !Ref MyApi
+   Export:
+     Name:
+       Fn::Sub: ${AppStackName}-ApiID
+Parameters:
+  NODE_ENV:
+    Type: String
+    Default: development
+  DB_HOST:
+    Type: String
+    Default: host.docker.internal
+  DB_PORT:
+    Type: String
+    Default: 5432
+  DB_USERNAME:
+    Type: String
+    Default: postgres
+  DB_NAME:
+    Type: String
+    Default: c6
+  DB_PASSWORD:
+    Type: String
+    NoEcho: true
+    Default: toor
+  DB_DATABASE:
+    Type: String
+    Default: c6
+  JWT_SECRET:
+    Type: String
+    NoEcho: true
+    Default: secretKey

@@ -1,0 +1,8 @@
+{
+    "httpMethod": "POST",
+    "path": "/api/users",
+    "queryStringParameters": null,
+    "headers": {},
+    "body": "{\"name\":\"John Doe\",\"email\":\"john.doe@example.com\",\"password\":\"password123\",\"role\":\"user\"}",
+    "isBase64Encoded": false
+}
