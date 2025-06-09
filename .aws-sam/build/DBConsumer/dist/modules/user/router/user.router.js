@@ -19,13 +19,15 @@ const typedi_1 = require("typedi");
 const user_controller_1 = require("../controller/user.controller");
 // router
 const base_router_1 = require("../../../core/common/router/base.router");
-// UserRouter Token
-const USER_ROUTER_TOKEN = new typedi_1.Token('UserRouter');
+// token
+const di_token_constant_1 = require("../../../core/common/di/di-token.constant");
+// decorator
+const component_decorator_1 = require("../../../core/common/di/component.decorator");
 let UserRouter = UserRouter_1 = class UserRouter extends base_router_1.BaseRouter {
     constructor(controller) {
         super(controller);
         this.controller = controller;
-        this.Token = USER_ROUTER_TOKEN;
+        this.Token = di_token_constant_1.USER_ROUTER_TOKEN;
     }
     static getRouter() {
         const controller = typedi_1.Container.get(user_controller_1.UserController);
@@ -53,10 +55,10 @@ let UserRouter = UserRouter_1 = class UserRouter extends base_router_1.BaseRoute
     }
 };
 exports.UserRouter = UserRouter;
-UserRouter.Token = USER_ROUTER_TOKEN;
+UserRouter.Token = di_token_constant_1.USER_ROUTER_TOKEN;
 exports.UserRouter = UserRouter = UserRouter_1 = __decorate([
-    (0, typedi_1.Service)({ id: USER_ROUTER_TOKEN }),
-    __param(0, (0, typedi_1.Inject)(() => user_controller_1.UserController)),
+    (0, component_decorator_1.Component)({ type: component_decorator_1.COMPONENT_TYPE.ROUTER }),
+    __param(0, (0, typedi_1.Inject)()),
     __metadata("design:paramtypes", [user_controller_1.UserController])
 ], UserRouter);
 //# sourceMappingURL=user.router.js.map

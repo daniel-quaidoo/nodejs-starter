@@ -10,9 +10,12 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserService = void 0;
-const typedi_1 = require("typedi");
+// repository
+const user_repository_1 = require("../repository/user.repository");
 // service
 const base_service_1 = require("../../../core/common/service/base.service");
+// decorator
+const component_decorator_1 = require("../../../core/common/di/component.decorator");
 // exceptions
 const http_exception_1 = require("../../../core/common/exceptions/http.exception");
 let UserService = class UserService extends base_service_1.BaseService {
@@ -59,7 +62,7 @@ let UserService = class UserService extends base_service_1.BaseService {
 };
 exports.UserService = UserService;
 exports.UserService = UserService = __decorate([
-    (0, typedi_1.Service)(),
-    __metadata("design:paramtypes", [Object])
+    (0, component_decorator_1.Component)({ type: component_decorator_1.COMPONENT_TYPE.SERVICE }),
+    __metadata("design:paramtypes", [user_repository_1.UserRepository])
 ], UserService);
 //# sourceMappingURL=user.service.js.map

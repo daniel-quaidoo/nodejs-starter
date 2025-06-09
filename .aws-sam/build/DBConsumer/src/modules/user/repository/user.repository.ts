@@ -10,6 +10,11 @@ import { BaseDAO } from '../../../core/common/dao/base.dao';
 // interface
 import { IUserRepository } from '../interfaces/user.interface';
 
+// decorator
+import { Component, COMPONENT_TYPE } from "../../../core/common/di/component.decorator";
+
+
+@Component({ type: COMPONENT_TYPE.REPOSITORY })
 export class UserRepository extends BaseDAO<User> implements IUserRepository {
     constructor() {
         const dataSource = Container.get(DataSource);

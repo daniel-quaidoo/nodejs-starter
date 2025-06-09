@@ -10,6 +10,7 @@ For SAM
 For SAM local api
 ----------------------
 1. sam local start-api --docker-network host --container-host-interface host --container-host 127.0.0.1 --add-host host.docker.internal:host-gateway
+2. sam local start-api --env-vars env.json
 
 For serverless
 ----------------------

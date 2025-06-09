@@ -1,8 +1,7 @@
-import cors from 'cors';
 import 'reflect-metadata';
 import { Container } from 'typedi';
 import { DataSource } from 'typeorm';
-import express, { Express } from 'express';
+import express, { Express, Request, Response, NextFunction } from 'express';
 
 // utils
 import { createErrorResponse } from './shared/utils';
@@ -25,16 +24,21 @@ import { DatabaseType } from './core/db/interfaces/database.interface';
 // middleware
 import { requestLogger } from './core/logging/request-logger.middleware';
 
-// health module
-import { HealthRouter } from './modules/health/router/health.router';
-import { HealthService } from './modules/health/service/health.service';
+// modules
+import { UserModule } from './modules/user/user.module';
+import { HealthModule } from './modules/health/health.module';
+
+// Module loader
+import { getModuleMetadata } from './core/common/di/module.decorator';
+
+// Controllers
+import { UserController } from './modules/user/controller/user.controller';
 import { HealthController } from './modules/health/controller/health.controller';
 
-// user module
+// Routers
 import { UserRouter } from './modules/user/router/user.router';
-import { UserService } from './modules/user/service/user.service';
-import { UserRepository } from './modules/user/repository/user.repository';
-import { UserController } from './modules/user/controller/user.controller';
+import { HealthRouter } from './modules/health/router/health.router';
+import { ModuleLoader } from './core/common/di/module.loader';
 
 // For AWS Lambda
 let isWarm = false;
@@ -54,12 +58,20 @@ export const bootstrap = async (): Promise<{ app: Express; dataSource: DataSourc
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
     
-    // CORS
-    app.use(cors({
-        origin: configService.get('CORS_ORIGIN'),
-        methods: configService.get('CORS_METHODS'),
-        credentials: configService.get('CORS_CREDENTIALS')
-    }));
+    // Enable CORS for all routes
+    app.use((req: Request, res: Response, next: NextFunction) => {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+        
+        // Handle preflight requests
+        if (req.method === 'OPTIONS') {
+            return res.status(200).json({});
+        }
+        
+        next();
+    });
 
     // Request logging
     app.use(requestLogger);
@@ -68,33 +80,11 @@ export const bootstrap = async (): Promise<{ app: Express; dataSource: DataSourc
         // Initialize database connection
         const dbConfig = DatabaseFactory.createDatabaseConfig(DatabaseType.POSTGRES);
         dataSource = await dbConfig.initialize();
-
-        // Register the DataSource instance with TypeDI
         Container.set(DataSource, dataSource);
         
-        // Register repositories
-        const userRepository = new UserRepository();
-        Container.set('UserRepository', userRepository);
-        
-        // Initialize and register services
-        const healthService = new HealthService();
-        const userService = new UserService(userRepository);
-        
-        // Register services with the container
-        Container.set(UserService, userService);
-        Container.set(HealthService, healthService);
-        
-        // Initialize and register controllers
-        const userController = new UserController(userService);
-        const healthController = new HealthController(healthService);
-        
-        // Register controllers with the container
-        Container.set(UserController, userController);
-        Container.set(HealthController, healthController);
-        
-        // Register routers with the router registry using their tokens
-        routerRegistry.registerRouter(UserRouter.Token);
-        routerRegistry.registerRouter(HealthRouter.Token);
+        // Initialize module loader
+        const moduleLoader = new ModuleLoader(dataSource);
+        await moduleLoader.loadModules([UserModule, HealthModule]);
         
         // Get all registered routers for logging
         const registeredRouters = routerRegistry.getAllRouters();

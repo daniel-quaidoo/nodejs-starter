@@ -13,10 +13,12 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HealthRouter = void 0;
-const express_1 = require("express");
 const typedi_1 = require("typedi");
+const express_1 = require("express");
 // controller
 const health_controller_1 = require("../controller/health.controller");
+// decorator
+const component_decorator_1 = require("../../../core/common/di/component.decorator");
 // HealthRouter token
 const HEALTH_ROUTER_TOKEN = new typedi_1.Token('HealthRouter');
 let HealthRouter = class HealthRouter {
@@ -88,8 +90,13 @@ let HealthRouter = class HealthRouter {
     initializeRoutes() {
         this.getRoutes().forEach(route => {
             const path = route.path.startsWith('/') ? route.path : `/${route.path}`;
-            this.router[route.method.toLowerCase()](path, (req, res, next) => {
-                return route.handler(req, res, next);
+            this.router[route.method.toLowerCase()](path, async (req, res, next) => {
+                try {
+                    await this.healthController.checkHealth(req, res, next);
+                }
+                catch (error) {
+                    next(error);
+                }
             });
         });
     }
@@ -97,7 +104,7 @@ let HealthRouter = class HealthRouter {
 exports.HealthRouter = HealthRouter;
 HealthRouter.Token = HEALTH_ROUTER_TOKEN;
 exports.HealthRouter = HealthRouter = __decorate([
-    (0, typedi_1.Service)({ id: HEALTH_ROUTER_TOKEN }),
+    (0, component_decorator_1.Component)({ type: component_decorator_1.COMPONENT_TYPE.ROUTER }),
     __param(0, (0, typedi_1.Inject)(() => health_controller_1.HealthController)),
     __metadata("design:paramtypes", [health_controller_1.HealthController])
 ], HealthRouter);

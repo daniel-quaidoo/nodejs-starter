@@ -10,6 +10,7 @@ const logger_service_1 = require("./logger.service");
  * Automatically adds a request ID to each request for tracing
  */
 const requestLogger = (req, res, next) => {
+    const response = res;
     const logger = typedi_1.Container.get(logger_service_1.LoggerService);
     const requestId = req.headers['x-request-id'] || (0, uuid_1.v4)();
     const start = Date.now();
@@ -28,7 +29,7 @@ const requestLogger = (req, res, next) => {
             : {})
     });
     // Capture response finish event to log the response
-    res.on('finish', () => {
+    response.on('finish', () => {
         const duration = Date.now() - start;
         const logData = {
             requestId,

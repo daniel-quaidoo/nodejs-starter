@@ -1,4 +1,4 @@
-import { Service, Token, Inject } from 'typedi';
+import { Token, Inject } from 'typedi';
 import { APIGatewayProxyResult } from 'aws-lambda';
 import { NextFunction, Request, Response, Router } from 'express';
 

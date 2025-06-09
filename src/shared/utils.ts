@@ -1,14 +1,51 @@
-import { Request } from 'express';
+import Container from 'typedi';
+import { Request, Express, NextFunction, Response } from 'express';
 import { ProxyIntegrationResult } from 'aws-lambda-router/lib/proxyIntegration';
 import { APIGatewayEventRequestContext, APIGatewayProxyEvent } from 'aws-lambda';
+
+// logging
+import { LoggerService } from '../core/logging/logger.service';
 
 // interface
 import { ApiResponse, ErrorResponse, LambdaResponse } from '../core/common/interfaces/route.interface';
 
 const IS_DEV = process.env.NODE_ENV === 'development';
 
+/**
+ * Returns CORS middleware with proper headers and preflight handling
+ * @param origin Array of allowed origins (default: ['*'])
+ */
+export const setupCorsMiddleware = (origin: string[] = ['*']): (req: Request, res: Response, next: NextFunction) => void => {
+    return (req: Request, res: Response, next: NextFunction) => {
+        res.setHeader('Access-Control-Allow-Origin', origin.join(', '));
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+        
+        // Handle preflight requests
+        if (req.method === 'OPTIONS') {
+            return res.status(200).json({});
+        }
+        
+        next();
+    };
+};
+
+/**
+ * Normalizes a path by ensuring it starts with a forward slash
+ * @param path The path to normalize
+ * @returns The normalized path
+ */
 export const normalizePath = (path: string): string => path.startsWith('/') ? path : `/${path}`;
 
+/**
+ * Creates an error response object
+ * @param statusCode The HTTP status code
+ * @param message The error message
+ * @param reqOrEvent The request or event object
+ * @param error Optional error object
+ * @returns An error response object
+ */
 export const createErrorResponse = (
     statusCode: number, 
     message: string, 
@@ -83,6 +120,12 @@ export const createErrorResponse = (
     return response;
 };
 
+/**
+ * Creates a success response object
+ * @param result The result data to include in the response
+ * @param existingHeaders Optional existing headers to include in the response
+ * @returns A success response object
+ */
 export const createSuccessResponse = (result: any, existingHeaders: Record<string, any> = {}): ApiResponse => ({
     success: true,
     data: result,
@@ -98,6 +141,11 @@ export const createSuccessResponse = (result: any, existingHeaders: Record<strin
     }),
 });
 
+/**
+ * Wraps a handler function with error handling and response formatting
+ * @param handler The handler function to wrap
+ * @returns A wrapped handler function that handles errors and formats responses
+ */
 export const wrapHandler = (handler: Function) => {
     return async (event: any, context: any): Promise<LambdaResponse> => {
         try {
@@ -199,6 +247,11 @@ export const wrapHandler = (handler: Function) => {
     };
 };
 
+/**
+ * Creates a Lambda handler function from an Express router
+ * @param expressRouter The Express router to convert
+ * @returns A Lambda-compatible handler function
+ */
 export const createLambdaHandler = (expressRouter: any) => {
     return async (event: any, context: APIGatewayEventRequestContext): Promise<ProxyIntegrationResult> => {
         // Create a mock Express request object for consistent error handling
@@ -289,7 +342,11 @@ export const createLambdaHandler = (expressRouter: any) => {
     };
 };
 
-// Convert Express request to Lambda event
+/**
+ * Converts an Express request to an API Gateway event format
+ * @param req Express request object
+ * @returns API Gateway compatible event object
+ */
 export const createLambdaEvent = (req: Request): APIGatewayProxyEvent => {
     return {
         httpMethod: req.method,
@@ -331,4 +388,68 @@ export const createLambdaEvent = (req: Request): APIGatewayProxyEvent => {
         resource: req.path,
         stageVariables: {},
     } as unknown as APIGatewayProxyEvent;
+};
+
+/**
+ * Registers and logs routes for each router
+ * @param app Express application instance
+ * @param registeredRouters Array of registered router instances
+ * @param apiPrefix API prefix path
+ */
+export const registerAndLogRoutes = (
+    app: Express,
+    registeredRouters: any[],
+    apiPrefix: string
+): void => {
+    registeredRouters.forEach(router => {
+        const routerName = router.constructor.name;
+        console.log(`\n${routerName} Routes:`);
+        
+        // Register the router with Express
+        app.use(apiPrefix, router.router);
+        
+        // Log the routes for debugging
+        if (router.router && router.router.stack) {
+            router.router.stack.forEach((r: any) => {
+                if (r.route && r.route.path) {
+                    const method = r.route.stack[0].method.toUpperCase();
+                    console.log(`[${method}] ${apiPrefix}${r.route.path}`);
+                }
+            });
+        }
+    });
+};
+
+/**
+ * Sets up the global error handler middleware
+ * @param app Express application instance
+ */
+export const setupGlobalErrorHandler = (app: Express): void => {
+    app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+        const logger = Container.get(LoggerService);
+        logger.error('Unhandled error', {
+            error: err.message,
+            stack: err.stack,
+            url: req.originalUrl,
+            method: req.method
+        });
+        
+        res.status(err.statusCode || 500).json(createErrorResponse(500, err.message, req, {
+            ...err,
+            error: err.message,
+            stack: err.stack,
+            method: req.method,
+            details: err.stack
+        }));
+    });
+};
+
+/**
+ * Sets up the 404 handler middleware
+ * @param app Express application instance
+ */
+export const setupNotFoundHandler = (app: Express): void => {
+    app.use((req: Request, res: Response) => {
+        res.status(404).json(createErrorResponse(404, 'Not Found', req));
+    });
 };

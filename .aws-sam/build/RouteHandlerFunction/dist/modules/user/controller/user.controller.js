@@ -8,12 +8,18 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserController = void 0;
 const typedi_1 = require("typedi");
 // service
 const user_service_1 = require("../service/user.service");
+// controller
 const base_controller_1 = require("../../../core/common/controller/base.controller");
+// decorator
+const component_decorator_1 = require("../../../core/common/di/component.decorator");
 let UserController = class UserController extends base_controller_1.BaseController {
     constructor(userService) {
         super(userService);
@@ -122,7 +128,8 @@ let UserController = class UserController extends base_controller_1.BaseControll
 };
 exports.UserController = UserController;
 exports.UserController = UserController = __decorate([
-    (0, typedi_1.Service)(),
+    (0, component_decorator_1.Component)({ type: component_decorator_1.COMPONENT_TYPE.CONTROLLER }),
+    __param(0, (0, typedi_1.Inject)()),
     __metadata("design:paramtypes", [user_service_1.UserService])
 ], UserController);
 //# sourceMappingURL=user.controller.js.map
