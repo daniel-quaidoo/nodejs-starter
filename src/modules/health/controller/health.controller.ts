@@ -1,20 +1,27 @@
-import { Service } from 'typedi';
 import { Request, Response, NextFunction } from 'express';
 
 // service
 import { HealthService } from '../service/health.service';
+import { Controller, Get } from '../../../core/common/decorators/route.decorator';
 
-@Service()
+@Controller('/healthy')
 export class HealthController {
     constructor(private healthService: HealthService) {}
 
-    async getHealthStatus() {
-        return this.healthService.getHealthStatus();
+    @Get('/status') 
+    public async getHealthStatus(_req: Request, res: Response) {
+        try {
+            const status = await this.healthService.getHealthStatus();
+            res.status(200).json(status);
+        } catch (error) {
+            res.status(500).json({ error: 'Failed to get health status' });
+        }
     }
 
-    async checkHealth(_req: Request, res: Response, next: NextFunction) {
+    @Get('/check')
+    public async checkHealth(_req: Request, res: Response, next: NextFunction) {
         try {
-            const healthStatus = await this.getHealthStatus();
+            const healthStatus = await this.getHealthStatus(_req, res);
             res.status(200).json(healthStatus);
         } catch (error) {
             next(error);

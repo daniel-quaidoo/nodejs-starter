@@ -1,9 +1,46 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createLambdaEvent = exports.createLambdaHandler = exports.wrapHandler = exports.createSuccessResponse = exports.createErrorResponse = exports.normalizePath = void 0;
+exports.setupNotFoundHandler = exports.setupGlobalErrorHandler = exports.registerAndLogRoutes = exports.createLambdaEvent = exports.createLambdaHandler = exports.wrapHandler = exports.createSuccessResponse = exports.createErrorResponse = exports.normalizePath = exports.setupCorsMiddleware = void 0;
+const typedi_1 = __importDefault(require("typedi"));
+// logging
+const logger_service_1 = require("../core/logging/logger.service");
 const IS_DEV = process.env.NODE_ENV === 'development';
+/**
+ * Returns CORS middleware with proper headers and preflight handling
+ * @param origin Array of allowed origins (default: ['*'])
+ */
+const setupCorsMiddleware = (origin = ['*']) => {
+    return (req, res, next) => {
+        res.setHeader('Access-Control-Allow-Origin', origin.join(', '));
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+        // Handle preflight requests
+        if (req.method === 'OPTIONS') {
+            return res.status(200).json({});
+        }
+        next();
+    };
+};
+exports.setupCorsMiddleware = setupCorsMiddleware;
+/**
+ * Normalizes a path by ensuring it starts with a forward slash
+ * @param path The path to normalize
+ * @returns The normalized path
+ */
 const normalizePath = (path) => path.startsWith('/') ? path : `/${path}`;
 exports.normalizePath = normalizePath;
+/**
+ * Creates an error response object
+ * @param statusCode The HTTP status code
+ * @param message The error message
+ * @param reqOrEvent The request or event object
+ * @param error Optional error object
+ * @returns An error response object
+ */
 const createErrorResponse = (statusCode, message, reqOrEvent, error) => {
     const isExpressRequest = 'url' in reqOrEvent && 'method' in reqOrEvent;
     const path = isExpressRequest
@@ -68,6 +105,12 @@ const createErrorResponse = (statusCode, message, reqOrEvent, error) => {
     return response;
 };
 exports.createErrorResponse = createErrorResponse;
+/**
+ * Creates a success response object
+ * @param result The result data to include in the response
+ * @param existingHeaders Optional existing headers to include in the response
+ * @returns A success response object
+ */
 const createSuccessResponse = (result, existingHeaders = {}) => ({
     success: true,
     data: result,
@@ -83,6 +126,11 @@ const createSuccessResponse = (result, existingHeaders = {}) => ({
     }),
 });
 exports.createSuccessResponse = createSuccessResponse;
+/**
+ * Wraps a handler function with error handling and response formatting
+ * @param handler The handler function to wrap
+ * @returns A wrapped handler function that handles errors and formats responses
+ */
 const wrapHandler = (handler) => {
     return async (event, context) => {
         try {
@@ -174,6 +222,11 @@ const wrapHandler = (handler) => {
     };
 };
 exports.wrapHandler = wrapHandler;
+/**
+ * Creates a Lambda handler function from an Express router
+ * @param expressRouter The Express router to convert
+ * @returns A Lambda-compatible handler function
+ */
 const createLambdaHandler = (expressRouter) => {
     return async (event, context) => {
         // Create a mock Express request object for consistent error handling
@@ -260,7 +313,11 @@ const createLambdaHandler = (expressRouter) => {
     };
 };
 exports.createLambdaHandler = createLambdaHandler;
-// Convert Express request to Lambda event
+/**
+ * Converts an Express request to an API Gateway event format
+ * @param req Express request object
+ * @returns API Gateway compatible event object
+ */
 const createLambdaEvent = (req) => {
     return {
         httpMethod: req.method,
@@ -304,4 +361,68 @@ const createLambdaEvent = (req) => {
     };
 };
 exports.createLambdaEvent = createLambdaEvent;
+/**
+ * Registers and logs routes for each router
+ * @param app Express application instance
+ * @param registeredRouters Array of registered router instances
+ * @param apiPrefix API prefix path
+ */
+const registerAndLogRoutes = (app, registeredRouters, apiPrefix) => {
+    registeredRouters.forEach(router => {
+        const routerName = router.controllerName || router.constructor.name;
+        console.log(`\n${routerName} Routes:`);
+        // Register the router with Express
+        app.use(apiPrefix, router.router);
+        // Log the routes from the router's getRoutes() method if it exists
+        if (typeof router.getRoutes === 'function') {
+            const routes = router.getRoutes();
+            routes.forEach((route) => {
+                console.log(`[${route.method}] ${apiPrefix}${route.path}`);
+            });
+        }
+        // Fallback to stack inspection if getRoutes() doesn't exist
+        else if (router.router?.stack) {
+            router.router.stack.forEach((layer) => {
+                if (layer.route && layer.route.path) {
+                    const method = Object.keys(layer.route.methods)[0].toUpperCase();
+                    console.log(`[${method}] ${apiPrefix}${layer.route.path}`);
+                }
+            });
+        }
+    });
+};
+exports.registerAndLogRoutes = registerAndLogRoutes;
+/**
+ * Sets up the global error handler middleware
+ * @param app Express application instance
+ */
+const setupGlobalErrorHandler = (app) => {
+    app.use((err, req, res, next) => {
+        const logger = typedi_1.default.get(logger_service_1.LoggerService);
+        logger.error('Unhandled error', {
+            error: err.message,
+            stack: err.stack,
+            url: req.originalUrl,
+            method: req.method
+        });
+        res.status(err.statusCode || 500).json((0, exports.createErrorResponse)(500, err.message, req, {
+            ...err,
+            error: err.message,
+            stack: err.stack,
+            method: req.method,
+            details: err.stack
+        }));
+    });
+};
+exports.setupGlobalErrorHandler = setupGlobalErrorHandler;
+/**
+ * Sets up the 404 handler middleware
+ * @param app Express application instance
+ */
+const setupNotFoundHandler = (app) => {
+    app.use((req, res) => {
+        res.status(404).json((0, exports.createErrorResponse)(404, 'Not Found', req));
+    });
+};
+exports.setupNotFoundHandler = setupNotFoundHandler;
 //# sourceMappingURL=utils.js.map

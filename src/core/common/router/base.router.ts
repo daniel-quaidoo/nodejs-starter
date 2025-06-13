@@ -1,11 +1,15 @@
+import 'reflect-metadata';
 import { Router, Request, Response, NextFunction } from 'express';
 
 // model
 import { BaseModel } from '../entities/base.entity';
 
-// interfaces
+// decorator
+import { getRouteMetadata } from '../decorators/route.decorator';
+
+// interface
 import { IBaseController } from '../interfaces/base.controller.interface';
-import { RouteDefinition, HttpMethod } from '../interfaces/route.interface';
+import { RouteDefinition, HttpMethod, RouteMetadata } from '../interfaces/route.interface';
 
 export abstract class BaseRouter<T extends BaseModel> {
     public router: Router;
@@ -70,17 +74,39 @@ export abstract class BaseRouter<T extends BaseModel> {
     }
 
     /**
-     * Get all routes (base + custom)
+     * Get routes defined by decorators
+     */
+    protected getDecoratorRoutes(): RouteDefinition[] {
+        const controller = (this.controller as any);
+        const controllerPath = Reflect.getMetadata('basePath', controller.constructor) || '';
+        const routeMetadata = getRouteMetadata(controller.constructor) as RouteMetadata[];
+
+        return routeMetadata.map(route => ({
+            method: route.method as HttpMethod,
+            path: `${controllerPath}${route.path ? `/${route.path}` : ''}`.replace(/\/+/g, '/'),
+            handler: (req: Request, res: Response, next: NextFunction) => 
+                controller[route.handlerName](req, res, next),
+            absolutePath: true
+        }));
+    }
+
+    /**
+     * Get all routes (base + custom + decorator-based)
      */
     public getRoutes(): RouteDefinition[] {
+        const decoratorRoutes = this.getDecoratorRoutes();
+        const baseRoutes = this.getBaseRoutes();
+        const customRoutes = this.getCustomRoutes();
+        
         return [
-            ...this.getBaseRoutes(),
-            ...this.getCustomRoutes()
+            ...decoratorRoutes,
+            ...baseRoutes,
+            ...customRoutes
         ];
     }
 
     /**
-     * Initialize routes in the Express router
+     * Register all routes (decorator-based, base, and custom)
      */
     protected initializeRoutes(): void {
         this.getRoutes().forEach(route => {
@@ -92,7 +118,7 @@ export abstract class BaseRouter<T extends BaseModel> {
             
             (this.router as any)[method](fullPath, 
                 (req: Request, res: Response, next: NextFunction) => {
-                    return route.handler(req, res, next);
+                    return route.handler ? route.handler(req, res, next) : undefined;
                 }
             );
         });

@@ -1,5 +1,5 @@
+import { Router } from 'express';
 import { Inject, Container } from 'typedi';
-import { Router, Request, Response, NextFunction } from 'express';
 
 // entity
 import { User } from '../entities/user.entity';
@@ -33,25 +33,7 @@ export class UserRouter extends BaseRouter<User> implements IModuleRouter {
         return new UserRouter(controller).router;
     }
 
-    /**
-     * Override to add custom routes
-     * These will be prefixed with '/user' automatically
-     */
     protected getCustomRoutes(): RouteDefinition[] {
-        return [
-            {
-                method: 'GET',
-                path: '/users',
-                handler: (req: Request, res: Response, next: NextFunction) => this.controller.getAllUsers(req, res, next),
-                absolutePath: true
-            },
-            {
-                method: 'POST',
-                path: '/users',
-                handler: (req: Request, res: Response, next: NextFunction) => this.controller.createUser(req, res, next),
-                absolutePath: true
-            }
-        ];
+        return [ ];
     }
-
 }

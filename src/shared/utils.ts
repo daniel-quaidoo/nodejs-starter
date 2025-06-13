@@ -402,18 +402,25 @@ export const registerAndLogRoutes = (
     apiPrefix: string
 ): void => {
     registeredRouters.forEach(router => {
-        const routerName = router.constructor.name;
+        const routerName = router.controllerName || router.constructor.name;
         console.log(`\n${routerName} Routes:`);
         
         // Register the router with Express
         app.use(apiPrefix, router.router);
         
-        // Log the routes for debugging
-        if (router.router && router.router.stack) {
-            router.router.stack.forEach((r: any) => {
-                if (r.route && r.route.path) {
-                    const method = r.route.stack[0].method.toUpperCase();
-                    console.log(`[${method}] ${apiPrefix}${r.route.path}`);
+        // Log the routes from the router's getRoutes() method if it exists
+        if (typeof router.getRoutes === 'function') {
+            const routes = router.getRoutes();
+            routes.forEach((route: any) => {
+                console.log(`[${route.method}] ${apiPrefix}${route.path}`);
+            });
+        }
+        // Fallback to stack inspection if getRoutes() doesn't exist
+        else if (router.router?.stack) {
+            router.router.stack.forEach((layer: any) => {
+                if (layer.route && layer.route.path) {
+                    const method = Object.keys(layer.route.methods)[0].toUpperCase();
+                    console.log(`[${method}] ${apiPrefix}${layer.route.path}`);
                 }
             });
         }

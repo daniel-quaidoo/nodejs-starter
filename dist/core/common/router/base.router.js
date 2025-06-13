@@ -1,7 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BaseRouter = void 0;
+require("reflect-metadata");
 const express_1 = require("express");
+// decorator
+const route_decorator_1 = require("../decorators/route.decorator");
 class BaseRouter {
     constructor(controller) {
         this.controller = controller;
@@ -55,16 +58,34 @@ class BaseRouter {
         return [];
     }
     /**
-     * Get all routes (base + custom)
+     * Get routes defined by decorators
+     */
+    getDecoratorRoutes() {
+        const controller = this.controller;
+        const controllerPath = Reflect.getMetadata('basePath', controller.constructor) || '';
+        const routeMetadata = (0, route_decorator_1.getRouteMetadata)(controller.constructor);
+        return routeMetadata.map(route => ({
+            method: route.method,
+            path: `${controllerPath}${route.path ? `/${route.path}` : ''}`.replace(/\/+/g, '/'),
+            handler: (req, res, next) => controller[route.handlerName](req, res, next),
+            absolutePath: true
+        }));
+    }
+    /**
+     * Get all routes (base + custom + decorator-based)
      */
     getRoutes() {
+        const decoratorRoutes = this.getDecoratorRoutes();
+        const baseRoutes = this.getBaseRoutes();
+        const customRoutes = this.getCustomRoutes();
         return [
-            ...this.getBaseRoutes(),
-            ...this.getCustomRoutes()
+            ...decoratorRoutes,
+            ...baseRoutes,
+            ...customRoutes
         ];
     }
     /**
-     * Initialize routes in the Express router
+     * Register all routes (decorator-based, base, and custom)
      */
     initializeRoutes() {
         this.getRoutes().forEach(route => {
@@ -73,7 +94,7 @@ class BaseRouter {
                 : `/${this.basePath}${route.path.startsWith('/') ? '' : '/'}${route.path}`;
             const method = route.method.toLowerCase();
             this.router[method](fullPath, (req, res, next) => {
-                return route.handler(req, res, next);
+                return route.handler ? route.handler(req, res, next) : undefined;
             });
         });
     }

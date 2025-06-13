@@ -1,5 +1,5 @@
 import { Token } from 'typedi';
-import { Router } from 'express';
+import { NextFunction, RequestHandler, Router } from 'express';
 
 // types
 import { LambdaHandler } from '../types/route.types';
@@ -46,7 +46,7 @@ export interface SuccessResponse<T = any> extends ApiResponse<T> {
  */
 export interface IModuleRouter {
     router: Router;
-    getRoutes(): RouteDefinition[];
+    getRoutes: () => RouteDefinition[];
     Token: Token<IModuleRouter>;
 }
 
@@ -58,7 +58,9 @@ export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 
 export interface RouteDefinition {
     method: HttpMethod;
     path: string;
-    handler: LambdaHandler;
+    handler?: LambdaHandler;
+    handlerName?: string;
+    // handler?: (req: Request, res: Response, next: NextFunction) => any;
     absolutePath?: boolean;
 }
 
@@ -66,4 +68,11 @@ export interface LambdaResponse {
     statusCode: number;
     headers?: Record<string, any>;
     body: string;
+}
+
+export interface RouteMetadata {
+    path: string;
+    method: string;
+    handlerName: string;
+    middlewares?: RequestHandler[];
 }

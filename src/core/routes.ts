@@ -15,15 +15,22 @@ import { createLambdaHandler, wrapHandler, normalizePath } from '../shared/utils
 const configService = new ConfigService();
 const API_PREFIX = (configService.get('API_PREFIX') || '/api').replace(/\/+$/, '');
 
-const allRoutes = routerRegistry
-    .getAllRouters()
-    .flatMap((moduleRouter) =>
-        moduleRouter.getRoutes().map((route: RouteDefinition) => ({
-            method: route.method,
-            path: `${API_PREFIX}${normalizePath(route.path)}`,
-            action: wrapHandler(createLambdaHandler(route.handler)),
-        }))
-    );
+const allRoutes = routerRegistry.getAllRouters().flatMap((moduleRouter) => {
+    if (typeof moduleRouter.getRoutes === 'function') {
+        return moduleRouter.getRoutes().map((route: RouteDefinition) => {
+            const fullPath = route.path.startsWith('/')
+                ? route.path
+                : `/${route.path}`;
+
+            return {
+                method: route.method,
+                path: `${API_PREFIX}${fullPath}`.replace(/\/+/g, '/'),
+                action: wrapHandler(createLambdaHandler(route.handler)),
+            };
+        });
+    }
+    return [];
+});
 
 export const routerConfig: router.RouteConfig = {
     proxyIntegration: {

@@ -1,5 +1,5 @@
 import { Inject } from 'typedi';
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction, Router } from 'express';
 
 // models
 import { User } from '../entities/user.entity';
@@ -15,8 +15,10 @@ import { BaseController } from '../../../core/common/controller/base.controller'
 
 // decorator
 import { Component, COMPONENT_TYPE } from "../../../core/common/di/component.decorator";
+import { Controller, Delete, Get, Post, Put } from "../../../core/common/decorators/route.decorator";
 
 @Component({ type: COMPONENT_TYPE.CONTROLLER })
+@Controller('/users')
 export class UserController extends BaseController<User> {
 
     constructor(@Inject() private userService: UserService) {
@@ -24,8 +26,16 @@ export class UserController extends BaseController<User> {
     }
 
     /**
-     * Find all users with pagination (overrides base method)
+     * Get paginated list of all users
+     * @param req Request object containing query parameters:
+     *   - page: Current page number (default: 1)
+     *   - limit: Number of items per page (default: 10)
+     * @param res Response object
+     * @param next Next function
+     * @returns Promise<void> - Returns a paginated list of users with metadata
+     * @throws Error if database operation fails
      */
+    @Get('/all')
     public async getAllUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const { page = 1, limit = 10 } = req.query;
@@ -55,8 +65,14 @@ export class UserController extends BaseController<User> {
     }
 
     /**
-     * Get user by ID (legacy method - kept for backward compatibility)
+     * Get a single user by ID
+     * @param req Request object containing user ID in params
+     * @param res Response object
+     * @param next Next function
+     * @returns Promise<void> - Returns the requested user
+     * @throws Error if user is not found or database operation fails
      */
+    @Get('/:id')
     public async getUserById(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const user = await this.userService.findOne(req.params.id);
@@ -76,7 +92,13 @@ export class UserController extends BaseController<User> {
 
     /**
      * Create a new user
+     * @param req Request object containing user data in body
+     * @param res Response object
+     * @param next Next function
+     * @returns Promise<void> - Returns the created user
+     * @throws Error if user creation fails
      */
+    @Post('/')
     public async createUser(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const user = await this.userService.create(req.body);
@@ -92,11 +114,17 @@ export class UserController extends BaseController<User> {
     }
 
     /**
-     * Update user by ID
+     * Update an existing user
+     * @param req Request object containing user ID in params and update data in body
+     * @param res Response object
+     * @param next Next function
+     * @returns Promise<void> - Returns the updated user
+     * @throws Error if user is not found or update fails
      */
+    @Put('/:id')
     public async updateUser(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const user = await this.userService.update(req.params.id, req.body);
+            const user = await this.userService.updateUser(req.params.id, req.body);
 
             if (!user) {
                 throw new Error('User not found');
@@ -114,13 +142,18 @@ export class UserController extends BaseController<User> {
     }
 
     /**
-     * Delete user by ID (soft delete)
+     * Delete a user
+     * @param req Request object containing user ID in params
+     * @param res Response object
+     * @param next Next function
+     * @returns Promise<void> - Returns success message
+     * @throws Error if user deletion fails
      */
+    @Delete('/:id')
     public async deleteUser(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             await this.userService.delete(req.params.id);
-
-            const response: ApiResponse<null> = {
+            const response: ApiResponse<void> = {
                 success: true,
                 message: 'User deleted successfully'
             };

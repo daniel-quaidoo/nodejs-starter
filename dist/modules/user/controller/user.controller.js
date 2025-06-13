@@ -20,13 +20,21 @@ const user_service_1 = require("../service/user.service");
 const base_controller_1 = require("../../../core/common/controller/base.controller");
 // decorator
 const component_decorator_1 = require("../../../core/common/di/component.decorator");
+const route_decorator_1 = require("../../../core/common/decorators/route.decorator");
 let UserController = class UserController extends base_controller_1.BaseController {
     constructor(userService) {
         super(userService);
         this.userService = userService;
     }
     /**
-     * Find all users with pagination (overrides base method)
+     * Get paginated list of all users
+     * @param req Request object containing query parameters:
+     *   - page: Current page number (default: 1)
+     *   - limit: Number of items per page (default: 10)
+     * @param res Response object
+     * @param next Next function
+     * @returns Promise<void> - Returns a paginated list of users with metadata
+     * @throws Error if database operation fails
      */
     async getAllUsers(req, res, next) {
         try {
@@ -54,7 +62,12 @@ let UserController = class UserController extends base_controller_1.BaseControll
         }
     }
     /**
-     * Get user by ID (legacy method - kept for backward compatibility)
+     * Get a single user by ID
+     * @param req Request object containing user ID in params
+     * @param res Response object
+     * @param next Next function
+     * @returns Promise<void> - Returns the requested user
+     * @throws Error if user is not found or database operation fails
      */
     async getUserById(req, res, next) {
         try {
@@ -74,6 +87,11 @@ let UserController = class UserController extends base_controller_1.BaseControll
     }
     /**
      * Create a new user
+     * @param req Request object containing user data in body
+     * @param res Response object
+     * @param next Next function
+     * @returns Promise<void> - Returns the created user
+     * @throws Error if user creation fails
      */
     async createUser(req, res, next) {
         try {
@@ -90,11 +108,16 @@ let UserController = class UserController extends base_controller_1.BaseControll
         }
     }
     /**
-     * Update user by ID
+     * Update an existing user
+     * @param req Request object containing user ID in params and update data in body
+     * @param res Response object
+     * @param next Next function
+     * @returns Promise<void> - Returns the updated user
+     * @throws Error if user is not found or update fails
      */
     async updateUser(req, res, next) {
         try {
-            const user = await this.userService.update(req.params.id, req.body);
+            const user = await this.userService.updateUser(req.params.id, req.body);
             if (!user) {
                 throw new Error('User not found');
             }
@@ -110,7 +133,12 @@ let UserController = class UserController extends base_controller_1.BaseControll
         }
     }
     /**
-     * Delete user by ID (soft delete)
+     * Delete a user
+     * @param req Request object containing user ID in params
+     * @param res Response object
+     * @param next Next function
+     * @returns Promise<void> - Returns success message
+     * @throws Error if user deletion fails
      */
     async deleteUser(req, res, next) {
         try {
@@ -127,8 +155,39 @@ let UserController = class UserController extends base_controller_1.BaseControll
     }
 };
 exports.UserController = UserController;
+__decorate([
+    (0, route_decorator_1.Get)('/all'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object, Function]),
+    __metadata("design:returntype", Promise)
+], UserController.prototype, "getAllUsers", null);
+__decorate([
+    (0, route_decorator_1.Get)('/:id'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object, Function]),
+    __metadata("design:returntype", Promise)
+], UserController.prototype, "getUserById", null);
+__decorate([
+    (0, route_decorator_1.Post)('/'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object, Function]),
+    __metadata("design:returntype", Promise)
+], UserController.prototype, "createUser", null);
+__decorate([
+    (0, route_decorator_1.Put)('/:id'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object, Function]),
+    __metadata("design:returntype", Promise)
+], UserController.prototype, "updateUser", null);
+__decorate([
+    (0, route_decorator_1.Delete)('/:id'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object, Function]),
+    __metadata("design:returntype", Promise)
+], UserController.prototype, "deleteUser", null);
 exports.UserController = UserController = __decorate([
     (0, component_decorator_1.Component)({ type: component_decorator_1.COMPONENT_TYPE.CONTROLLER }),
+    (0, route_decorator_1.Controller)('/users'),
     __param(0, (0, typedi_1.Inject)()),
     __metadata("design:paramtypes", [user_service_1.UserService])
 ], UserController);

@@ -43,13 +43,21 @@ const router_registry_1 = require("./common/router/router.registry");
 const utils_1 = require("../shared/utils");
 const configService = new configuration_1.ConfigService();
 const API_PREFIX = (configService.get('API_PREFIX') || '/api').replace(/\/+$/, '');
-const allRoutes = router_registry_1.routerRegistry
-    .getAllRouters()
-    .flatMap((moduleRouter) => moduleRouter.getRoutes().map((route) => ({
-    method: route.method,
-    path: `${API_PREFIX}${(0, utils_1.normalizePath)(route.path)}`,
-    action: (0, utils_1.wrapHandler)((0, utils_1.createLambdaHandler)(route.handler)),
-})));
+const allRoutes = router_registry_1.routerRegistry.getAllRouters().flatMap((moduleRouter) => {
+    if (typeof moduleRouter.getRoutes === 'function') {
+        return moduleRouter.getRoutes().map((route) => {
+            const fullPath = route.path.startsWith('/')
+                ? route.path
+                : `/${route.path}`;
+            return {
+                method: route.method,
+                path: `${API_PREFIX}${fullPath}`.replace(/\/+/g, '/'),
+                action: (0, utils_1.wrapHandler)((0, utils_1.createLambdaHandler)(route.handler)),
+            };
+        });
+    }
+    return [];
+});
 exports.routerConfig = {
     proxyIntegration: {
         routes: allRoutes,

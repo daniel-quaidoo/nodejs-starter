@@ -1,3 +1,5 @@
+import bcrypt from 'bcrypt';
+
 // model
 import { User } from '../entities/user.entity';
 
@@ -9,17 +11,21 @@ import { BaseService } from '../../../core/common/service/base.service';
 
 // decorator
 import { Component, COMPONENT_TYPE } from "../../../core/common/di/component.decorator";
+import { Inject } from 'typedi';
 
-// exceptions
+// exception
 import { ConflictException, NotFoundException } from '../../../core/common/exceptions/http.exception';
+
 
 @Component({ type: COMPONENT_TYPE.SERVICE })
 export class UserService extends BaseService<User> {
-    constructor(private userRepository: UserRepository) {
+    private readonly SALT_ROUNDS = 10;
+    
+    constructor(@Inject() private userRepository: UserRepository) {
         super(userRepository);
     }
     
-    async create(userData: Partial<User>): Promise<User> {
+    async create(userData:   Partial<User>): Promise<User> {
         if (userData.email && await this.userRepository.isEmailTaken(userData.email)) {
             throw new ConflictException('Email already in use');
         }
@@ -31,12 +37,41 @@ export class UserService extends BaseService<User> {
             throw new ConflictException('Email already in use');
         }
         
+        // Hash new password if provided
+        if (updateData.password) {
+            updateData.password = await this.hashPassword(updateData.password);
+        }
+        
         await this.userRepository.update(id, updateData);
         const updatedUser = await this.userRepository.findOne({ where: { id } });
         if (!updatedUser) {
             throw new NotFoundException('User not found after update');
         }
         return updatedUser;
+    }
+    
+    /**
+     * Hash a password
+     */
+    private async hashPassword(password: string): Promise<string> {
+        return bcrypt.hash(password, this.SALT_ROUNDS);
+    }
+    
+    /**
+     * Validate user credentials
+     */
+    async validateUser(email: string, password: string): Promise<User | null> {
+        const user = await this.findByEmail(email);
+        if (!user) {
+            return null;
+        }
+        
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            return null;
+        }
+        
+        return user;
     }
 
     async findByEmail(email: string): Promise<User | null> {

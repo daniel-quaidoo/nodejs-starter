@@ -40,25 +40,29 @@ exports.handler = exports.bootstrap = void 0;
 require("reflect-metadata");
 const typedi_1 = require("typedi");
 const typeorm_1 = require("typeorm");
+const express_session_1 = __importDefault(require("express-session"));
 const express_1 = __importDefault(require("express"));
-// utils
-const utils_1 = require("./shared/utils");
 // config
 const configuration_1 = require("./config/configuration");
-// logger
-const logger_service_1 = require("./core/logging/logger.service");
-// router registry
-const router_registry_1 = require("./core/common/router/router.registry");
-// factory
-const database_factory_1 = require("./core/db/factory/database.factory");
-// interfaces
-const database_interface_1 = require("./core/db/interfaces/database.interface");
-// middleware
-const request_logger_middleware_1 = require("./core/logging/request-logger.middleware");
 // modules
 const user_module_1 = require("./modules/user/user.module");
 const health_module_1 = require("./modules/health/health.module");
+// loader
 const module_loader_1 = require("./core/common/di/module.loader");
+// service
+const user_service_1 = require("./modules/user/service/user.service");
+// factory
+const database_factory_1 = require("./core/db/factory/database.factory");
+// router registry
+const router_registry_1 = require("./core/common/router/router.registry");
+// interfaces
+const database_interface_1 = require("./core/db/interfaces/database.interface");
+// middleware
+const passport_1 = require("./core/auth/passport");
+const request_logger_middleware_1 = require("./core/logging/request-logger.middleware");
+// utils
+const utils_1 = require("./shared/utils");
+const auth_module_1 = require("./modules/auth/auth.module");
 // For AWS Lambda
 let isWarm = false;
 let dataSource;
@@ -67,23 +71,25 @@ const bootstrap = async () => {
     // Initialize configuration
     const configService = new configuration_1.ConfigService();
     typedi_1.Container.set(configuration_1.ConfigService, configService);
+    // Register API routes
+    const apiPrefix = configService.get('API_PREFIX') || '/api';
     // Initialize Express app
     const app = (0, express_1.default)();
     // Apply middleware
     app.use(express_1.default.json());
     app.use(express_1.default.urlencoded({ extended: true }));
     // Enable CORS for all routes
-    app.use((req, res, next) => {
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-        res.setHeader('Access-Control-Allow-Credentials', 'true');
-        // Handle preflight requests
-        if (req.method === 'OPTIONS') {
-            return res.status(200).json({});
-        }
-        next();
-    });
+    app.use((0, utils_1.setupCorsMiddleware)(['*']));
+    // Session configuration
+    app.use((0, express_session_1.default)({
+        secret: process.env.SESSION_SECRET || 'your-secret-key',
+        resave: false,
+        saveUninitialized: false,
+        cookie: {
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        },
+    }));
     // Request logging
     app.use(request_logger_middleware_1.requestLogger);
     try {
@@ -93,61 +99,20 @@ const bootstrap = async () => {
         typedi_1.Container.set(typeorm_1.DataSource, dataSource);
         // Initialize module loader
         const moduleLoader = new module_loader_1.ModuleLoader(dataSource);
-        await moduleLoader.loadModules([user_module_1.UserModule, health_module_1.HealthModule]);
+        await moduleLoader.loadModules([user_module_1.UserModule, auth_module_1.AuthModule, health_module_1.HealthModule]);
+        // Initialize Passport
+        const userService = typedi_1.Container.get(user_service_1.UserService);
+        (0, passport_1.configurePassport)(userService);
+        app.use(passport_1.passportMiddleware);
+        app.use(passport_1.passportSessionMiddleware);
         // Get all registered routers for logging
         const registeredRouters = router_registry_1.routerRegistry.getAllRouters();
-        // Log registered routers
-        console.log('\n=== Registered Routers ===');
-        if (registeredRouters.length === 0) {
-            console.warn('No routers were registered! Check your router setup.');
-        }
-        else {
-            registeredRouters.forEach(router => {
-                console.log(`- ${router.constructor.name}`);
-            });
-        }
-        // Register API routes
-        const apiPrefix = configService.get('API_PREFIX') || '/api';
-        // Log registered routes for debugging
-        console.log('\n=== Registered Routes ===');
-        // Register each router's routes with Express
-        registeredRouters.forEach(router => {
-            const routerName = router.constructor.name;
-            console.log(`\n${routerName} Routes:`);
-            // Register the router with Express
-            app.use(apiPrefix, router.router);
-            // Log the routes for debugging
-            if (router.router && router.router.stack) {
-                router.router.stack.forEach((r) => {
-                    if (r.route && r.route.path) {
-                        const method = r.route.stack[0].method.toUpperCase();
-                        console.log(`[${method}] ${apiPrefix}${r.route.path}`);
-                    }
-                });
-            }
-        });
-        console.log('\n========================');
+        // Register and log all routes
+        (0, utils_1.registerAndLogRoutes)(app, registeredRouters, apiPrefix);
         // Global error handler
-        app.use((err, req, res, next) => {
-            const logger = typedi_1.Container.get(logger_service_1.LoggerService);
-            logger.error('Unhandled error', {
-                error: err.message,
-                stack: err.stack,
-                url: req.originalUrl,
-                method: req.method
-            });
-            res.status(err.statusCode || 500).json((0, utils_1.createErrorResponse)(500, err.message, req, {
-                ...err,
-                error: err.message,
-                stack: err.stack,
-                method: req.method,
-                details: err.stack
-            }));
-        });
+        (0, utils_1.setupGlobalErrorHandler)(app);
         // 404 handler
-        app.use((req, res) => {
-            res.status(404).json((0, utils_1.createErrorResponse)(404, 'Not Found', req));
-        });
+        (0, utils_1.setupNotFoundHandler)(app);
         console.log('Application bootstrapped successfully');
         return { app, dataSource };
     }

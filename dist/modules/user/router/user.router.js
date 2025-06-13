@@ -33,25 +33,8 @@ let UserRouter = UserRouter_1 = class UserRouter extends base_router_1.BaseRoute
         const controller = typedi_1.Container.get(user_controller_1.UserController);
         return new UserRouter_1(controller).router;
     }
-    /**
-     * Override to add custom routes
-     * These will be prefixed with '/user' automatically
-     */
     getCustomRoutes() {
-        return [
-            {
-                method: 'GET',
-                path: '/users',
-                handler: (req, res, next) => this.controller.getAllUsers(req, res, next),
-                absolutePath: true
-            },
-            {
-                method: 'POST',
-                path: '/users',
-                handler: (req, res, next) => this.controller.createUser(req, res, next),
-                absolutePath: true
-            }
-        ];
+        return [];
     }
 };
 exports.UserRouter = UserRouter;

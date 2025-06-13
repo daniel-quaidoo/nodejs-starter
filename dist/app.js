@@ -25,7 +25,7 @@ const handler = async (event, context) => {
     }
 };
 exports.handler = handler;
-// // For local development
+// For local development
 if (process.env.NODE_ENV !== 'production' && require.main === module) {
     (0, bootstrap_1.bootstrap)().then(({ app }) => {
         const port = process.env.PORT || 3000;

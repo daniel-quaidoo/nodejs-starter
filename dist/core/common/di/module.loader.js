@@ -19,6 +19,7 @@ const component_decorator_1 = require("./component.decorator");
 const component_decorator_2 = require("./component.decorator");
 // router registry
 const router_registry_1 = require("../router/router.registry");
+const controller_router_1 = require("./controller.router");
 let ModuleLoader = class ModuleLoader {
     constructor(dataSource) {
         this.dataSource = dataSource;
@@ -69,15 +70,33 @@ let ModuleLoader = class ModuleLoader {
         typedi_2.Container.set(Service, instance);
     }
     registerController(Controller) {
-        const deps = this.getDependencies(Controller);
-        const instance = new Controller(...deps);
-        typedi_2.Container.set(Controller, instance);
+        // const deps = this.getDependencies(Controller);
+        // const instance = new Controller(...deps);
+        // Container.set(Controller, instance);
+        try {
+            // Get controller dependencies and create instance
+            const deps = this.getDependencies(Controller);
+            const controller = new Controller(...deps);
+            // Register the controller in the container
+            typedi_2.Container.set(Controller, controller);
+            // Create and register the router
+            const router = new controller_router_1.ControllerRouter(controller);
+            // Add router to the registry
+            if (router.Token) {
+                console.log(`✓ Registered controller: ${Controller.name}`);
+                router_registry_1.routerRegistry.registerRouter(router.Token, () => router);
+            }
+        }
+        catch (error) {
+            console.error(`Failed to register controller ${Controller?.name || 'unknown'}:`, error);
+            throw error;
+        }
     }
     registerRouter(Router) {
         const deps = this.getDependencies(Router);
         const instance = new Router(...deps);
         typedi_2.Container.set(Router.Token, instance);
-        router_registry_1.routerRegistry.registerRouter(Router.Token);
+        router_registry_1.routerRegistry.registerRouter(Router.Token, () => instance);
     }
     getDependencies(Target) {
         const paramTypes = Reflect.getMetadata('design:paramtypes', Target) || [];

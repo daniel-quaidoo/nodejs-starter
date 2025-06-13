@@ -9,6 +9,7 @@ import { getComponentMetadata } from './component.decorator';
 
 // router registry
 import { routerRegistry } from '../router/router.registry';
+import { ControllerRouter } from './controller.router';
 
 @Service()
 export class ModuleLoader {
@@ -68,16 +69,37 @@ export class ModuleLoader {
     }
 
     private registerController(Controller: any): void {
-        const deps = this.getDependencies(Controller);
-        const instance = new Controller(...deps);
-        Container.set(Controller, instance);
+        // const deps = this.getDependencies(Controller);
+        // const instance = new Controller(...deps);
+        // Container.set(Controller, instance);
+        try {
+            // Get controller dependencies and create instance
+            const deps = this.getDependencies(Controller);
+            const controller = new Controller(...deps);
+
+            // Register the controller in the container
+            Container.set(Controller, controller);
+
+            // Create and register the router
+            const router = new ControllerRouter(controller);
+
+            // Add router to the registry
+            if (router.Token) {
+                console.log(`✓ Registered controller: ${Controller.name}`);
+                routerRegistry.registerRouter(router.Token, () => router);
+            }
+
+        } catch (error) {
+            console.error(`Failed to register controller ${Controller?.name || 'unknown'}:`, error);
+            throw error;
+        }
     }
 
     private registerRouter(Router: any): void {
         const deps = this.getDependencies(Router);
         const instance = new Router(...deps);
         Container.set(Router.Token, instance);
-        routerRegistry.registerRouter(Router.Token);
+        routerRegistry.registerRouter(Router.Token, () => instance);
     }
 
     private getDependencies(Target: any): any[] {
