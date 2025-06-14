@@ -10,12 +10,12 @@ export class ConfigService {
     private config: ConfigSchema;
 
     constructor() {
-        // Load .env file
+        // load .env file
         dotenv.config({
             path: path.resolve(process.cwd(), '.env')
         });
 
-        // Validate configuration
+        // validate configuration
         const { error, value } = configSchema.validate(process.env, {
             allowUnknown: true,
             stripUnknown: true,

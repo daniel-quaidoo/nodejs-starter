@@ -191,7 +191,6 @@ export abstract class BaseController<T extends BaseModel> implements IBaseContro
                         BaseResponseDto.error('Resource not found')
                     );
                 } else {
-                    // Handle the case where res is NextFunction
                     const error = new Error('Resource not found');
                     (error as any).status = 404;
                     (res as NextFunction)(error);
@@ -208,14 +207,12 @@ export abstract class BaseController<T extends BaseModel> implements IBaseContro
                     )
                 );
             } else {
-                // If res is NextFunction, call it without arguments to proceed
                 (res as NextFunction)();
             }
         } catch (error) {
             if (next) {
                 next(error);
             } else if ('status' in res) {
-                // If next is not provided but res is a Response, send the error
                 (res as Response).status(500).json(
                     BaseResponseDto.error(
                         'Internal server error',

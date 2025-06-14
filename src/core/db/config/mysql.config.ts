@@ -4,6 +4,10 @@ import { DataSourceOptions } from 'typeorm';
 import { BaseDatabaseConfig } from './base-database.config';
 
 export class MySqlConfig extends BaseDatabaseConfig {
+    /**
+     * Retrieves the MySQL connection configuration
+     * @returns The MySQL connection configuration
+     */
     protected getConnectionConfig(): DataSourceOptions {
         return {
             type: 'mysql',

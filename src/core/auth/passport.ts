@@ -24,12 +24,12 @@ export const initializePassport = () => {
 export const configurePassport = () => {
     const userService = Container.get(UserService);
 
-    // Serialize user into the session
+    // serialize user into the session
     passport.serializeUser((user: any, done) => {
         done(null, user.id);
     });
 
-    // Deserialize user from the session
+    // deserialize user from the session
     passport.deserializeUser(async (id: string, done) => {
         try {
             const user = await userService.findById(id);
@@ -39,14 +39,14 @@ export const configurePassport = () => {
         }
     });
 
-    // Configure authentication strategies
+    // configure authentication strategies
     passport.use(createLocalStrategy(userService));
     passport.use(createJwtStrategy(userService));
 
     return passport;
 };
 
-// Export middleware for Express
+// export middleware for Express
 const passportInstance = passport.initialize();
 const passportSessionInstance = passport.session();
 

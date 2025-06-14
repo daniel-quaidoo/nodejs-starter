@@ -11,6 +11,12 @@ import { authMiddleware } from '../../../core/auth/guards/local.guard';
 export class HealthController {
     constructor(private healthService: HealthService) {}
 
+    /**
+     * Retrieves the health status of the system
+     * @param _req The request object
+     * @param res The response object
+     * @returns The health status of the system
+     */
     @Get('/status') 
     public async getHealthStatus(_req: Request, res: Response) {
         try {
@@ -21,6 +27,13 @@ export class HealthController {
         }
     }
 
+    /**
+     * Checks the health of the system
+     * @param _req The request object
+     * @param res The response object
+     * @param next The next function
+     * @returns The health status of the system
+     */
     @Get('/check')
     public async checkHealth(_req: Request, res: Response, next: NextFunction) {
         try {

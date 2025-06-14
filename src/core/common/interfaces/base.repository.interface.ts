@@ -3,6 +3,10 @@ import { DeepPartial, FindManyOptions, FindOneOptions, FindOptionsWhere, UpdateR
 // model
 import { BaseModel } from '../entities/base.entity';
 
+/** 
+ * Base repository interface
+ * @template T The type of the model
+ */
 export interface IBaseRepository<T extends BaseModel> {
     // Create
     create(entity: DeepPartial<T>): Promise<T>;

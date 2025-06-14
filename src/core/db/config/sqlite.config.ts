@@ -4,6 +4,10 @@ import { DataSourceOptions } from 'typeorm';
 import { BaseDatabaseConfig } from './base-database.config';
 
 export class SqliteConfig extends BaseDatabaseConfig {
+    /**
+     * Retrieves the SQLite connection configuration
+     * @returns The SQLite connection configuration
+     */
     protected getConnectionConfig(): DataSourceOptions {
         return {
             type: 'better-sqlite3',

@@ -21,6 +21,10 @@ export abstract class BaseRouter<T extends BaseModel> {
         this.initializeRoutes();
     }
 
+    /**
+     * Gets the router
+     * @returns The router
+     */
     public getRouter(): Router {
         return this.router;
     }
@@ -142,6 +146,10 @@ export abstract class BaseRouter<T extends BaseModel> {
         this.getRoutes().forEach(route => this.registerRoute(route));
     }
 
+    /**
+     * Register a single route
+     * @param route The route to register
+     */
     protected registerRoute(route: RouteDefinition) {
         const fullPath = route.absolutePath 
             ? route.path

@@ -1,10 +1,10 @@
 import { NextFunction, Router } from 'express';
 
-// decorator
-import { createControllerRouter, getControllerMetadata } from '../decorators/route.decorator';
-
 // interface
 import { IModuleRouter, RouteDefinition } from '../interfaces/route.interface';
+
+// decorator
+import { createControllerRouter, getControllerMetadata } from '../decorators/route.decorator';
 
 export class ControllerRouter implements IModuleRouter {
     public Token: any;
@@ -21,16 +21,10 @@ export class ControllerRouter implements IModuleRouter {
         this.initializeRoutes();
     }
 
-    private validateRoute(route: RouteDefinition) {
-        if (!route.handlerName) {
-            throw new Error(`Route ${route.method.toUpperCase()} ${route.path} is missing both handler and handlerName`);
-        }
-
-        if (typeof this.controller[route.handlerName] !== 'function') {
-            throw new Error(`Handler '${route.handlerName}' is not a function in ${this.controller.constructor.name}. Available methods: ${Object.getOwnPropertyNames(Object.getPrototypeOf(this.controller)).join(', ')}`);
-        }
-    }
-
+    /**
+     * Gets the routes for the controller
+     * @returns The routes for the controller
+     */
     public getRoutes(): RouteDefinition[] {
         console.log(`Getting routes for controller: ${this.controller.constructor.name}`);
         console.log('Available methods on controller:', Object.getOwnPropertyNames(Object.getPrototypeOf(this.controller)));
@@ -88,6 +82,9 @@ export class ControllerRouter implements IModuleRouter {
         });
     }
 
+    /**
+     * Initializes the routes for the controller
+     */
     private initializeRoutes() {
         const { basePath } = getControllerMetadata(this.controller);
         const controllerRouter = createControllerRouter(this.controller, basePath);
@@ -97,9 +94,6 @@ export class ControllerRouter implements IModuleRouter {
             this.routes = controllerRouter.stack
                 .map((layer: any) => {
                     if (layer.route) {
-
-                        // validate route
-                        // this.validateRoute(layer.route);
 
                         const method = Object.keys(layer.route.methods)[0].toUpperCase();
                         const path = layer.route.path;
@@ -122,7 +116,7 @@ export class ControllerRouter implements IModuleRouter {
                     }
                     return null;
                 })
-                .filter(Boolean); // Remove null entries
+                .filter(Boolean);
         }
     }
 }

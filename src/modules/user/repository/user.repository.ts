@@ -13,7 +13,6 @@ import { IUserRepository } from '../interfaces/user.interface';
 // decorator
 import { Component, COMPONENT_TYPE } from "../../../core/common/di/component.decorator";
 
-
 @Component({ type: COMPONENT_TYPE.REPOSITORY })
 export class UserRepository extends BaseDAO<User> implements IUserRepository {
     constructor() {
@@ -21,6 +20,11 @@ export class UserRepository extends BaseDAO<User> implements IUserRepository {
         super(dataSource, User);
     }
 
+    /**
+     * Finds a user by email
+     * @param email The email of the user to find
+     * @returns The user with the given email, or null if not found
+     */
     async findByEmail(email: string): Promise<User | null> {
         return this.repository.findOne({ 
             where: { 
@@ -30,6 +34,10 @@ export class UserRepository extends BaseDAO<User> implements IUserRepository {
         });
     }
 
+    /**
+     * Finds all active users
+     * @returns An array of active users
+     */
     async findActiveUsers(): Promise<User[]> {
         return this.repository.find({ 
             where: { 
@@ -39,6 +47,12 @@ export class UserRepository extends BaseDAO<User> implements IUserRepository {
         });
     }
 
+    /**
+     * Checks if an email is taken
+     * @param email The email to check
+     * @param excludeId Optional ID to exclude from the check
+     * @returns true if the email is taken, false otherwise
+     */
     async isEmailTaken(email: string, excludeId?: string): Promise<boolean> {
         const query: FindOptionsWhere<User> = { 
             email,

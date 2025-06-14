@@ -4,7 +4,12 @@ import { Response, NextFunction } from 'express';
 // service
 import { AuthService } from '../../../modules/auth/service/auth.service';
 
-
+/**
+ * JWT authentication guard
+ * @param req Request object
+ * @param res Response object
+ * @param next Next function for error handling
+ */
 export const JwtAuthGuard = async (req: any, res: Response, next: NextFunction) => {
     try {
         const authHeader = req.headers.authorization || req.headers.Authorization;

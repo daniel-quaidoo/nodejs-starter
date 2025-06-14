@@ -1,9 +1,17 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
 
-// local imports
+// local import
+import { ConfigService } from './config/configuration';
 import { handler as routerHandler, bootstrap } from './bootstrap';
 
-// For AWS Lambda
+const configService = new ConfigService();
+
+/**
+ * AWS Lambda handler function
+ * @param event API Gateway event object
+ * @param context AWS Lambda context object
+ * @returns Promise<APIGatewayProxyResult> - Returns the API Gateway proxy result
+ */
 export const handler = async (
     event: APIGatewayProxyEvent,
     context: Context
@@ -27,8 +35,11 @@ export const handler = async (
     }
 };
 
-// For local development
-if (process.env.NODE_ENV !== 'production' && require.main === module) {
+/**
+ * Local development server
+ * @returns Promise<void> - Returns void
+ */
+if (configService.isDevelopment() && require.main === module) {
     bootstrap().then(({ app }) => {
         const port = process.env.PORT || 3000;
         app.listen(port, () => {

@@ -8,6 +8,11 @@ import { UserService } from '../../../modules/user/service/user.service';
 
 const configService = new ConfigService();
 
+/**
+ * Creates a JWT strategy for Passport authentication
+ * @param userService The user service instance
+ * @returns The JWT strategy
+ */
 export const createJwtStrategy = (userService: UserService) => {
     return new JwtStrategy(
         {

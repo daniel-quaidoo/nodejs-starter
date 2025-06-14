@@ -51,17 +51,12 @@ export class AuthController extends BaseController<any> {
     public async login(req: Request & { user: User }, res: Response, next: NextFunction): Promise<void> {
         try {
             const user = req.user as User;
-            
-            // Generate JWT token
             const token = this.authService.generateToken(user);
-
-            // Call auth service for additional login logic
             const loginResponse = await this.authService.login({
                 email: user.email,
                 password: req.body.password as string
             });
 
-            // Return success response
             res.status(200).json({
                 success: true,
                 data: {
@@ -89,7 +84,6 @@ export class AuthController extends BaseController<any> {
     @UseMiddleware(authMiddleware({ roles: ['admin'] }))
     public getProfile(req: AuthenticatedRequest, res: Response, next: NextFunction): void {
 
-        // Call the auth service to get the user profile
         this.authService.getProfile(req.user?.id as string)
             .then(user => {
                 const { password, ...userWithoutPassword } = user;

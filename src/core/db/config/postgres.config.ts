@@ -4,6 +4,10 @@ import { DataSourceOptions } from 'typeorm';
 import { BaseDatabaseConfig } from './base-database.config';
 
 export class PostgresConfig extends BaseDatabaseConfig {
+    /**
+     * Retrieves the PostgreSQL connection configuration
+     * @returns The PostgreSQL connection configuration
+     */
     protected getConnectionConfig(): DataSourceOptions {
         return {
             type: 'postgres',

@@ -12,7 +12,7 @@ import { ApiResponse, ErrorResponse, LambdaResponse } from '../core/common/inter
 import { ConfigService } from '../config/configuration';
 
 const configService = new ConfigService();
-const IS_DEV = configService.get('NODE_ENV') === 'development';
+const IS_DEV = configService.isDevelopment();
 
 /**
  * Normalizes a path by ensuring it starts with a forward slash

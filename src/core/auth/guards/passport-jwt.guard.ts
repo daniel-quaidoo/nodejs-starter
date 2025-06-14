@@ -1,7 +1,12 @@
 import passport from 'passport';
 import { Request, Response, NextFunction } from 'express';
 
-
+/**
+ * JWT passport guard
+ * @param req Request object
+ * @param res Response object
+ * @param next Next function for error handling
+ */
 export function JwtPassportGuard(req: Request, res: Response, next: NextFunction) {
     return passport.authenticate('jwt', { session: false }, (err: any, user: any, info: any) => {
         if (err) {

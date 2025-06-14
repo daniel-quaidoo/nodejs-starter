@@ -2,6 +2,11 @@ import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import { NextFunction, Request, Response } from 'express';
 
+/**
+ * Validates a DTO (Data Transfer Object)
+ * @param dtoClass The DTO class to validate
+ * @returns A middleware function that validates the DTO
+ */
 export async function validateDto(dtoClass: any) {
     return async (req: Request, res: Response, next: NextFunction) => {
         const dto = plainToClass(dtoClass, req.query);

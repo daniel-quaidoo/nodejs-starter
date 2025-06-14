@@ -3,25 +3,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { DataSource } from 'typeorm';
 import { Container, Service } from 'typedi';
 
-export interface HealthCheckResult {
-    status: 'healthy' | 'degraded' | 'unhealthy';
-    timestamp: string;
-    node: {
-        id: string;
-        hostname: string;
-        platform: string;
-        arch: string;
-        uptime: number;
-    };
-    services: {
-        database: {
-            status: 'connected' | 'disconnected';
-            responseTime?: number;
-            error?: string;
-        };
-    };
-    details?: Record<string, unknown>;
-}
+// interface
+import { HealthCheckResult } from '../interface/health.interface';
 
 @Service()
 export class HealthService {
@@ -33,6 +16,10 @@ export class HealthService {
         this.nodeId = process.env.NODE_ID || uuidv4();
     }
 
+    /**
+     * Checks the database connection
+     * @returns A promise that resolves to an object containing the status of the database connection
+     */
     private async checkDatabase(): Promise<{
         status: boolean;
         responseTime?: number;
@@ -52,6 +39,10 @@ export class HealthService {
         }
     }
 
+    /**
+     * Retrieves system information
+     * @returns An object containing system information
+     */
     private getSystemInfo() {
         return {
             id: this.nodeId,
@@ -70,6 +61,10 @@ export class HealthService {
         };
     }
 
+    /**
+     * Retrieves the health status of the system
+     * @returns An object containing the health status of the system
+     */
     async getHealthStatus(): Promise<HealthCheckResult> {
         const systemInfo = this.getSystemInfo();
         const databaseCheck = await this.checkDatabase();

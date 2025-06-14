@@ -21,7 +21,7 @@ import { BaseController } from '../../../core/common/controller/base.controller'
 import { UseMiddleware } from '../../../core/common/decorators/middleware.decorator';
 import { Controller, Delete, Get, Post, Put } from "../../../core/common/decorators/route.decorator";
 
-@Controller('/users')
+@Controller('/user')
 export class UserController extends BaseController<User> {
 
     constructor(@Inject() private userService: UserService, @Inject() private healthService: HealthService) {

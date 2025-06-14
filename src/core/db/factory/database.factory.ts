@@ -7,7 +7,17 @@ import { PostgresConfig } from '../config/postgres.config';
 // interface
 import { IDatabaseConfig, DatabaseType } from '../interfaces/database.interface';
 
+/**
+ * Database factory class
+ * @class
+ * @implements IDatabaseConfig
+ */
 export class DatabaseFactory {
+    /**
+     * Creates a database configuration instance
+     * @param type The type of database to create
+     * @returns The database configuration instance
+     */
     public static createDatabaseConfig(type: DatabaseType = DatabaseType.POSTGRES): IDatabaseConfig {
         switch (type) {
             case DatabaseType.POSTGRES:

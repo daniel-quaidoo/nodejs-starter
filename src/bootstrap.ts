@@ -32,12 +32,14 @@ import { configurePassport, passportMiddleware, passportSessionMiddleware } from
 // utils
 import { registerAndLogRoutes, setupGlobalErrorHandler, setupNotFoundHandler } from './shared/utils';
 
-// For AWS Lambda
 let app: any;
 let isWarm = false;
 let dataSource: DataSource;
 
-// Initialize application services, database connections, etc.
+/**
+ * Initializes the application services, database connections, etc.
+ * @returns Promise<{ app: Express; dataSource: DataSource }> - Returns the Express app and DataSource
+ */
 export const bootstrap = async (): Promise<{ app: Express; dataSource: DataSource }> => {
     // Initialize configuration
     const configService = new ConfigService();
@@ -107,6 +109,12 @@ export const bootstrap = async (): Promise<{ app: Express; dataSource: DataSourc
     }
 };
 
+/**
+ * AWS Lambda handler function
+ * @param event API Gateway event object
+ * @param context AWS Lambda context object
+ * @returns Promise<APIGatewayProxyResult> - Returns the API Gateway proxy result
+ */
 export const handler = async (event: any, context: any) => {
     // Cold start handling
     if (!isWarm) {

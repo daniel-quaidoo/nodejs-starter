@@ -7,13 +7,17 @@ import { HttpMethod, RouteDefinition, RouteMetadata } from '../interfaces/route.
 import { MIDDLEWARE_METADATA_KEY } from './middleware.decorator';
 import { Component, COMPONENT_TYPE, CONTROLLER_METADATA_KEY, ROUTE_METADATA_KEY } from '../di/component.decorator';
 
-
+/**
+ * Decorator to define a controller
+ * @param basePath Base path for the controller
+ * @param options Optional options for the controller
+ */
 export function Controller(basePath: string = '', options: { auth?: boolean | string[], roles?: string[], middlewares?: RequestHandler[] } = {}) {
     return function (target: any) {
         Component({ type: COMPONENT_TYPE.CONTROLLER })(target);
         Reflect.defineMetadata('basePath', basePath, target);
 
-        // Store class-level middlewares
+        // store class-level middlewares
         if (options.middlewares && options.middlewares.length > 0) {
             const existingMiddlewares = Reflect.getMetadata(MIDDLEWARE_METADATA_KEY, target) || [];
             Reflect.defineMetadata(
@@ -23,7 +27,7 @@ export function Controller(basePath: string = '', options: { auth?: boolean | st
             );
         }
 
-        // Store the base path in metadata
+        // store the base path in metadata
         Reflect.defineMetadata(CONTROLLER_METADATA_KEY, {
             basePath, auth: {
                 required: !!options.auth || !!options.roles?.length,
@@ -33,14 +37,19 @@ export function Controller(basePath: string = '', options: { auth?: boolean | st
             }
         }, target);
 
-        // Initialize routes array if it doesn't exist
+        // initialize routes array if it doesn't exist
         if (!Reflect.hasMetadata(ROUTE_METADATA_KEY, target)) {
             Reflect.defineMetadata(ROUTE_METADATA_KEY, [], target);
         }
     };
 }
 
-// In route.decorator.ts
+/**
+ * Decorator to define a route
+ * @param method HTTP method for the route
+ * @param path Path for the route
+ * @param options Optional options for the route
+ */
 export function createMethodDecorator(
     method: HttpMethod,
     path: string = '',
@@ -78,6 +87,12 @@ export function createMethodDecorator(
     }
 }
 
+/**
+ * Creates a router for a controller
+ * @param controller The controller to create a router for
+ * @param basePath Base path for the controller
+ * @returns The router for the controller
+ */
 export function createControllerRouter(controller: any, basePath: string = ''): Router {
     const router = Router();
     const controllerClass = controller.constructor;
@@ -135,14 +150,29 @@ export function createControllerRouter(controller: any, basePath: string = ''): 
     return router;
 }
 
+/**
+ * Gets the controller metadata
+ * @param controller The controller to get metadata for
+ * @returns The controller metadata
+ */
 export function getControllerMetadata(controller: any) {
     return Reflect.getMetadata(CONTROLLER_METADATA_KEY, controller.constructor) || { basePath: '' };
 }
 
+/**
+ * Gets the controller routes
+ * @param controller The controller to get routes for
+ * @returns The controller routes
+ */
 export function getControllerRoutes(controller: any): RouteDefinition[] {
     return Reflect.getMetadata(ROUTE_METADATA_KEY, controller.constructor) || [];
 }
 
+/**
+ * Gets the route metadata
+ * @param target The target to get metadata for
+ * @returns The route metadata
+ */
 export function getRouteMetadata(target: any): RouteMetadata[] {
     const methods = Object.getOwnPropertyNames(target.prototype);
     return methods

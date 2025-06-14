@@ -4,6 +4,11 @@ import { Request, Response, NextFunction } from 'express';
 // service
 import { AuthService } from '../../../modules/auth/service/auth.service';
 
+/**
+ * Authentication middleware
+ * @param options Options for the middleware
+ * @returns The middleware function
+ */
 export const authMiddleware = (options: { roles?: string[] } = {}) => {
     return async (req: Request, res: Response, next: NextFunction) => {
         try {

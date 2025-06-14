@@ -6,6 +6,10 @@ import { User } from '../entities/user.entity';
 // dao
 import { BaseDAO } from '../../../core/common/dao/base.dao';
 
+/**
+ * User DAO class
+ * @extends BaseDAO<User>
+ */
 export class UserDAO extends BaseDAO<User> {
     constructor(dataSource: DataSource) {
         super(dataSource, User);

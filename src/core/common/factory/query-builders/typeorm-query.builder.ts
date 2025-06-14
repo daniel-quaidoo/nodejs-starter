@@ -17,17 +17,22 @@ type WhereCondition<T> = {
 } | FindOperator<any>[];
 
 export class TypeORMQueryBuilder<T> implements IQueryBuilder<T> {
+    /**
+     * Builds find options for TypeORM
+     * @param query The query parameters
+     * @returns The find options
+     */
     buildFindOptions(query: QueryParams): FindManyOptions<T> {
         const { page = '1', limit = '10', sortBy, sortOrder, search, ...filters } = query;
         const options: FindManyOptions<T> = {};
         const where: WhereCondition<T> = {};
 
-        // Handle search
+        // handle search
         if (search) {
             Object.assign(where, this.buildSearchCondition('name', search) as any);
         }
 
-        // Add other filters
+        // add other filters
         Object.entries(filters).forEach(([key, value]) => {
             if (value !== undefined && value !== '') {
                 (where as any)[key] = value;
@@ -38,13 +43,13 @@ export class TypeORMQueryBuilder<T> implements IQueryBuilder<T> {
             options.where = where as FindOptionsWhere<T>;
         }
 
-        // Add pagination
+        // add pagination
         const pageNum = parseInt(page, 10) || 1;
         const limitNum = parseInt(limit, 10) || 10;
         options.skip = (pageNum - 1) * limitNum;
         options.take = limitNum;
 
-        // Add sorting
+        // add sorting
         if (sortBy) {
             options.order = {
                 [sortBy]: sortOrder || 'ASC',
@@ -54,6 +59,12 @@ export class TypeORMQueryBuilder<T> implements IQueryBuilder<T> {
         return options;
     }
 
+    /**
+     * Builds a search condition for TypeORM
+     * @param field The field to search on
+     * @param search The search term
+     * @returns The search condition
+     */
     buildSearchCondition(field: string, search: string): Record<string, any> {
         return {
             [field]: ILike(`%${search}%`)

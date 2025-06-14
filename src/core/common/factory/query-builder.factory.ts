@@ -17,6 +17,9 @@ export class QueryBuilderFactory {
         this.builders.set('mongodb', MongoDBQueryBuilder);
     }
 
+    /**
+     * Gets the singleton instance of the query builder factory
+     */
     public static getInstance(): QueryBuilderFactory {
         if (!QueryBuilderFactory.instance) {
             QueryBuilderFactory.instance = new QueryBuilderFactory();
@@ -24,10 +27,20 @@ export class QueryBuilderFactory {
         return QueryBuilderFactory.instance;
     }
 
+    /**
+     * Registers a query builder
+     * @param type The type of the query builder
+     * @param builder The query builder constructor
+     */
     public register<T>(type: DatabaseType, builder: BuilderConstructor<T>): void {
         this.builders.set(type, builder);
     }
 
+    /**
+     * Creates a query builder
+     * @param type The type of the query builder
+     * @returns The query builder instance
+     */
     public create<T>(type: DatabaseType): IQueryBuilder<T> {
         const Builder = this.builders.get(type);
         if (!Builder) {

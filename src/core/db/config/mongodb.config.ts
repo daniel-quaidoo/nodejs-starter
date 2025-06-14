@@ -4,6 +4,10 @@ import { DataSourceOptions } from 'typeorm';
 import { BaseDatabaseConfig } from './base-database.config';
 
 export class MongodbConfig extends BaseDatabaseConfig {
+    /**
+     * Retrieves the MongoDB connection configuration
+     * @returns The MongoDB connection configuration
+     */
     protected getConnectionConfig(): DataSourceOptions {
         return {
             type: 'mongodb',

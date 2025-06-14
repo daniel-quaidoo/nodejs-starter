@@ -17,8 +17,8 @@ import { Inject, Service } from 'typedi';
 import { ConflictException, NotFoundException } from '../../../core/common/exceptions/http.exception';
 
 
-@Component({ type: COMPONENT_TYPE.SERVICE })
 @Service()
+@Component({ type: COMPONENT_TYPE.SERVICE })
 export class UserService extends BaseService<User> {
     private readonly SALT_ROUNDS = 10;
     
