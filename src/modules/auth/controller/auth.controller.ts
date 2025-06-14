@@ -1,13 +1,21 @@
-import jwt from 'jsonwebtoken';
 import { Inject } from 'typedi';
 import passport from 'passport';
 import { Router, Request, Response, NextFunction } from 'express';
 
-// models
-import { User } from '../../user/entities/user.entity';
+// types
+import { AuthenticatedRequest } from '../types';
 
 // service
 import { AuthService } from '../service/auth.service';
+
+// model
+import { User } from '../../user/entities/user.entity';
+
+// config
+import { ConfigService } from '../../../config/configuration';
+
+// guard
+import { authMiddleware } from '../../../core/auth/guards/local.guard';
 
 // interface
 import { ApiResponse } from '../../../core/common/interfaces/route.interface';
@@ -16,57 +24,19 @@ import { ApiResponse } from '../../../core/common/interfaces/route.interface';
 import { BaseController } from '../../../core/common/controller/base.controller';
 
 // decorator
-import { Component, COMPONENT_TYPE } from "../../../core/common/di/component.decorator";
-import { Controller, Get, Post, getRouteMetadata } from "../../../core/common/decorators/route.decorator";
+import { UseMiddleware } from '../../../core/common/decorators/middleware.decorator';
+import { Controller, Get, Post } from "../../../core/common/decorators/route.decorator";
 
-// dto
-import { LoginDto } from '../dto/login.dto';
-
-// types
-import { AuthenticatedRequest } from '../types';
-import { JwtAuthGuard } from '../../../core/auth/guards/jwt-auth.guard';
-
-import { ConfigService } from '../../../config/configuration';
-import { Auth } from '../../../core/auth/decorators/auth.decorator';
-
-@Component({ type: COMPONENT_TYPE.CONTROLLER })
 @Controller('/auth')
 export class AuthController extends BaseController<any> {
-    public router: Router;
     config: any;
+    public router: Router;
 
     constructor(@Inject() private authService: AuthService) {
         super(authService as any);
         this.router = Router();
-
         this.config = new ConfigService();
-        // this.initializeRoutes();
     }
-
-    // private initializeRoutes(): void {
-    //     const routes = getRouteMetadata(AuthController);
-
-    //     routes.forEach(route => {
-    //         const handler = (req: Request, res: Response, next: NextFunction) => {
-    //             return (this as any)[route.handlerName](req, res, next);
-    //         };
-
-    //         switch (route.method) {
-    //             case 'GET':
-    //                 this.router.get(route.path, handler);
-    //                 break;
-    //             case 'POST':
-    //                 this.router.post(route.path, handler);
-    //                 break;
-    //             case 'PUT':
-    //                 this.router.put(route.path, handler);
-    //                 break;
-    //             case 'DELETE':
-    //                 this.router.delete(route.path, handler);
-    //                 break;
-    //         }
-    //     });
-    // }
 
     /**
      * User login
@@ -133,24 +103,21 @@ export class AuthController extends BaseController<any> {
      * @returns Promise<void> - Returns the authenticated user's profile
      * @throws Error if user is not authenticated
      */
-    @Auth()
     @Get('/profile')
+    @UseMiddleware(authMiddleware({ roles: ['admin'] }))
     public getProfile(req: AuthenticatedRequest, res: Response, next: NextFunction): void {
 
         // Call the auth service to get the user profile
         this.authService.getProfile(req.user?.id as string)
             .then(user => {
-                // Create a response without the password field
                 const { password, ...userWithoutPassword } = user;
                 const response: ApiResponse = {
                     success: true,
                     data: userWithoutPassword
                 };
-                // Send the response
                 res.status(200).json(response);
             })
             .catch(error => {
-                // Pass any errors to the error handler
                 next(error);
             });
     }

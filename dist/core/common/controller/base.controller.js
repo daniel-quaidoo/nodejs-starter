@@ -6,8 +6,6 @@ const class_transformer_1 = require("class-transformer");
 // dto
 const base_query_dto_1 = require("../dto/base-query.dto");
 const base_response_dto_1 = require("../dto/base-response.dto");
-// guard
-const jwt_auth_guard_1 = require("../../../core/auth/guards/jwt-auth.guard");
 class BaseController {
     constructor(service) {
         this.service = service;
@@ -117,20 +115,9 @@ class BaseController {
                 res.status(500).json(base_response_dto_1.BaseResponseDto.error('Internal server error', error instanceof Error ? error.message : 'Unknown error'));
             }
             else {
-                // If res is NextFunction and next is not provided, pass the error to res
                 res(error);
             }
         }
-    }
-    applyAuthGuard(req, res, next, handler) {
-        return (0, jwt_auth_guard_1.JwtAuthGuard)(req, res, async () => {
-            try {
-                await handler(req, res, next);
-            }
-            catch (error) {
-                next(error);
-            }
-        });
     }
 }
 exports.BaseController = BaseController;

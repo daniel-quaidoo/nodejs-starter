@@ -70,9 +70,6 @@ let ModuleLoader = class ModuleLoader {
         typedi_2.Container.set(Service, instance);
     }
     registerController(Controller) {
-        // const deps = this.getDependencies(Controller);
-        // const instance = new Controller(...deps);
-        // Container.set(Controller, instance);
         try {
             // Get controller dependencies and create instance
             const deps = this.getDependencies(Controller);
@@ -83,11 +80,6 @@ let ModuleLoader = class ModuleLoader {
             const controllerRouter = new controller_router_1.ControllerRouter(controller);
             // Add router to the registry
             if (controllerRouter.Token) {
-                // Object.getOwnPropertyNames(Object.getPrototypeOf(controller))
-                //     .filter(prop => typeof controller[prop] === 'function' && prop !== 'constructor')
-                //     .forEach(method => {
-                //         controller[method] = controller[method].bind(controller);
-                //     });
                 console.log(`✓ Registered controller: ${Controller.name}`);
                 router_registry_1.routerRegistry.registerRouter(controllerRouter.Token, () => controllerRouter);
             }

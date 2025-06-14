@@ -1,11 +1,14 @@
-import { Inject, Service } from 'typedi';
-import { Request, Response, NextFunction, Router } from 'express';
+import { Inject } from 'typedi';
+import { Request, Response, NextFunction } from 'express';
 
-// models
+// model
 import { User } from '../entities/user.entity';
 
 // service
 import { UserService } from '../service/user.service';
+
+// guard
+import { authMiddleware } from '../../../core/auth/guards/local.guard';
 
 // interface
 import { ApiResponse } from '../../../core/common/interfaces/route.interface';
@@ -14,12 +17,11 @@ import { ApiResponse } from '../../../core/common/interfaces/route.interface';
 import { BaseController } from '../../../core/common/controller/base.controller';
 
 // decorator
-import { Component, COMPONENT_TYPE } from "../../../core/common/di/component.decorator";
+import { UseMiddleware } from '../../../core/common/decorators/middleware.decorator';
 import { Controller, Delete, Get, Post, Put } from "../../../core/common/decorators/route.decorator";
 
-// @Component({ type: COMPONENT_TYPE.CONTROLLER })
-// @Service()
 @Controller('/users')
+@UseMiddleware(authMiddleware({ roles: ['admin'] }))
 export class UserController extends BaseController<User> {
 
     constructor(@Inject() private userService: UserService) {
@@ -37,6 +39,7 @@ export class UserController extends BaseController<User> {
      * @throws Error if database operation fails
      */
     @Get('/all')
+    // @UseMiddleware(authMiddleware({ roles: ['admin'] }))
     public async getAllUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const { page = 1, limit = 10 } = req.query;

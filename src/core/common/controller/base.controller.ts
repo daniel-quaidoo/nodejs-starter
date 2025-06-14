@@ -9,13 +9,9 @@ import { BaseModel } from '../entities/base.entity';
 import { BaseQueryDto } from '../dto/base-query.dto';
 import { BaseResponseDto } from '../dto/base-response.dto';
 
-// guard
-import { JwtAuthGuard } from '../../../core/auth/guards/jwt-auth.guard';
-
 // interfaces
 import { IBaseService } from '../interfaces/base.service.interface';
 import { IBaseController as IBaseControllerInterface } from '../interfaces/base.controller.interface';
-import { AuthenticatedRequest } from '@/modules/auth/types';
 
 export abstract class BaseController<T extends BaseModel> implements IBaseControllerInterface<T> {
     constructor(protected service: IBaseService<T>) { }
@@ -168,7 +164,6 @@ export abstract class BaseController<T extends BaseModel> implements IBaseContro
                     )
                 );
             } else {
-                // If res is NextFunction and next is not provided, pass the error to res
                 (res as NextFunction)(error);
             }
         }

@@ -3,17 +3,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.BaseRouter = void 0;
 require("reflect-metadata");
 const express_1 = require("express");
-// guard
-const jwt_auth_guard_1 = require("../../auth/guards/jwt-auth.guard");
 // decorator
 const route_decorator_1 = require("../decorators/route.decorator");
 class BaseRouter {
     constructor(controller) {
         this.controller = controller;
-        this.applyAuthGuard = (req, res, next) => {
-            console.log('Auth guard triggered for path:', req.path);
-            return (0, jwt_auth_guard_1.JwtAuthGuard)(req, res, next);
-        };
         this.router = (0, express_1.Router)();
         this.basePath = this.constructor.name.replace(/Router$/, '').toLowerCase();
         this.initializeRoutes();
@@ -30,33 +24,61 @@ class BaseRouter {
             {
                 method: 'POST',
                 path: `/${this.basePath}`,
-                handler: (req, res, next) => this.controller.create(req, res, next),
+                handler: async (req, res, next) => {
+                    if (!this.controller.create) {
+                        res.status(501).json({ message: 'Method not implemented' });
+                        return;
+                    }
+                    return this.controller.create(req, res, next);
+                },
                 absolutePath: true
             },
             {
                 method: 'GET',
                 path: `/${this.basePath}`,
-                handler: (req, res, next) => this.controller.findAll(req, res, next),
-                middlewares: [this.applyAuthGuard],
-                auth: { required: true },
+                handler: async (req, res, next) => {
+                    if (!this.controller.findAll) {
+                        res.status(501).json({ message: 'Method not implemented' });
+                        return;
+                    }
+                    return this.controller.findAll(req, res, next);
+                },
                 absolutePath: true
             },
             {
                 method: 'GET',
                 path: `/${this.basePath}/:id`,
-                handler: (req, res, next) => this.controller.findById(req, res, next),
+                handler: async (req, res, next) => {
+                    if (!this.controller.findById) {
+                        res.status(501).json({ message: 'Method not implemented' });
+                        return;
+                    }
+                    return this.controller.findById(req, res, next);
+                },
                 absolutePath: true
             },
             {
                 method: 'PUT',
                 path: `/${this.basePath}/:id`,
-                handler: (req, res, next) => this.controller.update(req, res, next),
+                handler: async (req, res, next) => {
+                    if (!this.controller.update) {
+                        res.status(501).json({ message: 'Method not implemented' });
+                        return;
+                    }
+                    return this.controller.update(req, res, next);
+                },
                 absolutePath: true
             },
             {
                 method: 'DELETE',
                 path: `/${this.basePath}/:id`,
-                handler: (req, res, next) => this.controller.delete(req, res, next),
+                handler: async (req, res, next) => {
+                    if (!this.controller.delete) {
+                        res.status(501).json({ message: 'Method not implemented' });
+                        return;
+                    }
+                    return this.controller.delete(req, res, next);
+                },
                 absolutePath: true
             }
         ];
@@ -100,21 +122,7 @@ class BaseRouter {
      * Register all routes (decorator-based, base, and custom)
      */
     initializeRoutes() {
-        this.getRoutes().forEach(route => {
-            const fullPath = route.absolutePath
-                ? route.path
-                : `/${this.basePath}${route.path.startsWith('/') ? '' : '/'}${route.path}`;
-            const method = route.method.toLowerCase();
-            const middlewares = [...(route.middlewares || [])];
-            // Add auth middleware if route requires it
-            if (route.auth?.required) {
-                const authMiddleware = this.createAuthMiddleware(route.auth.roles);
-                middlewares.unshift(authMiddleware);
-            }
-            this.router[method](fullPath, ...middlewares, (req, res, next) => {
-                return route.handler ? route.handler(req, res, next) : undefined;
-            });
-        });
+        this.getRoutes().forEach(route => this.registerRoute(route));
     }
     registerRoute(route) {
         const fullPath = route.absolutePath
@@ -122,32 +130,9 @@ class BaseRouter {
             : `/${this.basePath}${route.path.startsWith('/') ? '' : '/'}${route.path}`;
         const method = route.method.toLowerCase();
         const middlewares = [...(route.middlewares || [])];
-        // Add auth middleware if route requires it
-        if (route.auth?.required) {
-            const authMiddleware = this.createAuthMiddleware(route.auth.roles);
-            middlewares.unshift(authMiddleware);
-        }
         this.router[method](fullPath, ...middlewares, (req, res, next) => {
             return route.handler ? route.handler(req, res, next) : undefined;
         });
-    }
-    createAuthMiddleware(roles = []) {
-        return (req, res, next) => {
-            return this.applyAuthGuard(req, res, async () => {
-                if (roles.length > 0) {
-                    const user = req.user;
-                    const userRole = user?.role;
-                    const hasRequiredRole = userRole && roles.some(role => userRole.includes(role));
-                    if (!hasRequiredRole) {
-                        return res.status(403).json({
-                            success: false,
-                            message: 'Insufficient permissions'
-                        });
-                    }
-                }
-                next();
-            });
-        };
     }
 }
 exports.BaseRouter = BaseRouter;

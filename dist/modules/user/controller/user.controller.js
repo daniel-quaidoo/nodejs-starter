@@ -16,11 +16,13 @@ exports.UserController = void 0;
 const typedi_1 = require("typedi");
 // service
 const user_service_1 = require("../service/user.service");
+// guard
+const local_guard_1 = require("../../../core/auth/guards/local.guard");
 // controller
 const base_controller_1 = require("../../../core/common/controller/base.controller");
+// decorator
+const middleware_decorator_1 = require("../../../core/common/decorators/middleware.decorator");
 const route_decorator_1 = require("../../../core/common/decorators/route.decorator");
-// @Component({ type: COMPONENT_TYPE.CONTROLLER })
-// @Service()
 let UserController = class UserController extends base_controller_1.BaseController {
     constructor(userService) {
         super(userService);
@@ -156,7 +158,9 @@ let UserController = class UserController extends base_controller_1.BaseControll
 };
 exports.UserController = UserController;
 __decorate([
-    (0, route_decorator_1.Get)('/all'),
+    (0, route_decorator_1.Get)('/all')
+    // @UseMiddleware(authMiddleware({ roles: ['admin'] }))
+    ,
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, Object, Function]),
     __metadata("design:returntype", Promise)
@@ -187,6 +191,7 @@ __decorate([
 ], UserController.prototype, "deleteUser", null);
 exports.UserController = UserController = __decorate([
     (0, route_decorator_1.Controller)('/users'),
+    (0, middleware_decorator_1.UseMiddleware)((0, local_guard_1.authMiddleware)({ roles: ['admin'] })),
     __param(0, (0, typedi_1.Inject)()),
     __metadata("design:paramtypes", [user_service_1.UserService])
 ], UserController);

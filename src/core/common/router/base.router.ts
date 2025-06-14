@@ -1,12 +1,8 @@
 import 'reflect-metadata';
 import { Router, Request, Response, NextFunction } from 'express';
-import { User } from '../../../modules/auth/types';
 
 // model
 import { BaseModel } from '../entities/base.entity';
-
-// guard
-import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 
 // decorator
 import { getRouteMetadata } from '../decorators/route.decorator';
@@ -143,32 +139,8 @@ export abstract class BaseRouter<T extends BaseModel> {
      * Register all routes (decorator-based, base, and custom)
      */
     protected initializeRoutes(): void {
-        this.getRoutes().forEach(route => {
-            const fullPath = route.absolutePath 
-                ? route.path 
-                : `/${this.basePath}${route.path.startsWith('/') ? '' : '/'}${route.path}`;
-                
-            const method = route.method.toLowerCase() as Lowercase<HttpMethod>;
-            const middlewares = [...(route.middlewares || [])];
-
-            // Add auth middleware if route requires it
-            if (route.auth?.required) {
-                const authMiddleware = this.createAuthMiddleware(route.auth.roles);
-                middlewares.unshift(authMiddleware);
-            }
-
-            (this.router as any)[method](fullPath, ...middlewares, 
-                (req: Request, res: Response, next: NextFunction) => {
-                    return route.handler ? route.handler(req, res, next) : undefined;
-                }
-            );
-        });
+        this.getRoutes().forEach(route => this.registerRoute(route));
     }
-
-    protected applyAuthGuard = (req: Request, res: Response, next: NextFunction) => {
-        console.log('Auth guard triggered for path:', req.path);
-        return JwtAuthGuard(req, res, next);
-    };
 
     protected registerRoute(route: RouteDefinition) {
         const fullPath = route.absolutePath 
@@ -177,37 +149,11 @@ export abstract class BaseRouter<T extends BaseModel> {
         
         const method = route.method.toLowerCase() as Lowercase<HttpMethod>;
         const middlewares = [...(route.middlewares || [])];
-        
-        // Add auth middleware if route requires it
-        if (route.auth?.required) {
-            const authMiddleware = this.createAuthMiddleware(route.auth.roles);
-            middlewares.unshift(authMiddleware);
-        }
 
         (this.router as any)[method](fullPath, ...middlewares, 
             (req: Request, res: Response, next: NextFunction) => {
                 return route.handler ? route.handler(req, res, next) : undefined;
             }
         );
-    }
-
-    private createAuthMiddleware(roles: string[] = []) {
-        return (req: Request, res: Response, next: NextFunction) => {
-            return this.applyAuthGuard(req, res, async () => {
-                if (roles.length > 0) {
-                    const user = req.user as User | undefined;
-                    const userRole = user?.role;
-                    const hasRequiredRole = userRole &&  roles.some(role => userRole.includes(role));
-                    
-                    if (!hasRequiredRole) {
-                        return res.status(403).json({
-                            success: false,
-                            message: 'Insufficient permissions'
-                        });
-                    }
-                }
-                next();
-            });
-        };
     }
 }

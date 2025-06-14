@@ -60,13 +60,8 @@ export interface RouteDefinition {
     path: string;
     handler?: LambdaHandler;
     handlerName?: string;
-    auth?: {
-        required: boolean;
-        roles?: string[];
-    };
     middlewares?: RequestHandler[];
     absolutePath?: boolean;
-    // handler?: (req: Request, res: Response, next: NextFunction) => any;
 }
 
 export interface LambdaResponse {

@@ -69,9 +69,6 @@ export class ModuleLoader {
     }
 
     private registerController(Controller: any): void {
-        // const deps = this.getDependencies(Controller);
-        // const instance = new Controller(...deps);
-        // Container.set(Controller, instance);
         try {
             // Get controller dependencies and create instance
             const deps = this.getDependencies(Controller);
@@ -85,11 +82,6 @@ export class ModuleLoader {
 
             // Add router to the registry
             if (controllerRouter.Token) {
-                // Object.getOwnPropertyNames(Object.getPrototypeOf(controller))
-                //     .filter(prop => typeof controller[prop] === 'function' && prop !== 'constructor')
-                //     .forEach(method => {
-                //         controller[method] = controller[method].bind(controller);
-                //     });
                 console.log(`✓ Registered controller: ${Controller.name}`);
                 routerRegistry.registerRouter(controllerRouter.Token, () => controllerRouter);
             }

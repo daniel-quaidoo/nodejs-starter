@@ -10,22 +10,6 @@ exports.routerRegistry = exports.RouterRegistry = void 0;
 const typedi_1 = require("typedi");
 let RouterRegistry = class RouterRegistry {
     constructor() {
-        // private static instance: RouterRegistry;
-        // private routers: Map<Token<IModuleRouter>, IModuleRouter> = new Map();
-        // private constructor() {}
-        // public static getInstance(): RouterRegistry {
-        //     if (!RouterRegistry.instance) {
-        //         RouterRegistry.instance = new RouterRegistry();
-        //     }
-        //     return RouterRegistry.instance;
-        // }
-        // public registerRouter(token: Token<IModuleRouter>): void {
-        //     const router = Container.get<IModuleRouter>(token);
-        //     this.routers.set(token, router);
-        // }
-        // public getAllRouters(): IModuleRouter[] {
-        //     return Array.from(this.routers.values());
-        // }
         this.routers = new Map();
     }
     registerRouter(token, routerFactory) {
@@ -43,6 +27,5 @@ exports.RouterRegistry = RouterRegistry;
 exports.RouterRegistry = RouterRegistry = __decorate([
     (0, typedi_1.Service)()
 ], RouterRegistry);
-// export const routerRegistry = RouterRegistry.getInstance();
 exports.routerRegistry = new RouterRegistry();
 //# sourceMappingURL=router.registry.js.map

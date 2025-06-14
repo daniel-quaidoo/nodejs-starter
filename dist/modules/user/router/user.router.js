@@ -28,14 +28,6 @@ let UserRouter = class UserRouter extends base_router_1.BaseRouter {
         this.controller = controller;
         this.Token = di_token_constant_1.USER_ROUTER_TOKEN;
     }
-    // public static getRouter(): Router {
-    //     const controller = Container.get(UserController);
-    //     const userRouter = new UserRouter(controller);
-    //     userRouter.router.use((req, res, next) => {
-    //         return userRouter.applyAuthGuard(req, res, next);
-    //     });
-    //     return userRouter.router;
-    // }
     getCustomRoutes() {
         return [];
     }

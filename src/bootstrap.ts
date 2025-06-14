@@ -1,5 +1,4 @@
 import 'reflect-metadata';
-import passport from 'passport';
 import { Container } from 'typedi';
 import { DataSource } from 'typeorm';
 import session from 'express-session';
