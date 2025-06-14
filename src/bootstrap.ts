@@ -25,11 +25,12 @@ import { routerRegistry } from './core/common/router/router.registry';
 import { DatabaseType } from './core/db/interfaces/database.interface';
 
 // middleware
+import { setupCorsMiddleware } from './core/middleware/cors.middleware';
 import { requestLogger } from './core/logging/request-logger.middleware';
 import { configurePassport, passportMiddleware, passportSessionMiddleware } from './core/auth/passport';
 
 // utils
-import { registerAndLogRoutes, setupCorsMiddleware, setupGlobalErrorHandler, setupNotFoundHandler } from './shared/utils';
+import { registerAndLogRoutes, setupGlobalErrorHandler, setupNotFoundHandler } from './shared/utils';
 
 // For AWS Lambda
 let app: any;

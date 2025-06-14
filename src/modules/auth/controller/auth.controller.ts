@@ -1,5 +1,4 @@
 import { Inject } from 'typedi';
-import passport from 'passport';
 import { Router, Request, Response, NextFunction } from 'express';
 
 // types
@@ -16,6 +15,7 @@ import { ConfigService } from '../../../config/configuration';
 
 // guard
 import { authMiddleware } from '../../../core/auth/guards/local.guard';
+import { LocalPassportGuard } from '../../../core/auth/guards/passport-local.guard';
 
 // interface
 import { ApiResponse } from '../../../core/common/interfaces/route.interface';
@@ -47,52 +47,34 @@ export class AuthController extends BaseController<any> {
      * @throws Error if authentication fails
      */
     @Post('/login')
-    public login(req: Request, res: Response, next: NextFunction): void {
-        const handleAuth = (err: Error | null, user?: User, info?: { message: string }): void => {
-            if (err) {
-                next(err);
-                return;
-            }
-
-            if (!user) {
-                const response: ApiResponse = {
-                    success: false,
-                    message: info?.message || 'Authentication failed',
-                };
-                res.status(401).json(response);
-                return;
-            }
-
+    @UseMiddleware(LocalPassportGuard)
+    public async login(req: Request & { user: User }, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const user = req.user as User;
+            
             // Generate JWT token
             const token = this.authService.generateToken(user);
 
-            // Call your auth service if needed
-            this.authService.login({
+            // Call auth service for additional login logic
+            const loginResponse = await this.authService.login({
                 email: user.email,
                 password: req.body.password as string
-            })
-                .then(loginResponse => {
-                    const response: ApiResponse = {
-                        success: true,
-                        data: {
-                            ...loginResponse,
-                            token,
-                            token_type: 'Bearer',
-                            expires_in: 3600
-                        },
-                        message: 'Login successful'
-                    };
-                    res.status(200).json(response);
-                })
-                .catch(error => next(error));
-        };
+            });
 
-        const authMiddleware = passport.authenticate('local', {
-            session: false,
-            failWithError: true
-        }, handleAuth);
-
-        authMiddleware(req, res, next);
+            // Return success response
+            res.status(200).json({
+                success: true,
+                data: {
+                    ...loginResponse,
+                    token,
+                    token_type: 'Bearer',
+                    expires_in: 3600
+                },
+                message: 'Login successful'
+            });
+        } catch (error) {
+            next(error);
+        }
     }
 
     /**

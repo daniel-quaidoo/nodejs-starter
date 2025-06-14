@@ -34,6 +34,7 @@ const allRoutes = routerRegistry.getAllRouters().flatMap((moduleRouter) => {
 
             // Create a handler that chains all middlewares
             const chainedHandler = (req: any, res: any, next: any) => {
+                
                 const executeHandler = async (index: number) => {
                     try {
                         if (index >= handlerChain.length) return next();

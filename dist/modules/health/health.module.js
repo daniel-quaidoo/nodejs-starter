@@ -7,8 +7,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HealthModule = void 0;
-// router
-const health_router_1 = require("./router/health.router");
 // service
 const health_service_1 = require("./service/health.service");
 // module
@@ -21,7 +19,6 @@ exports.HealthModule = HealthModule;
 exports.HealthModule = HealthModule = __decorate([
     (0, module_decorator_1.Module)({
         repositories: [],
-        routers: [health_router_1.HealthRouter],
         controllers: [health_controller_1.HealthController],
         services: [health_service_1.HealthService],
     })

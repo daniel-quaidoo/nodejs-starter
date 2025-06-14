@@ -1,6 +1,3 @@
-// module
-import { UserRouter } from "./router/user.router";
-
 // service
 import { UserService } from "./service/user.service";
 
@@ -14,7 +11,6 @@ import { UserRepository } from "./repository/user.repository";
 import { UserController } from "./controller/user.controller";
 
 @Module({
-    routers: [UserRouter],
     services: [UserService],
     controllers: [UserController],
     repositories: [UserRepository],

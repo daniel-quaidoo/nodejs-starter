@@ -7,8 +7,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserModule = void 0;
-// module
-const user_router_1 = require("./router/user.router");
 // service
 const user_service_1 = require("./service/user.service");
 // module
@@ -22,7 +20,6 @@ let UserModule = class UserModule {
 exports.UserModule = UserModule;
 exports.UserModule = UserModule = __decorate([
     (0, module_decorator_1.Module)({
-        routers: [user_router_1.UserRouter],
         services: [user_service_1.UserService],
         controllers: [user_controller_1.UserController],
         repositories: [user_repository_1.UserRepository],

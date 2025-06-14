@@ -15,7 +15,6 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./dao/user.dao"), exports);
-__exportStar(require("./router/user.router"), exports);
 __exportStar(require("./entities/user.entity"), exports);
 __exportStar(require("./service/user.service"), exports);
 __exportStar(require("./controller/user.controller"), exports);

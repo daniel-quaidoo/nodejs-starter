@@ -13,6 +13,7 @@
     "start:dev": "ts-node-dev --respawn --transpile-only src/app.ts",
     "dev": "cross-env NODE_ENV=development ts-node-dev --respawn --transpile-only src/app.ts",
     "serverless": "NODE_ENV=development npx tsc && NODE_ENV=development npx serverless offline",
+    "serverless:prod": "NODE_ENV=production npx tsc && NODE_ENV=production npx serverless offline",
     "sam": "NODE_ENV=development npm run build && NODE_ENV=development sam build&& NODE_ENV=development sam local invoke RouteHandlerFunction -e events/post.json",
     "lint": "eslint . --ext .ts --fix",
     "test": "jest --passWithNoTests",

@@ -21,66 +21,66 @@ class BaseRouter {
      */
     getBaseRoutes() {
         return [
-            {
-                method: 'POST',
-                path: `/${this.basePath}`,
-                handler: async (req, res, next) => {
-                    if (!this.controller.create) {
-                        res.status(501).json({ message: 'Method not implemented' });
-                        return;
-                    }
-                    return this.controller.create(req, res, next);
-                },
-                absolutePath: true
-            },
-            {
-                method: 'GET',
-                path: `/${this.basePath}`,
-                handler: async (req, res, next) => {
-                    if (!this.controller.findAll) {
-                        res.status(501).json({ message: 'Method not implemented' });
-                        return;
-                    }
-                    return this.controller.findAll(req, res, next);
-                },
-                absolutePath: true
-            },
-            {
-                method: 'GET',
-                path: `/${this.basePath}/:id`,
-                handler: async (req, res, next) => {
-                    if (!this.controller.findById) {
-                        res.status(501).json({ message: 'Method not implemented' });
-                        return;
-                    }
-                    return this.controller.findById(req, res, next);
-                },
-                absolutePath: true
-            },
-            {
-                method: 'PUT',
-                path: `/${this.basePath}/:id`,
-                handler: async (req, res, next) => {
-                    if (!this.controller.update) {
-                        res.status(501).json({ message: 'Method not implemented' });
-                        return;
-                    }
-                    return this.controller.update(req, res, next);
-                },
-                absolutePath: true
-            },
-            {
-                method: 'DELETE',
-                path: `/${this.basePath}/:id`,
-                handler: async (req, res, next) => {
-                    if (!this.controller.delete) {
-                        res.status(501).json({ message: 'Method not implemented' });
-                        return;
-                    }
-                    return this.controller.delete(req, res, next);
-                },
-                absolutePath: true
-            }
+        // {
+        //     method: 'POST',
+        //     path: `/${this.basePath}`,
+        //     handler: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        //         if (!this.controller.create) {
+        //             res.status(501).json({ message: 'Method not implemented' });
+        //             return;
+        //         }
+        //         return this.controller.create(req, res, next);
+        //     },
+        //     absolutePath: true
+        // },
+        // {
+        //     method: 'GET',
+        //     path: `/${this.basePath}`,
+        //     handler: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        //         if (!this.controller.findAll) {
+        //             res.status(501).json({ message: 'Method not implemented' });
+        //             return;
+        //         }
+        //         return this.controller.findAll(req, res, next);
+        //     },
+        //     absolutePath: true
+        // },
+        // {
+        //     method: 'GET',
+        //     path: `/${this.basePath}/:id`,
+        //     handler: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        //         if (!this.controller.findById) {
+        //             res.status(501).json({ message: 'Method not implemented' });
+        //             return;
+        //         }
+        //         return this.controller.findById(req, res, next);
+        //     },
+        //     absolutePath: true
+        // },  
+        // {
+        //     method: 'PUT',
+        //     path: `/${this.basePath}/:id`,
+        //     handler: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        //         if (!this.controller.update) {
+        //             res.status(501).json({ message: 'Method not implemented' });
+        //             return;
+        //         }
+        //         return this.controller.update(req, res, next);
+        //     },
+        //     absolutePath: true
+        // },
+        // {
+        //     method: 'DELETE',
+        //     path: `/${this.basePath}/:id`,
+        //     handler: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        //         if (!this.controller.delete) {
+        //             res.status(501).json({ message: 'Method not implemented' });
+        //             return;
+        //         }
+        //         return this.controller.delete(req, res, next);
+        //     },
+        //     absolutePath: true
+        // }
         ];
     }
     /**

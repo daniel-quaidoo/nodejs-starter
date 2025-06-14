@@ -16,25 +16,26 @@ import { Controller, Delete, Get, Post, Put, getRouteMetadata } from '../decorat
 import { IBaseService } from '../interfaces/base.service.interface';
 import { RouteDefinition, HttpMethod, RouteMetadata } from '../interfaces/route.interface';
 import { IBaseController as IBaseControllerInterface } from '../interfaces/base.controller.interface';
+import { ROUTE_METADATA_KEY } from '../di/component.decorator';
 
 @Controller()
 export abstract class BaseController<T extends BaseModel> implements IBaseControllerInterface<T> {
     public router: Router;
     private basePath: string;
 
-    constructor(protected service: IBaseService<T>) { 
+    constructor(protected service: IBaseService<T>) {
         this.router = Router();
         this.basePath = this.constructor.name.replace(/Controller$/, '').toLowerCase();
     }
 
-     /**
-     * Create a new user
-     * @param req Request object containing user data in body
-     * @param res Response object
-     * @param next Next function
-     * @returns Promise<void> - Returns the created user
-     * @throws Error if user creation fails
-     */
+    /**
+    * Create a new user
+    * @param req Request object containing user data in body
+    * @param res Response object
+    * @param next Next function
+    * @returns Promise<void> - Returns the created user
+    * @throws Error if user creation fails
+    */
     @Post('')
     async create(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
@@ -67,7 +68,7 @@ export abstract class BaseController<T extends BaseModel> implements IBaseContro
             // Transform and validate query parameters
             const queryDto = plainToInstance(BaseQueryDto, req.query);
             const errors = await validate(queryDto);
-            
+
             if (errors.length > 0) {
                 const errorMessages = errors.map(error => Object.values(error.constraints || {})).flat();
                 res.status(400).json(
@@ -75,14 +76,14 @@ export abstract class BaseController<T extends BaseModel> implements IBaseContro
                 );
                 return;
             }
-    
+
             // Convert DTO to TypeORM options
             const options = queryDto.toFindOptions();
-            
+
             // Get data from service
             let count = 0;
             let entities: any[] = [];
-            
+
             if (typeof this.service.findAndCount === 'function') {
                 [entities, count] = await (this.service as any).findAndCount(options);
             } else if (typeof this.service.findAll === 'function') {
@@ -91,18 +92,18 @@ export abstract class BaseController<T extends BaseModel> implements IBaseContro
             } else {
                 throw new Error('Service does not implement required methods');
             }
-            
+
             // Prepare pagination data
             const page = parseInt(queryDto.page || '1', 10);
             const limit = parseInt(queryDto.limit || '10', 10);
-            
+
             res.status(200).json(
                 BaseResponseDto.success(
                     entities,
-                    { 
-                        page, 
-                        limit, 
-                        total: count 
+                    {
+                        page,
+                        limit,
+                        total: count
                     },
                     'Data retrieved successfully'
                 )
@@ -198,7 +199,7 @@ export abstract class BaseController<T extends BaseModel> implements IBaseContro
                 }
                 return;
             }
-            
+
             if ('status' in res) {
                 res.status(200).json(
                     BaseResponseDto.success(
@@ -229,6 +230,35 @@ export abstract class BaseController<T extends BaseModel> implements IBaseContro
     }
 
     /**
+     * Get base routes from the prototype chain
+     */
+    protected getBaseRoutes(): RouteDefinition[] {
+        const baseRoutes = Object.getPrototypeOf(this).constructor !== BaseController
+            ? Object.getPrototypeOf(Object.getPrototypeOf(this)).getBaseRoutes?.() || []
+            : [];
+
+        // Get decorator routes
+        const decoratorRoutes = this.getDecoratorRoutes();
+
+        // Combine and deduplicate routes (child routes take precedence)
+        const routeMap = new Map<string, RouteDefinition>();
+
+        // Add base routes first
+        baseRoutes.forEach((route: RouteDefinition) => {
+            const key = `${route.method}:${route.path}`;
+            routeMap.set(key, route);
+        });
+
+        // Add/override with decorator routes
+        decoratorRoutes.forEach(route => {
+            const key = `${route.method}:${route.path}`;
+            routeMap.set(key, route);
+        });
+
+        return Array.from(routeMap.values());
+    }
+
+    /**
      * Get routes defined by decorators
      */
     protected getDecoratorRoutes(): RouteDefinition[] {
@@ -239,40 +269,77 @@ export abstract class BaseController<T extends BaseModel> implements IBaseContro
         return routeMetadata.map(route => ({
             method: route.method as HttpMethod,
             path: `${controllerPath}${route.path ? `/${route.path}` : ''}`.replace(/\/+/g, '/'),
-            handler: (req: Request, res: Response, next: NextFunction) => 
+            handler: (req: Request, res: Response, next: NextFunction) =>
                 controller[route.handlerName](req, res, next),
             middlewares: route.middlewares,
             absolutePath: true
         }));
     }
 
+    protected getDecoratorRoutesNew(): RouteDefinition[] {
+        const controller = this as any;
+        const controllerPath = this.basePath;
+        
+        // Get methods from current class and all parent classes
+        const getMethods = (obj: any, methods: string[] = []): string[] => {
+            const proto = Object.getPrototypeOf(obj);
+            if (proto === BaseController.prototype) {
+                return methods;
+            }
+            const ownMethods = Object.getOwnPropertyNames(proto)
+                .filter(name => name !== 'constructor' && typeof proto[name] === 'function');
+            return getMethods(proto, [...methods, ...ownMethods]);
+        };
+    
+        // Get all methods including inherited ones
+        const allMethods = getMethods(this);
+        const uniqueMethods = [...new Set(allMethods)];
+    
+        // Get route metadata for all methods
+        const routeMetadata = uniqueMethods
+            .map(methodName => {
+                const route = Reflect.getMetadata(
+                    ROUTE_METADATA_KEY,
+                    controller,
+                    methodName
+                );
+                return route ? { ...route, handlerName: methodName } : null;
+            })
+            .filter(Boolean);
+    
+        return routeMetadata.map(route => ({
+            method: route.method as HttpMethod,
+            path: `${controllerPath}${route.path ? `/${route.path}` : ''}`.replace(/\/+/g, '/'),
+            handler: (req: Request, res: Response, next: NextFunction) =>
+                controller[route.handlerName](req, res, next),
+            middlewares: route.middlewares,
+            absolutePath: true
+        }));
+    }   
+
     /**
      * Get all routes (base + custom + decorator-based)
      */
-    public getRoutes(): RouteDefinition[] {
-        const decoratorRoutes = this.getDecoratorRoutes();
-
-        return [
-            ...decoratorRoutes
-        ];
+    public getAllRoutes(): RouteDefinition[] {
+        return this.getBaseRoutes();
     }
 
     /**
      * Register all routes (decorator-based, base, and custom)
      */
     protected initializeRoutes(): void {
-        this.getRoutes().forEach(route => this.registerRoute(route));
+        this.getAllRoutes().forEach((route: RouteDefinition) => this.registerRoute(route));
     }
 
     protected registerRoute(route: RouteDefinition) {
-        const fullPath = route.absolutePath 
+        const fullPath = route.absolutePath
             ? route.path
             : `/${this.basePath}${route.path.startsWith('/') ? '' : '/'}${route.path}`;
-        
+
         const method = route.method.toLowerCase() as Lowercase<HttpMethod>;
         const middlewares = [...(route.middlewares || [])];
 
-        (this.router as any)[method](fullPath, ...middlewares, 
+        (this.router as any)[method](fullPath, ...middlewares,
             (req: Request, res: Response, next: NextFunction) => {
                 return route.handler ? route.handler(req, res, next) : undefined;
             }

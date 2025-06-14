@@ -14,8 +14,9 @@ export const createLocalStrategy = (userService: UserService) => {
         {
             usernameField: 'email',
             passwordField: 'password',
+            passReqToCallback: true,
         },
-        async (email: string, password: string, done: (error: any, user?: any, options?: IVerifyOptions) => void) => {
+        async (req: any, email: string, password: string, done: (error: any, user?: any, options?: IVerifyOptions) => void) => {
             try {
                 const user = await userService.findByEmail(email);
 

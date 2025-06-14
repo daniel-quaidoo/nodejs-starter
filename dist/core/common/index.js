@@ -14,16 +14,16 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// Base Model
-__exportStar(require("./entities/base.entity"), exports);
-// Base Controller
-__exportStar(require("./controller/base.controller"), exports);
-// Base Service
-__exportStar(require("./service/base.service"), exports);
 // Base DAO
 __exportStar(require("./dao/base.dao"), exports);
 // Base Router
 __exportStar(require("./router/base.router"), exports);
+// Base Model
+__exportStar(require("./entities/base.entity"), exports);
+// Base Service
+__exportStar(require("./service/base.service"), exports);
+// Base Controller
+__exportStar(require("./controller/base.controller"), exports);
 // Common interfaces
 __exportStar(require("./interfaces/route.interface"), exports);
 __exportStar(require("./interfaces/page-meta.interface"), exports);

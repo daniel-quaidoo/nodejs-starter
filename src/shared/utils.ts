@@ -9,28 +9,10 @@ import { LoggerService } from '../core/logging/logger.service';
 
 // interface
 import { ApiResponse, ErrorResponse, LambdaResponse } from '../core/common/interfaces/route.interface';
+import { ConfigService } from '../config/configuration';
 
-const IS_DEV = process.env.NODE_ENV === 'development';
-
-/**
- * Returns CORS middleware with proper headers and preflight handling
- * @param origin Array of allowed origins (default: ['*'])
- */
-export const setupCorsMiddleware = (origin: string[] = ['*']): (req: Request, res: Response, next: NextFunction) => void => {
-    return (req: Request, res: Response, next: NextFunction) => {
-        res.setHeader('Access-Control-Allow-Origin', origin.join(', '));
-        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-        res.setHeader('Access-Control-Allow-Credentials', 'true');
-        
-        // Handle preflight requests
-        if (req.method === 'OPTIONS') {
-            return res.status(200).json({});
-        }
-        
-        next();
-    };
-};
+const configService = new ConfigService();
+const IS_DEV = configService.get('NODE_ENV') === 'development';
 
 /**
  * Normalizes a path by ensuring it starts with a forward slash
@@ -48,17 +30,17 @@ export const normalizePath = (path: string): string => path.startsWith('/') ? pa
  * @returns An error response object
  */
 export const createErrorResponse = (
-    statusCode: number, 
-    message: string, 
-    reqOrEvent: Request | any, 
+    statusCode: number,
+    message: string,
+    reqOrEvent: Request | any,
     error?: any
 ): ErrorResponse => {
     const isExpressRequest = 'url' in reqOrEvent && 'method' in reqOrEvent;
-    const path = isExpressRequest 
-        ? reqOrEvent.url 
+    const path = isExpressRequest
+        ? reqOrEvent.url
         : (reqOrEvent?.path || '');
-    const method = isExpressRequest 
-        ? reqOrEvent.method 
+    const method = isExpressRequest
+        ? reqOrEvent.method
         : (reqOrEvent?.httpMethod || reqOrEvent?.method || '');
 
     const errorData = {
@@ -79,7 +61,7 @@ export const createErrorResponse = (
         if (error.name) {
             response.name = error.name;
         }
-        
+
         // In development, include the full stack trace
         if (IS_DEV) {
             // If we have a stack trace, use it
@@ -93,7 +75,7 @@ export const createErrorResponse = (
         else if (error.message && error.message !== message) {
             response.details = error.message;
         }
-        
+
         // If we have a body with error details, include them
         if (error.body) {
             try {
@@ -156,7 +138,7 @@ export const wrapHandler = (handler: Function) => {
             if (result && typeof result === 'object' && 'statusCode' in result) {
                 if (result.statusCode >= 400) {
                     let error;
-                    
+
                     // If the body is a string, try to parse it as JSON
                     if (typeof result.body === 'string') {
                         try {
@@ -167,19 +149,19 @@ export const wrapHandler = (handler: Function) => {
                     } else {
                         error = result.body || {};
                     }
-                    
+
                     // Create a new error with the original error message or a default message
                     const err = new Error(error?.message || error?.error || 'An error occurred');
-                    
+
                     // Preserve all original error properties
                     Object.assign(err, error);
-                    
+
                     // Ensure status code is set
                     (err as any).statusCode = result.statusCode;
-                    
+
                     throw err;
                 }
-                
+
                 // For successful responses, ensure proper headers and body format
                 return {
                     statusCode: result.statusCode,
@@ -207,11 +189,11 @@ export const wrapHandler = (handler: Function) => {
 
         } catch (error: any) {
             console.error('=== ROUTE ERROR ===', error);
-            
+
             // Extract error details from the error object
             const statusCode = error?.statusCode || error?.status || 500;
             let message = error?.message || 'An unexpected error occurred';
-            
+
             // If the error has a body with an error message, use that
             if (error?.body) {
                 try {
@@ -224,9 +206,9 @@ export const wrapHandler = (handler: Function) => {
                     message = error.body;
                 }
             }
-            
+
             const errorResponse = createErrorResponse(statusCode, message, event, error);
-            
+
             const responseBody = {
                 success: false,
                 data: errorResponse.data,
@@ -234,7 +216,7 @@ export const wrapHandler = (handler: Function) => {
                 ...(errorResponse.details && { details: errorResponse.details }),
                 ...(errorResponse.name && { name: errorResponse.name })
             };
-            
+
             return {
                 statusCode,
                 headers: {
@@ -255,13 +237,21 @@ export const wrapHandler = (handler: Function) => {
  */
 export const createLambdaHandler = (expressRouter: any) => {
     return async (event: any, context: APIGatewayEventRequestContext): Promise<ProxyIntegrationResult> => {
-        // Create a mock Express request object for consistent error handling
-        const mockReq = {
-            url: event.path,
-            originalUrl: event.path,
-            method: event.httpMethod
-        } as Request;
+
         return new Promise((resolve) => {
+            // Extract parameters from the event
+            const pathParams = event.paths || {};
+            const path = event.path;
+            const routePath = event.routePath || ''
+
+            // Log the incoming request for debugging
+            console.log('Incoming request:', {
+                path,
+                routePath,
+                pathParams,
+                httpMethod: event.httpMethod
+            });
+
             // Convert Lambda event to Express-like request
             const req = {
                 method: event.httpMethod,
@@ -269,8 +259,13 @@ export const createLambdaHandler = (expressRouter: any) => {
                 query: event.queryStringParameters || {},
                 headers: event.headers || {},
                 body: event.body ? (typeof event.body === 'string' ? JSON.parse(event.body) : event.body) : {},
-                params: event.pathParameters || {}
-            } as Request;
+                params: pathParams,
+                url: path,
+                originalUrl: path,
+                // Add raw event and context for advanced use cases
+                lambdaEvent: event,
+                lambdaContext: context
+            } as any;
 
             // Create response object
             const res: any = {
@@ -289,7 +284,7 @@ export const createLambdaHandler = (expressRouter: any) => {
                 json: function (data: any) {
                     this.body = JSON.stringify(data);
                     this.setHeader('Content-Type', 'application/json');
-                    
+
                     let responseData = data;
 
                     if (this.statusCode >= 400) {
@@ -303,11 +298,11 @@ export const createLambdaHandler = (expressRouter: any) => {
                             },
                             error: data?.message || data?.error || 'An error occurred',
                             ...(data?.name && { name: data.name }),
-                            ...(process.env.NODE_ENV === 'development' && data?.stack && { details: data.stack })
+                            ...(IS_DEV && data?.stack && { details: data.stack })
                         };
                         responseData = errorData;
                     }
-                    
+
                     resolve({
                         statusCode: this.statusCode,
                         headers: this.headers,
@@ -405,10 +400,10 @@ export const registerAndLogRoutes = (
     registeredRouters.forEach(router => {
         const routerName = router.controllerName || router.constructor.name;
         console.log(`\n${routerName} Routes:`);
-        
+
         // Register the router with Express
         app.use(apiPrefix, router.router);
-        
+
         // Log the routes from the router's getRoutes() method if it exists
         if (typeof router.getRoutes === 'function') {
             const routes = router.getRoutes();
@@ -441,7 +436,7 @@ export const setupGlobalErrorHandler = (app: Express): void => {
             url: req.originalUrl,
             method: req.method
         });
-        
+
         res.status(err.statusCode || 500).json(createErrorResponse(500, err.message, req, {
             ...err,
             error: err.message,

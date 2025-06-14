@@ -3,30 +3,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setupNotFoundHandler = exports.setupGlobalErrorHandler = exports.registerAndLogRoutes = exports.createLambdaEvent = exports.createLambdaHandler = exports.wrapHandler = exports.createSuccessResponse = exports.createErrorResponse = exports.normalizePath = exports.setupCorsMiddleware = void 0;
+exports.setupNotFoundHandler = exports.setupGlobalErrorHandler = exports.registerAndLogRoutes = exports.createLambdaEvent = exports.createLambdaHandler = exports.wrapHandler = exports.createSuccessResponse = exports.createErrorResponse = exports.normalizePath = void 0;
 //utils.ts
 const typedi_1 = __importDefault(require("typedi"));
 // logging
 const logger_service_1 = require("../core/logging/logger.service");
-const IS_DEV = process.env.NODE_ENV === 'development';
-/**
- * Returns CORS middleware with proper headers and preflight handling
- * @param origin Array of allowed origins (default: ['*'])
- */
-const setupCorsMiddleware = (origin = ['*']) => {
-    return (req, res, next) => {
-        res.setHeader('Access-Control-Allow-Origin', origin.join(', '));
-        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-        res.setHeader('Access-Control-Allow-Credentials', 'true');
-        // Handle preflight requests
-        if (req.method === 'OPTIONS') {
-            return res.status(200).json({});
-        }
-        next();
-    };
-};
-exports.setupCorsMiddleware = setupCorsMiddleware;
+const configuration_1 = require("../config/configuration");
+const configService = new configuration_1.ConfigService();
+const IS_DEV = configService.get('NODE_ENV') === 'development';
 /**
  * Normalizes a path by ensuring it starts with a forward slash
  * @param path The path to normalize
@@ -230,13 +214,18 @@ exports.wrapHandler = wrapHandler;
  */
 const createLambdaHandler = (expressRouter) => {
     return async (event, context) => {
-        // Create a mock Express request object for consistent error handling
-        const mockReq = {
-            url: event.path,
-            originalUrl: event.path,
-            method: event.httpMethod
-        };
         return new Promise((resolve) => {
+            // Extract parameters from the event
+            const pathParams = event.paths || {};
+            const path = event.path;
+            const routePath = event.routePath || '';
+            // Log the incoming request for debugging
+            console.log('Incoming request:', {
+                path,
+                routePath,
+                pathParams,
+                httpMethod: event.httpMethod
+            });
             // Convert Lambda event to Express-like request
             const req = {
                 method: event.httpMethod,
@@ -244,7 +233,12 @@ const createLambdaHandler = (expressRouter) => {
                 query: event.queryStringParameters || {},
                 headers: event.headers || {},
                 body: event.body ? (typeof event.body === 'string' ? JSON.parse(event.body) : event.body) : {},
-                params: event.pathParameters || {}
+                params: pathParams,
+                url: path,
+                originalUrl: path,
+                // Add raw event and context for advanced use cases
+                lambdaEvent: event,
+                lambdaContext: context
             };
             // Create response object
             const res = {
@@ -275,7 +269,7 @@ const createLambdaHandler = (expressRouter) => {
                             },
                             error: data?.message || data?.error || 'An error occurred',
                             ...(data?.name && { name: data.name }),
-                            ...(process.env.NODE_ENV === 'development' && data?.stack && { details: data.stack })
+                            ...(IS_DEV && data?.stack && { details: data.stack })
                         };
                         responseData = errorData;
                     }

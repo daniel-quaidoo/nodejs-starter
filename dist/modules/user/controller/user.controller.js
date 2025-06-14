@@ -16,6 +16,7 @@ exports.UserController = void 0;
 const typedi_1 = require("typedi");
 // service
 const user_service_1 = require("../service/user.service");
+const health_service_1 = require("../../../modules/health/service/health.service");
 // guard
 const local_guard_1 = require("../../../core/auth/guards/local.guard");
 // controller
@@ -24,9 +25,19 @@ const base_controller_1 = require("../../../core/common/controller/base.controll
 const middleware_decorator_1 = require("../../../core/common/decorators/middleware.decorator");
 const route_decorator_1 = require("../../../core/common/decorators/route.decorator");
 let UserController = class UserController extends base_controller_1.BaseController {
-    constructor(userService) {
+    constructor(userService, healthService) {
         super(userService);
         this.userService = userService;
+        this.healthService = healthService;
+    }
+    async healthCheck(req, res, next) {
+        try {
+            const healthCheck = await this.healthService.getHealthStatus();
+            res.status(200).json(healthCheck);
+        }
+        catch (error) {
+            next(error);
+        }
     }
     /**
      * Get paginated list of all users
@@ -119,7 +130,16 @@ let UserController = class UserController extends base_controller_1.BaseControll
      */
     async updateUser(req, res, next) {
         try {
-            const user = await this.userService.updateUser(req.params.id, req.body);
+            const { id } = req.params;
+            const updateData = req.body;
+            // Validate that we have an ID and update data
+            if (!id) {
+                throw new Error('ID is required for update');
+            }
+            if (!updateData || Object.keys(updateData).length === 0) {
+                throw new Error('No update data provided');
+            }
+            const user = await this.userService.updateUser(id, updateData);
             if (!user) {
                 throw new Error('User not found');
             }
@@ -158,9 +178,14 @@ let UserController = class UserController extends base_controller_1.BaseControll
 };
 exports.UserController = UserController;
 __decorate([
-    (0, route_decorator_1.Get)('/all')
-    // @UseMiddleware(authMiddleware({ roles: ['admin'] }))
-    ,
+    (0, route_decorator_1.Get)('/health'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object, Function]),
+    __metadata("design:returntype", Promise)
+], UserController.prototype, "healthCheck", null);
+__decorate([
+    (0, route_decorator_1.Get)('/all'),
+    (0, middleware_decorator_1.UseMiddleware)((0, local_guard_1.authMiddleware)({ roles: ['admin'] })),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, Object, Function]),
     __metadata("design:returntype", Promise)
@@ -172,7 +197,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UserController.prototype, "getUserById", null);
 __decorate([
-    (0, route_decorator_1.Post)('/'),
+    (0, route_decorator_1.Post)(''),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, Object, Function]),
     __metadata("design:returntype", Promise)
@@ -191,8 +216,8 @@ __decorate([
 ], UserController.prototype, "deleteUser", null);
 exports.UserController = UserController = __decorate([
     (0, route_decorator_1.Controller)('/users'),
-    (0, middleware_decorator_1.UseMiddleware)((0, local_guard_1.authMiddleware)({ roles: ['admin'] })),
     __param(0, (0, typedi_1.Inject)()),
-    __metadata("design:paramtypes", [user_service_1.UserService])
+    __param(1, (0, typedi_1.Inject)()),
+    __metadata("design:paramtypes", [user_service_1.UserService, health_service_1.HealthService])
 ], UserController);
 //# sourceMappingURL=user.controller.js.map

@@ -6,6 +6,7 @@ import { User } from '../entities/user.entity';
 
 // service
 import { UserService } from '../service/user.service';
+import { HealthService } from '../../../modules/health/service/health.service';
 
 // guard
 import { authMiddleware } from '../../../core/auth/guards/local.guard';
@@ -21,11 +22,20 @@ import { UseMiddleware } from '../../../core/common/decorators/middleware.decora
 import { Controller, Delete, Get, Post, Put } from "../../../core/common/decorators/route.decorator";
 
 @Controller('/users')
-@UseMiddleware(authMiddleware({ roles: ['admin'] }))
 export class UserController extends BaseController<User> {
 
-    constructor(@Inject() private userService: UserService) {
+    constructor(@Inject() private userService: UserService, @Inject() private healthService: HealthService) {
         super(userService);
+    }
+
+    @Get('/health')
+    public async healthCheck(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const healthCheck = await this.healthService.getHealthStatus();
+            res.status(200).json(healthCheck);
+        } catch (error) {
+            next(error);
+        }
     }
 
     /**
@@ -39,7 +49,7 @@ export class UserController extends BaseController<User> {
      * @throws Error if database operation fails
      */
     @Get('/all')
-    // @UseMiddleware(authMiddleware({ roles: ['admin'] }))
+    @UseMiddleware(authMiddleware({ roles: ['admin'] }))
     public async getAllUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const { page = 1, limit = 10 } = req.query;
@@ -102,7 +112,7 @@ export class UserController extends BaseController<User> {
      * @returns Promise<void> - Returns the created user
      * @throws Error if user creation fails
      */
-    @Post('/')
+    @Post('')
     public async createUser(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const user = await this.userService.create(req.body);
@@ -127,8 +137,21 @@ export class UserController extends BaseController<User> {
      */
     @Put('/:id')
     public async updateUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+
         try {
-            const user = await this.userService.updateUser(req.params.id, req.body);
+            const { id } = req.params;
+            const updateData = req.body;
+            
+            // Validate that we have an ID and update data
+            if (!id) {
+                throw new Error('ID is required for update');
+            }
+
+            if (!updateData || Object.keys(updateData).length === 0) {
+                throw new Error('No update data provided');
+            }
+            
+            const user = await this.userService.updateUser(id, updateData);
 
             if (!user) {
                 throw new Error('User not found');
@@ -155,6 +178,7 @@ export class UserController extends BaseController<User> {
      */
     @Delete('/:id')
     public async deleteUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+
         try {
             await this.userService.delete(req.params.id);
             const response: ApiResponse<void> = {

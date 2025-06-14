@@ -7,11 +7,14 @@ require("reflect-metadata");
 exports.MODULE_METADATA_KEY = 'module:components';
 function Module(metadata) {
     return (target) => {
+        // Show warning if routers are being used
+        if (metadata.routers && metadata.routers.length > 0) {
+            console.warn('The "routers" property in @Module is deprecated. Use @Controller with route decorators instead.');
+        }
         const normalizedMetadata = {
             controllers: [],
             services: [],
             repositories: [],
-            routers: [],
             imports: [],
             exports: [],
             ...metadata

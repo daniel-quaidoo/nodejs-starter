@@ -57,6 +57,7 @@ const router_registry_1 = require("./core/common/router/router.registry");
 // interfaces
 const database_interface_1 = require("./core/db/interfaces/database.interface");
 // middleware
+const cors_middleware_1 = require("./core/middleware/cors.middleware");
 const request_logger_middleware_1 = require("./core/logging/request-logger.middleware");
 const passport_1 = require("./core/auth/passport");
 // utils
@@ -78,7 +79,7 @@ const bootstrap = async () => {
     app.use(express_1.default.json());
     app.use(express_1.default.urlencoded({ extended: true }));
     // Enable CORS for all routes
-    app.use((0, utils_1.setupCorsMiddleware)(['*']));
+    app.use((0, cors_middleware_1.setupCorsMiddleware)(['*']));
     // Session configuration
     app.use((0, express_session_1.default)({
         secret: process.env.SESSION_SECRET || 'your-secret-key',

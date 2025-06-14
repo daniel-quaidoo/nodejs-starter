@@ -1,6 +1,3 @@
-// router
-import { HealthRouter } from './router/health.router';
-
 // service
 import { HealthService } from './service/health.service';
 
@@ -12,7 +9,6 @@ import { HealthController } from './controller/health.controller';
 
 @Module({
     repositories: [],
-    routers: [HealthRouter],    
     controllers: [HealthController],
     services: [HealthService],
 })

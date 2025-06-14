@@ -13,6 +13,8 @@ exports.HealthController = void 0;
 // service
 const health_service_1 = require("../service/health.service");
 const route_decorator_1 = require("../../../core/common/decorators/route.decorator");
+const middleware_decorator_1 = require("../../../core/common/decorators/middleware.decorator");
+const local_guard_1 = require("../../../core/auth/guards/local.guard");
 let HealthController = class HealthController {
     constructor(healthService) {
         this.healthService = healthService;
@@ -51,6 +53,7 @@ __decorate([
 ], HealthController.prototype, "checkHealth", null);
 exports.HealthController = HealthController = __decorate([
     (0, route_decorator_1.Controller)('/healthy'),
+    (0, middleware_decorator_1.UseMiddleware)((0, local_guard_1.authMiddleware)({ roles: ['admin'] })),
     __metadata("design:paramtypes", [health_service_1.HealthService])
 ], HealthController);
 //# sourceMappingURL=health.controller.js.map

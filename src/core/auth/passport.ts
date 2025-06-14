@@ -3,11 +3,11 @@ import passport from 'passport';
 import { NextFunction, Request, Response } from 'express';
 
 // strategies
+import { createJwtStrategy } from './strategies/jwt.strategy';
 import { createLocalStrategy } from './strategies/local.strategy';
 
 // service
 import { UserService } from '../../modules/user/service/user.service';
-import { createJwtStrategy } from './strategies/jwt.strategy';
 
 // Initialize passport (since we don't have app.use in Lambda)
 export const initializePassport = () => {

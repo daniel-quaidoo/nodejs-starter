@@ -3,8 +3,11 @@ import { Request, Response, NextFunction } from 'express';
 // service
 import { HealthService } from '../service/health.service';
 import { Controller, Get } from '../../../core/common/decorators/route.decorator';
+import { UseMiddleware } from '../../../core/common/decorators/middleware.decorator';
+import { authMiddleware } from '../../../core/auth/guards/local.guard';
 
 @Controller('/healthy')
+@UseMiddleware(authMiddleware({ roles: ['admin'] }))
 export class HealthController {
     constructor(private healthService: HealthService) {}
 

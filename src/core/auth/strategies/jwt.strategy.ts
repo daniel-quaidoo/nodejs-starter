@@ -8,7 +8,6 @@ import { UserService } from '../../../modules/user/service/user.service';
 
 const configService = new ConfigService();
 
-// JWT strategy
 export const createJwtStrategy = (userService: UserService) => {
     return new JwtStrategy(
         {
