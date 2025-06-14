@@ -1,17 +1,29 @@
+import Container from 'typedi';
 import passport from 'passport';
+import { NextFunction, Request, Response } from 'express';
 
 // strategies
 import { createLocalStrategy } from './strategies/local.strategy';
 
 // service
 import { UserService } from '../../modules/user/service/user.service';
+import { createJwtStrategy } from './strategies/jwt.strategy';
+
+// Initialize passport (since we don't have app.use in Lambda)
+export const initializePassport = () => {
+    return (req: Request, res: Response, next: NextFunction) => {
+        passport.initialize()(req, res, next);
+    };
+};
 
 /**
  * Configures Passport with serialization, deserialization, and strategies
  * @param userService - User service for database operations
  * @returns Configured Passport instance
  */
-export const configurePassport = (userService: UserService) => {
+export const configurePassport = () => {
+    const userService = Container.get(UserService);
+
     // Serialize user into the session
     passport.serializeUser((user: any, done) => {
         done(null, user.id);
@@ -29,6 +41,7 @@ export const configurePassport = (userService: UserService) => {
 
     // Configure authentication strategies
     passport.use(createLocalStrategy(userService));
+    passport.use(createJwtStrategy(userService));
 
     return passport;
 };

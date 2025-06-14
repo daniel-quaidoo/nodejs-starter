@@ -80,11 +80,16 @@ let ModuleLoader = class ModuleLoader {
             // Register the controller in the container
             typedi_2.Container.set(Controller, controller);
             // Create and register the router
-            const router = new controller_router_1.ControllerRouter(controller);
+            const controllerRouter = new controller_router_1.ControllerRouter(controller);
             // Add router to the registry
-            if (router.Token) {
+            if (controllerRouter.Token) {
+                // Object.getOwnPropertyNames(Object.getPrototypeOf(controller))
+                //     .filter(prop => typeof controller[prop] === 'function' && prop !== 'constructor')
+                //     .forEach(method => {
+                //         controller[method] = controller[method].bind(controller);
+                //     });
                 console.log(`✓ Registered controller: ${Controller.name}`);
-                router_registry_1.routerRegistry.registerRouter(router.Token, () => router);
+                router_registry_1.routerRegistry.registerRouter(controllerRouter.Token, () => controllerRouter);
             }
         }
         catch (error) {

@@ -1,6 +1,7 @@
+import jwt from 'jsonwebtoken';
 import { Inject } from 'typedi';
-import { Router, Request, Response, NextFunction } from 'express';
 import passport from 'passport';
+import { Router, Request, Response, NextFunction } from 'express';
 
 // models
 import { User } from '../../user/entities/user.entity';
@@ -23,42 +24,49 @@ import { LoginDto } from '../dto/login.dto';
 
 // types
 import { AuthenticatedRequest } from '../types';
+import { JwtAuthGuard } from '../../../core/auth/guards/jwt-auth.guard';
+
+import { ConfigService } from '../../../config/configuration';
+import { Auth } from '../../../core/auth/decorators/auth.decorator';
 
 @Component({ type: COMPONENT_TYPE.CONTROLLER })
 @Controller('/auth')
 export class AuthController extends BaseController<any> {
     public router: Router;
+    config: any;
 
     constructor(@Inject() private authService: AuthService) {
         super(authService as any);
         this.router = Router();
-        this.initializeRoutes();
+
+        this.config = new ConfigService();
+        // this.initializeRoutes();
     }
 
-    private initializeRoutes(): void {
-        const routes = getRouteMetadata(AuthController);
-        
-        routes.forEach(route => {
-            const handler = (req: Request, res: Response, next: NextFunction) => {
-                return (this as any)[route.handlerName](req, res, next);
-            };
+    // private initializeRoutes(): void {
+    //     const routes = getRouteMetadata(AuthController);
 
-            switch (route.method) {
-                case 'GET':
-                    this.router.get(route.path, handler);
-                    break;
-                case 'POST':
-                    this.router.post(route.path, handler);
-                    break;
-                case 'PUT':
-                    this.router.put(route.path, handler);
-                    break;
-                case 'DELETE':
-                    this.router.delete(route.path, handler);
-                    break;
-            }
-        });
-    }
+    //     routes.forEach(route => {
+    //         const handler = (req: Request, res: Response, next: NextFunction) => {
+    //             return (this as any)[route.handlerName](req, res, next);
+    //         };
+
+    //         switch (route.method) {
+    //             case 'GET':
+    //                 this.router.get(route.path, handler);
+    //                 break;
+    //             case 'POST':
+    //                 this.router.post(route.path, handler);
+    //                 break;
+    //             case 'PUT':
+    //                 this.router.put(route.path, handler);
+    //                 break;
+    //             case 'DELETE':
+    //                 this.router.delete(route.path, handler);
+    //                 break;
+    //         }
+    //     });
+    // }
 
     /**
      * User login
@@ -75,7 +83,7 @@ export class AuthController extends BaseController<any> {
                 next(err);
                 return;
             }
-            
+
             if (!user) {
                 const response: ApiResponse = {
                     success: false,
@@ -85,29 +93,35 @@ export class AuthController extends BaseController<any> {
                 return;
             }
 
-            req.login(user, (loginErr?: Error) => {
-                if (loginErr) {
-                    next(loginErr);
-                    return;
-                }
+            // Generate JWT token
+            const token = this.authService.generateToken(user);
 
-                this.authService.login({
-                    email: user.email,
-                    password: req.body.password as string
-                })
+            // Call your auth service if needed
+            this.authService.login({
+                email: user.email,
+                password: req.body.password as string
+            })
                 .then(loginResponse => {
                     const response: ApiResponse = {
                         success: true,
-                        data: loginResponse,
+                        data: {
+                            ...loginResponse,
+                            token,
+                            token_type: 'Bearer',
+                            expires_in: 3600
+                        },
                         message: 'Login successful'
                     };
                     res.status(200).json(response);
                 })
                 .catch(error => next(error));
-            });
         };
 
-        const authMiddleware = passport.authenticate('local', handleAuth);
+        const authMiddleware = passport.authenticate('local', {
+            session: false,
+            failWithError: true
+        }, handleAuth);
+
         authMiddleware(req, res, next);
     }
 
@@ -119,19 +133,12 @@ export class AuthController extends BaseController<any> {
      * @returns Promise<void> - Returns the authenticated user's profile
      * @throws Error if user is not authenticated
      */
+    @Auth()
     @Get('/profile')
     public getProfile(req: AuthenticatedRequest, res: Response, next: NextFunction): void {
-        if (!req.user) {
-            const response: ApiResponse = {
-                success: false,
-                message: 'Not authenticated'
-            };
-            res.status(401).json(response);
-            return;
-        }
 
         // Call the auth service to get the user profile
-        this.authService.getProfile(req.user.id)
+        this.authService.getProfile(req.user?.id as string)
             .then(user => {
                 // Create a response without the password field
                 const { password, ...userWithoutPassword } = user;
@@ -167,17 +174,17 @@ export class AuthController extends BaseController<any> {
             if (err) {
                 return next(err);
             }
-            
+
             // Clear the session cookie
             res.clearCookie('connect.sid');
-            
+
             const response: ApiResponse = {
                 success: true,
                 message: 'Logout successful'
             };
-            
+
             res.status(200).json(response);
-            
+
             return undefined;
         });
     }

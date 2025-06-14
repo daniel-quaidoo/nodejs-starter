@@ -81,12 +81,17 @@ export class ModuleLoader {
             Container.set(Controller, controller);
 
             // Create and register the router
-            const router = new ControllerRouter(controller);
+            const controllerRouter = new ControllerRouter(controller);
 
             // Add router to the registry
-            if (router.Token) {
+            if (controllerRouter.Token) {
+                // Object.getOwnPropertyNames(Object.getPrototypeOf(controller))
+                //     .filter(prop => typeof controller[prop] === 'function' && prop !== 'constructor')
+                //     .forEach(method => {
+                //         controller[method] = controller[method].bind(controller);
+                //     });
                 console.log(`✓ Registered controller: ${Controller.name}`);
-                routerRegistry.registerRouter(router.Token, () => router);
+                routerRegistry.registerRouter(controllerRouter.Token, () => controllerRouter);
             }
 
         } catch (error) {

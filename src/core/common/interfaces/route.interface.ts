@@ -56,12 +56,17 @@ export interface IModuleRouter {
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS' | 'CONNECT' | 'TRACE';
 
 export interface RouteDefinition {
-    method: HttpMethod;
+    method: HttpMethod | string;
     path: string;
     handler?: LambdaHandler;
     handlerName?: string;
-    // handler?: (req: Request, res: Response, next: NextFunction) => any;
+    auth?: {
+        required: boolean;
+        roles?: string[];
+    };
+    middlewares?: RequestHandler[];
     absolutePath?: boolean;
+    // handler?: (req: Request, res: Response, next: NextFunction) => any;
 }
 
 export interface LambdaResponse {

@@ -10,6 +10,9 @@ export const COMPONENT_TYPE = {
     CONTROLLER: 'controller'
 } as const;
 
+export const ROUTE_METADATA_KEY = 'routes';
+export const CONTROLLER_METADATA_KEY = 'controller';
+
 export type ComponentType = typeof COMPONENT_TYPE[keyof typeof COMPONENT_TYPE];
 
 export interface ComponentMetadata {

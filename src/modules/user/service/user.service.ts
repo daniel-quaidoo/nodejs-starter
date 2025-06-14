@@ -11,13 +11,14 @@ import { BaseService } from '../../../core/common/service/base.service';
 
 // decorator
 import { Component, COMPONENT_TYPE } from "../../../core/common/di/component.decorator";
-import { Inject } from 'typedi';
+import { Inject, Service } from 'typedi';
 
 // exception
 import { ConflictException, NotFoundException } from '../../../core/common/exceptions/http.exception';
 
 
 @Component({ type: COMPONENT_TYPE.SERVICE })
+@Service()
 export class UserService extends BaseService<User> {
     private readonly SALT_ROUNDS = 10;
     

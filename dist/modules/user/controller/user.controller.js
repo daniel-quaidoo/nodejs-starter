@@ -18,9 +18,9 @@ const typedi_1 = require("typedi");
 const user_service_1 = require("../service/user.service");
 // controller
 const base_controller_1 = require("../../../core/common/controller/base.controller");
-// decorator
-const component_decorator_1 = require("../../../core/common/di/component.decorator");
 const route_decorator_1 = require("../../../core/common/decorators/route.decorator");
+// @Component({ type: COMPONENT_TYPE.CONTROLLER })
+// @Service()
 let UserController = class UserController extends base_controller_1.BaseController {
     constructor(userService) {
         super(userService);
@@ -186,7 +186,6 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UserController.prototype, "deleteUser", null);
 exports.UserController = UserController = __decorate([
-    (0, component_decorator_1.Component)({ type: component_decorator_1.COMPONENT_TYPE.CONTROLLER }),
     (0, route_decorator_1.Controller)('/users'),
     __param(0, (0, typedi_1.Inject)()),
     __metadata("design:paramtypes", [user_service_1.UserService])

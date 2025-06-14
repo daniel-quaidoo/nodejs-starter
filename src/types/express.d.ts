@@ -1,4 +1,5 @@
 import { Request } from 'express';
+import { User } from '../modules/auth/types';
 
 declare global {
     namespace Express {

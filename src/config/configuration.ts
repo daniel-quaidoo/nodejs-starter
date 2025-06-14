@@ -1,6 +1,8 @@
 import * as path from 'path';
 import { Service } from 'typedi';
 import * as dotenv from 'dotenv';
+
+// schema
 import { configSchema, ConfigSchema } from './schema';
 
 @Service()

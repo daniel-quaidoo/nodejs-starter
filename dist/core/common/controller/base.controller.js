@@ -6,6 +6,8 @@ const class_transformer_1 = require("class-transformer");
 // dto
 const base_query_dto_1 = require("../dto/base-query.dto");
 const base_response_dto_1 = require("../dto/base-response.dto");
+// guard
+const jwt_auth_guard_1 = require("../../../core/auth/guards/jwt-auth.guard");
 class BaseController {
     constructor(service) {
         this.service = service;
@@ -119,6 +121,16 @@ class BaseController {
                 res(error);
             }
         }
+    }
+    applyAuthGuard(req, res, next, handler) {
+        return (0, jwt_auth_guard_1.JwtAuthGuard)(req, res, async () => {
+            try {
+                await handler(req, res, next);
+            }
+            catch (error) {
+                next(error);
+            }
+        });
     }
 }
 exports.BaseController = BaseController;

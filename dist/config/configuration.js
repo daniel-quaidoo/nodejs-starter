@@ -46,6 +46,7 @@ exports.ConfigService = void 0;
 const path = __importStar(require("path"));
 const typedi_1 = require("typedi");
 const dotenv = __importStar(require("dotenv"));
+// schema
 const schema_1 = require("./schema");
 let ConfigService = class ConfigService {
     constructor() {

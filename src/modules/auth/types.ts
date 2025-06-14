@@ -1,7 +1,9 @@
 export type User = {
     id: string;
+    name: string;
     email: string;
     password?: string;
+    role: string | string[];
     [key: string]: any;
 };
 

@@ -1,3 +1,4 @@
+import jwt from 'jsonwebtoken';
 import { Inject } from 'typedi';
 
 // types
@@ -9,15 +10,23 @@ import { LoginDto, LoginResponseDto } from '../dto/login.dto';
 // service
 import { UserService } from '../../user/service/user.service';
 
+// config
+import { ConfigService } from '../../../config/configuration';
+
 // exception
 import { UnauthorizedException } from '../../../core/common/exceptions/http.exception';
 
 // decorator
 import { Component, COMPONENT_TYPE } from '../../../core/common/di/component.decorator';
 
+
 @Component({ type: COMPONENT_TYPE.SERVICE })
 export class AuthService {
-    constructor(@Inject() private readonly userService: UserService) {}
+    private readonly config = new ConfigService();
+    private readonly JWT_SECRET: any = this.config.get('JWT_SECRET');
+    private readonly JWT_EXPIRES_IN: any = this.config.get('JWT_EXPIRES_IN');
+
+    constructor(@Inject() private readonly userService: UserService) { }
 
     async validateUser(email: string, password: string): Promise<Omit<User, 'password'>> {
         const user = await this.userService.findByEmail(email);
@@ -54,5 +63,26 @@ export class AuthService {
         // Remove password from the returned user object
         const { password: _, ...userWithoutPassword } = user;
         return userWithoutPassword;
+    }
+
+
+    public generateToken(user: User): string {
+        return jwt.sign(
+            {
+                sub: user.id,
+                email: user.email,
+                role: user.role
+            },
+            this.JWT_SECRET,
+            { expiresIn: this.JWT_EXPIRES_IN }
+        );
+    }
+
+    public verifyToken(token: string): any {
+        try {
+            return jwt.verify(token, this.JWT_SECRET);
+        } catch (error) {
+            return null;
+        }
     }
 }

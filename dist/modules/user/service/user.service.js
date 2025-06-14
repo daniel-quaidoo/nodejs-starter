@@ -96,6 +96,7 @@ let UserService = class UserService extends base_service_1.BaseService {
 exports.UserService = UserService;
 exports.UserService = UserService = __decorate([
     (0, component_decorator_1.Component)({ type: component_decorator_1.COMPONENT_TYPE.SERVICE }),
+    (0, typedi_1.Service)(),
     __param(0, (0, typedi_1.Inject)()),
     __metadata("design:paramtypes", [user_repository_1.UserRepository])
 ], UserService);

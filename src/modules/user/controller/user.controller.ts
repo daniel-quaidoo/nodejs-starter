@@ -1,4 +1,4 @@
-import { Inject } from 'typedi';
+import { Inject, Service } from 'typedi';
 import { Request, Response, NextFunction, Router } from 'express';
 
 // models
@@ -17,7 +17,8 @@ import { BaseController } from '../../../core/common/controller/base.controller'
 import { Component, COMPONENT_TYPE } from "../../../core/common/di/component.decorator";
 import { Controller, Delete, Get, Post, Put } from "../../../core/common/decorators/route.decorator";
 
-@Component({ type: COMPONENT_TYPE.CONTROLLER })
+// @Component({ type: COMPONENT_TYPE.CONTROLLER })
+// @Service()
 @Controller('/users')
 export class UserController extends BaseController<User> {
 

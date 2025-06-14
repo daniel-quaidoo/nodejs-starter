@@ -11,7 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var UserRouter_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserRouter = void 0;
 const typedi_1 = require("typedi");
@@ -23,23 +22,27 @@ const base_router_1 = require("../../../core/common/router/base.router");
 const di_token_constant_1 = require("../../../core/common/di/di-token.constant");
 // decorator
 const component_decorator_1 = require("../../../core/common/di/component.decorator");
-let UserRouter = UserRouter_1 = class UserRouter extends base_router_1.BaseRouter {
+let UserRouter = class UserRouter extends base_router_1.BaseRouter {
     constructor(controller) {
         super(controller);
         this.controller = controller;
         this.Token = di_token_constant_1.USER_ROUTER_TOKEN;
     }
-    static getRouter() {
-        const controller = typedi_1.Container.get(user_controller_1.UserController);
-        return new UserRouter_1(controller).router;
-    }
+    // public static getRouter(): Router {
+    //     const controller = Container.get(UserController);
+    //     const userRouter = new UserRouter(controller);
+    //     userRouter.router.use((req, res, next) => {
+    //         return userRouter.applyAuthGuard(req, res, next);
+    //     });
+    //     return userRouter.router;
+    // }
     getCustomRoutes() {
         return [];
     }
 };
 exports.UserRouter = UserRouter;
 UserRouter.Token = di_token_constant_1.USER_ROUTER_TOKEN;
-exports.UserRouter = UserRouter = UserRouter_1 = __decorate([
+exports.UserRouter = UserRouter = __decorate([
     (0, component_decorator_1.Component)({ type: component_decorator_1.COMPONENT_TYPE.ROUTER }),
     __param(0, (0, typedi_1.Inject)()),
     __metadata("design:paramtypes", [user_controller_1.UserController])

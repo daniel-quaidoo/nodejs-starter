@@ -8,15 +8,13 @@ import express, { Express } from 'express';
 // config
 import { ConfigService } from './config/configuration';
 
-// modules
+// module
+import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
 import { HealthModule } from './modules/health/health.module';
 
 // loader
 import { ModuleLoader } from './core/common/di/module.loader';
-
-// service
-import { UserService } from './modules/user/service/user.service';
 
 // factory
 import { DatabaseFactory } from './core/db/factory/database.factory';
@@ -28,16 +26,15 @@ import { routerRegistry } from './core/common/router/router.registry';
 import { DatabaseType } from './core/db/interfaces/database.interface';
 
 // middleware
-import { configurePassport, passportMiddleware, passportSessionMiddleware } from './core/auth/passport';
 import { requestLogger } from './core/logging/request-logger.middleware';
+import { configurePassport, passportMiddleware, passportSessionMiddleware } from './core/auth/passport';
 
 // utils
 import { registerAndLogRoutes, setupCorsMiddleware, setupGlobalErrorHandler, setupNotFoundHandler } from './shared/utils';
-import { AuthModule } from './modules/auth/auth.module';
 
 // For AWS Lambda
+let app: any;
 let isWarm = false;
-
 let dataSource: DataSource;
 
 // Initialize application services, database connections, etc.
@@ -86,8 +83,7 @@ export const bootstrap = async (): Promise<{ app: Express; dataSource: DataSourc
         await moduleLoader.loadModules([UserModule, AuthModule, HealthModule]);
 
         // Initialize Passport
-        const userService = Container.get(UserService);
-        configurePassport(userService);
+        configurePassport();
         app.use(passportMiddleware);
         app.use(passportSessionMiddleware);
 
@@ -114,10 +110,11 @@ export const bootstrap = async (): Promise<{ app: Express; dataSource: DataSourc
 export const handler = async (event: any, context: any) => {
     // Cold start handling
     if (!isWarm) {
-        await bootstrap();
+        app = await bootstrap();
         isWarm = true;
     }
 
-    const { handler: routerHandler } = await import('./core/routes');
+    const { handler: routerHandler } = await import('./lambda');
+
     return routerHandler(event, context);
 };

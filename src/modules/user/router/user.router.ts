@@ -28,10 +28,16 @@ export class UserRouter extends BaseRouter<User> implements IModuleRouter {
         super(controller);
     }
 
-    public static getRouter(): Router {
-        const controller = Container.get(UserController);
-        return new UserRouter(controller).router;
-    }
+    // public static getRouter(): Router {
+    //     const controller = Container.get(UserController);
+    //     const userRouter = new UserRouter(controller);
+        
+    //     userRouter.router.use((req, res, next) => {
+    //         return userRouter.applyAuthGuard(req, res, next);
+    //     });
+        
+    //     return userRouter.router;
+    // }
 
     protected getCustomRoutes(): RouteDefinition[] {
         return [ ];
