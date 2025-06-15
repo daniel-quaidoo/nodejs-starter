@@ -145,7 +145,7 @@ export class ModuleLoader {
         return paramTypes.map(param => {
             try {
                 return Container.get(param);
-            } catch (error) {
+            } catch {
                 throw new Error(`Failed to resolve dependency ${param?.name} for ${Target.name}`);
             }
         });

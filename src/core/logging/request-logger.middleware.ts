@@ -51,7 +51,7 @@ export const requestLogger = (req: Request, res: Response, next: NextFunction): 
             if (responseBody) {
                 try {
                     logData.response = JSON.parse(responseBody);
-                } catch (e) {
+                } catch {
                     logData.response = responseBody;
                 }
             }

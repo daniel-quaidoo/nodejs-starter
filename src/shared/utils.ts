@@ -89,7 +89,7 @@ export const createErrorResponse = (
                 if (body.details && IS_DEV) {
                     response.details = body.details;
                 }
-            } catch (e) {
+            } catch {
                 console.error('Failed to parse error body:', error.body);
             }
         }
@@ -161,7 +161,7 @@ export const wrapHandler = (handler: (...args: any[]) => Promise<any>) => {
                     if (typeof result.body === 'string') {
                         try {
                             error = JSON.parse(result.body);
-                        } catch (e) {
+                        } catch {
                             error = { message: result.body };
                         }
                     } else {
@@ -220,8 +220,8 @@ export const wrapHandler = (handler: (...args: any[]) => Promise<any>) => {
                     if (body.error) {
                         message = body.error;
                     }
-                } catch (e) {
-                    // If we can't parse the body, use it as is
+                } catch {
+                    console.error('Failed to parse error body:', error.body);
                     message = error.body;
                 }
             }

@@ -22,7 +22,7 @@ export class HealthController {
         try {
             const status = await this.healthService.getHealthStatus();
             res.status(200).json(status);
-        } catch (error) {
+        } catch {
             res.status(500).json({ error: 'Failed to get health status' });
         }
     }

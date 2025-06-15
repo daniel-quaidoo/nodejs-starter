@@ -28,7 +28,7 @@ export const JwtAuthGuard = async (req: any, res: Response, next: NextFunction):
         // add user to request
         req.user = decoded;
         next();
-    } catch (error) {
+    } catch {
         await res.status(500).json({ message: 'Authentication failed' });
     }
 };

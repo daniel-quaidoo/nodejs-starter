@@ -28,4 +28,9 @@ export abstract class BaseModel extends BaseEntity {
     deletedAt?: Date | null;
 }
 
-export interface IBaseModel extends BaseModel {}
+export interface IBaseModel extends BaseModel {
+    id: string;
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt?: Date | null;
+}

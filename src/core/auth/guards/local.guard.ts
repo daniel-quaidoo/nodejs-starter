@@ -44,7 +44,7 @@ export const authMiddleware = (options: { roles?: string[] } = {}): any => {
             }
 
             next();
-        } catch (error) {
+        } catch {
             return res.status(500).json({ message: 'Authentication failed' });
         }
     };

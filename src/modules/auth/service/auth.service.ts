@@ -77,7 +77,7 @@ export class AuthService {
     public verifyToken(token: string): any {
         try {
             return jwt.verify(token, this.JWT_SECRET);
-        } catch (error) {
+        } catch {
             return null;
         }
     }
