@@ -4,6 +4,9 @@ import { DataSource } from 'typeorm';
 import session from 'express-session';
 import express, { Express } from 'express';
 
+// logger
+import { LoggerService } from './core/logging';
+
 // config
 import { ConfigService } from './config/configuration';
 
@@ -27,14 +30,22 @@ import { DatabaseType } from './core/db/interfaces/database.interface';
 // middleware
 import { setupCorsMiddleware } from './core/middleware/cors.middleware';
 import { requestLogger } from './core/logging/request-logger.middleware';
-import { configurePassport, passportMiddleware, passportSessionMiddleware } from './core/auth/passport';
+import {
+    configurePassport,
+    passportMiddleware,
+    passportSessionMiddleware,
+} from './core/auth/passport';
 
 // utils
-import { registerAndLogRoutes, setupGlobalErrorHandler, setupNotFoundHandler } from './shared/utils';
+import {
+    registerAndLogRoutes,
+    setupGlobalErrorHandler,
+    setupNotFoundHandler,
+} from './shared/utils';
 
-let app: any;
 let isWarm = false;
 let dataSource: DataSource;
+const logger = Container.get(LoggerService);
 
 /**
  * Initializes the application services, database connections, etc.
@@ -101,10 +112,10 @@ export const bootstrap = async (): Promise<{ app: Express; dataSource: DataSourc
         // 404 handler
         setupNotFoundHandler(app);
 
-        console.log('Application bootstrapped successfully');
+        logger.info('Application bootstrapped successfully');
         return { app, dataSource };
     } catch (error) {
-        console.error('Failed to bootstrap application:', error);
+        logger.error('Failed to bootstrap application:', error as Record<string, any>);
         throw error;
     }
 };
@@ -115,10 +126,10 @@ export const bootstrap = async (): Promise<{ app: Express; dataSource: DataSourc
  * @param context AWS Lambda context object
  * @returns Promise<APIGatewayProxyResult> - Returns the API Gateway proxy result
  */
-export const handler = async (event: any, context: any) => {
+export const handler = async (event: any, context: any): Promise<any> => {
     // Cold start handling
     if (!isWarm) {
-        app = await bootstrap();
+        await bootstrap();
         isWarm = true;
     }
 

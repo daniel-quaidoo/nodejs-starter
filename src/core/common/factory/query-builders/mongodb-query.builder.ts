@@ -45,7 +45,7 @@ export class MongoDBQueryBuilder<T> implements IQueryBuilder<T> {
 
     buildSearchCondition(field: string, search: string): any {
         return {
-            [field]: { $regex: search, $options: 'i' }
+            [field]: { $regex: search, $options: 'i' },
         };
     }
 }

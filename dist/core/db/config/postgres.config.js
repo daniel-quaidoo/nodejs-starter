@@ -4,6 +4,10 @@ exports.PostgresConfig = void 0;
 // config
 const base_database_config_1 = require("./base-database.config");
 class PostgresConfig extends base_database_config_1.BaseDatabaseConfig {
+    /**
+     * Retrieves the PostgreSQL connection configuration
+     * @returns The PostgreSQL connection configuration
+     */
     getConnectionConfig() {
         return {
             type: 'postgres',

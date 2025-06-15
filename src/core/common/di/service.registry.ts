@@ -39,9 +39,8 @@ export class ServiceRegistry {
     public getService<T>(key: ServiceKey<T>): T {
         const service = this.services.get(key);
         if (service === undefined) {
-            const keyName = typeof key === 'function' 
-                ? key.name 
-                : (key as any)?.name || String(key);
+            const keyName =
+                typeof key === 'function' ? key.name : (key as any)?.name || String(key);
             throw new Error(`Service not found for key: ${keyName}`);
         }
         return service as T;

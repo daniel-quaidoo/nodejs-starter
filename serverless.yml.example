@@ -1,0 +1,60 @@
+service: nodejs-starter
+
+frameworkVersion: '4'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-east-1'}
+  environment:
+    NODE_ENV: ${self:provider.stage}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - lambda:InvokeFunction
+          Resource: "*"
+
+plugins:
+  - serverless-offline
+  - serverless-esbuild
+
+package:
+  patterns:
+    - '!**/*'
+    - 'dist/**'
+    - 'node_modules/**'
+    - '!node_modules/.prisma/client/query_engine-*'
+    - '!node_modules/.prisma/client/libquery_engine-*'
+    - '!node_modules/prisma/libquery_engine-*'
+    - '!node_modules/@prisma/engines/**'
+
+functions:
+  api:
+    handler: dist/handler.handler
+    events:
+      - http:
+          path: /{proxy+}
+          method: ANY
+          cors: true
+      - http:
+          path: /
+          method: ANY
+          cors: true
+
+custom:
+  esbuild:
+    bundle: true
+    minify: true
+    sourcemap: true
+    exclude: ['@aws-sdk/*']
+    target: 'node18'
+    platform: 'node'
+    concurrency: 10
+  serverless-offline:
+    httpPort: 3000
+    useChildProcesses: true
+    noPrependStageInUrl: true
+    noAuth: true

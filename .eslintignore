@@ -1,0 +1,43 @@
+# Build output
+dist
+
+# Dependencies
+node_modules
+
+# Test files
+**/__tests__/**
+**/*.test.ts
+**/*.spec.ts
+**/test/**
+
+# Coverage directory
+coverage
+
+# IDE and editor files
+.vscode
+.idea
+*.swp
+*.swo
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+logs
+*.log
+
+# Misc
+.DS_Store
+Thumbs.db
+
+# Serverless directories
+.serverless
+.serverless_plugins
+
+# Local development
+.local
+
+# TypeScript build info
+*.tsbuildinfo

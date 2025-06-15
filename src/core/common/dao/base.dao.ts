@@ -1,4 +1,13 @@
-import { DataSource, DeleteResult, DeepPartial, FindManyOptions, FindOneOptions, FindOptionsWhere, Repository, UpdateResult } from 'typeorm';
+import {
+    DataSource,
+    DeleteResult,
+    DeepPartial,
+    FindManyOptions,
+    FindOneOptions,
+    FindOptionsWhere,
+    Repository,
+    UpdateResult,
+} from 'typeorm';
 
 // model
 import { BaseModel } from '../entities/base.entity';
@@ -22,7 +31,7 @@ export abstract class BaseDAO<T extends BaseModel> implements IBaseDAO<T> {
      * @returns The created entity
      */
     async create(entity: DeepPartial<T>): Promise<T> {
-        const newEntity = this.repository.create(entity);
+        const newEntity = await this.repository.create(entity);
         return this.repository.save(newEntity);
     }
 
@@ -32,10 +41,11 @@ export abstract class BaseDAO<T extends BaseModel> implements IBaseDAO<T> {
      * @returns Array of entities and total count
      */
     async findAll(options?: FindManyOptions<T>): Promise<[T[], number]> {
-        return this.repository.findAndCount({
+        const result = await this.repository.findAndCount({
             where: { deletedAt: null, ...options?.where } as any,
             ...options,
         });
+        return result;
     }
 
     /**
@@ -54,10 +64,11 @@ export abstract class BaseDAO<T extends BaseModel> implements IBaseDAO<T> {
      * @returns Array of entities and total count
      */
     async findAndCount(options?: FindManyOptions<T>): Promise<[T[], number]> {
-        return this.repository.findAndCount({
+        const result = await this.repository.findAndCount({
             where: { deletedAt: null, ...options?.where } as any,
             ...options,
         });
+        return result;
     }
 
     /**
@@ -65,21 +76,28 @@ export abstract class BaseDAO<T extends BaseModel> implements IBaseDAO<T> {
      * @param idOrOptions ID or find options
      * @returns The found entity or null
      */
-    async findOne(idOrOptions: string | number | FindOneOptions<T> | FindOptionsWhere<T>): Promise<T | null> {
+    async findOne(
+        idOrOptions: string | number | FindOneOptions<T> | FindOptionsWhere<T>
+    ): Promise<T | null> {
         if (typeof idOrOptions === 'string' || typeof idOrOptions === 'number') {
-            return this.repository.findOne({
+            const result = await this.repository.findOne({
                 where: { id: idOrOptions, deletedAt: null } as any,
             });
+            return result;
         }
 
         if ('where' in idOrOptions) {
-            return this.repository.findOne({
+            const result = await this.repository.findOne({
                 ...idOrOptions,
                 where: { deletedAt: null, ...idOrOptions.where } as any,
             });
+            return result;
         }
 
-        return this.repository.findOne({ where: { ...idOrOptions, deletedAt: null } as any });
+        const result = await this.repository.findOne({
+            where: { ...idOrOptions, deletedAt: null } as any,
+        });
+        return result;
     }
 
     /**
@@ -98,8 +116,8 @@ export abstract class BaseDAO<T extends BaseModel> implements IBaseDAO<T> {
         } as DeepPartial<T>;
 
         if (typeof idOrConditions === 'string' || typeof idOrConditions === 'number') {
-            const result = await this.repository.update(idOrConditions, updateData as any);
-            if (!result.affected) {
+            const updateResult = await this.repository.update(idOrConditions, updateData as any);
+            if (!updateResult.affected) {
                 return null;
             }
             return this.findOne(idOrConditions);
@@ -109,7 +127,7 @@ export abstract class BaseDAO<T extends BaseModel> implements IBaseDAO<T> {
         if (!updateResult.affected) {
             return null;
         }
-        
+
         return this.repository.findOne({ where: idOrConditions as any });
     }
 
@@ -119,7 +137,8 @@ export abstract class BaseDAO<T extends BaseModel> implements IBaseDAO<T> {
      * @returns The deleted entity
      */
     async delete(idOrConditions: string | number | FindOptionsWhere<T>): Promise<DeleteResult> {
-        return this.softDelete(idOrConditions);
+        const result = await this.repository.delete(idOrConditions as any);
+        return result;
     }
 
     /**
@@ -128,7 +147,8 @@ export abstract class BaseDAO<T extends BaseModel> implements IBaseDAO<T> {
      * @returns The deleted entity
      */
     async softDelete(idOrConditions: string | number | FindOptionsWhere<T>): Promise<DeleteResult> {
-        return this.repository.softDelete(idOrConditions as any);
+        const result = await this.repository.softDelete(idOrConditions as any);
+        return result;
     }
 
     /**
@@ -137,9 +157,10 @@ export abstract class BaseDAO<T extends BaseModel> implements IBaseDAO<T> {
      * @returns The count of entities
      */
     async count(options?: FindManyOptions<T>): Promise<number> {
-        return this.repository.count({
+        const result = await this.repository.count({
             where: { deletedAt: null, ...options?.where } as any,
             ...options,
         });
+        return result;
     }
 }

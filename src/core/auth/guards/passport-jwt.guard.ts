@@ -7,13 +7,13 @@ import { Request, Response, NextFunction } from 'express';
  * @param res Response object
  * @param next Next function for error handling
  */
-export function JwtPassportGuard(req: Request, res: Response, next: NextFunction) {
+export function JwtPassportGuard(req: Request, res: Response, next: NextFunction): void {
     return passport.authenticate('jwt', { session: false }, (err: any, user: any, info: any) => {
         if (err) {
             return res.status(500).json({
                 success: false,
                 message: 'Authentication error',
-                error: process.env.NODE_ENV === 'development' ? err.message : undefined
+                error: process.env.NODE_ENV === 'development' ? err.message : undefined,
             });
         }
 
@@ -30,7 +30,7 @@ export function JwtPassportGuard(req: Request, res: Response, next: NextFunction
             return res.status(401).json({
                 success: false,
                 message,
-                code: 'UNAUTHORIZED'
+                code: 'UNAUTHORIZED',
             });
         }
 

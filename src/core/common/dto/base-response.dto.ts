@@ -28,7 +28,7 @@ export class BaseResponseDto<T> {
         data: T,
         success: boolean = true,
         pagination?: { page: number; limit: number; total: number },
-        message?: string,
+        message?: string
     ) {
         this.success = success;
         this.data = data;
@@ -38,7 +38,7 @@ export class BaseResponseDto<T> {
             this.pagination = new PaginationMetaDto(
                 pagination.page,
                 pagination.limit,
-                pagination.total,
+                pagination.total
             );
         }
     }
@@ -46,7 +46,7 @@ export class BaseResponseDto<T> {
     static success<T>(
         data: T,
         pagination?: { page: number; limit: number; total: number },
-        message?: string,
+        message?: string
     ): BaseResponseDto<T> {
         return new BaseResponseDto(data, true, pagination, message);
     }

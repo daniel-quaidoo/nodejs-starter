@@ -1,7 +1,7 @@
-import { Column, Entity } from "typeorm";
+import { Column, Entity } from 'typeorm';
 
 // model
-import { BaseModel } from "../../../core/common";
+import { BaseModel } from '../../../core/common';
 
 @Entity('users')
 export class User extends BaseModel {
@@ -15,5 +15,5 @@ export class User extends BaseModel {
     password!: string;
 
     @Column()
-    role!: string; 
+    role!: string;
 }

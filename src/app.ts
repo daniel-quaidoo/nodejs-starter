@@ -1,3 +1,5 @@
+import Container from 'typedi';
+import { LoggerService } from './core/logging/logger.service';
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
 
 // local import
@@ -5,6 +7,7 @@ import { ConfigService } from './config/configuration';
 import { handler as routerHandler, bootstrap } from './bootstrap';
 
 const configService = new ConfigService();
+const logger = Container.get(LoggerService);
 
 /**
  * AWS Lambda handler function
@@ -17,9 +20,9 @@ export const handler = async (
     context: Context
 ): Promise<APIGatewayProxyResult> => {
     try {
-        return routerHandler(event, context);
+        return await routerHandler(event, context);
     } catch (error) {
-        console.error('Error processing request:', error);
+        logger.error('Error processing request:', error as Record<string, any>);
         return {
             statusCode: 500,
             headers: {
@@ -29,7 +32,7 @@ export const handler = async (
                 status: 'error',
                 message: 'Internal server error',
                 error: error instanceof Error ? error.message : 'Unknown error',
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
             }),
         };
     }
@@ -40,14 +43,16 @@ export const handler = async (
  * @returns Promise<void> - Returns void
  */
 if (configService.isDevelopment() && require.main === module) {
-    bootstrap().then(({ app }) => {
-        const port = process.env.PORT || 3000;
-        app.listen(port, () => {
-            console.log(`Server is running on http://localhost:${port}`);
-            console.log(`Health check: http://localhost:${port}/api/health`);
+    bootstrap()
+        .then(({ app }) => {
+            const port = process.env.PORT || 3000;
+            app.listen(port, () => {
+                logger.info(`Server is running on http://localhost:${port}`);
+                logger.info(`Health check: http://localhost:${port}/api/health`);
+            });
+        })
+        .catch(error => {
+            logger.error('Failed to start application:', error as Record<string, any>);
+            process.exit(1);
         });
-    }).catch(error => {
-        console.error('Failed to start application:', error);
-        process.exit(1);
-    });
 }

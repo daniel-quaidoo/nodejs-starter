@@ -50,11 +50,11 @@ const dotenv = __importStar(require("dotenv"));
 const schema_1 = require("./schema");
 let ConfigService = class ConfigService {
     constructor() {
-        // Load .env file
+        // load .env file
         dotenv.config({
             path: path.resolve(process.cwd(), '.env')
         });
-        // Validate configuration
+        // validate configuration
         const { error, value } = schema_1.configSchema.validate(process.env, {
             allowUnknown: true,
             stripUnknown: true,

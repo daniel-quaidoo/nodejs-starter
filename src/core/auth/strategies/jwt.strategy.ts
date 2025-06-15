@@ -13,13 +13,13 @@ const configService = new ConfigService();
  * @param userService The user service instance
  * @returns The JWT strategy
  */
-export const createJwtStrategy = (userService: UserService) => {
+export const createJwtStrategy = (userService: UserService): any => {
     return new JwtStrategy(
         {
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
             secretOrKey: configService.get('JWT_SECRET'),
             ignoreExpiration: false,
-            passReqToCallback: true
+            passReqToCallback: true,
         },
         async (req: any, payload: any, done: any) => {
             try {

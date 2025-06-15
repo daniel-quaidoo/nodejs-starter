@@ -1,6 +1,5 @@
-import { Service } from 'typedi';
-import { Container } from 'typedi';
 import { DataSource } from 'typeorm';
+import { Container, Service } from 'typedi';
 
 // decoratos
 import { getModuleMetadata } from './module.decorator';
@@ -10,6 +9,11 @@ import { getComponentMetadata } from './component.decorator';
 // router registry
 import { ControllerRouter } from './controller.router';
 import { routerRegistry } from '../router/router.registry';
+
+// logger
+import { LoggerService } from '../../logging/logger.service';
+
+const logger = Container.get(LoggerService);
 
 @Service()
 export class ModuleLoader {
@@ -76,7 +80,7 @@ export class ModuleLoader {
      * @param Repository The repository to register
      */
     private async registerRepository(Repository: any): Promise<void> {
-        const instance = new Repository(this.dataSource);
+        const instance = await Promise.resolve().then(() => new Repository(this.dataSource));
         Container.set(Repository, instance);
     }
 
@@ -108,12 +112,14 @@ export class ModuleLoader {
 
             // Add router to the registry
             if (controllerRouter.Token) {
-                console.log(`✓ Registered controller: ${Controller.name}`);
+                logger.info(`✓ Registered controller: ${Controller.name}`);
                 routerRegistry.registerRouter(controllerRouter.Token, () => controllerRouter);
             }
-
         } catch (error) {
-            console.error(`Failed to register controller ${Controller?.name || 'unknown'}:`, error);
+            logger.error(
+                `Failed to register controller ${Controller?.name || 'unknown'}:`,
+                error as Record<string, any>
+            );
             throw error;
         }
     }
@@ -121,7 +127,7 @@ export class ModuleLoader {
     /**
      * Registers a router
      * @param Router The router to register
-     */ 
+     */
     private registerRouter(Router: any): void {
         const deps = this.getDependencies(Router);
         const instance = new Router(...deps);
@@ -136,7 +142,7 @@ export class ModuleLoader {
      */
     private getDependencies(Target: any): any[] {
         const paramTypes: any[] = Reflect.getMetadata('design:paramtypes', Target) || [];
-        return paramTypes.map((param) => {
+        return paramTypes.map(param => {
             try {
                 return Container.get(param);
             } catch (error) {

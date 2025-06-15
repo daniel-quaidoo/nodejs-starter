@@ -1,9 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handler = void 0;
-// local imports
+// local import
+const configuration_1 = require("./config/configuration");
 const bootstrap_1 = require("./bootstrap");
-// For AWS Lambda
+const configService = new configuration_1.ConfigService();
+/**
+ * AWS Lambda handler function
+ * @param event API Gateway event object
+ * @param context AWS Lambda context object
+ * @returns Promise<APIGatewayProxyResult> - Returns the API Gateway proxy result
+ */
 const handler = async (event, context) => {
     try {
         return (0, bootstrap_1.handler)(event, context);
@@ -25,8 +32,11 @@ const handler = async (event, context) => {
     }
 };
 exports.handler = handler;
-// For local development
-if (process.env.NODE_ENV !== 'production' && require.main === module) {
+/**
+ * Local development server
+ * @returns Promise<void> - Returns void
+ */
+if (configService.isDevelopment() && require.main === module) {
     (0, bootstrap_1.bootstrap)().then(({ app }) => {
         const port = process.env.PORT || 3000;
         app.listen(port, () => {

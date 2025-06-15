@@ -1,6 +1,6 @@
 service: nodejs-starter
 
-frameworkVersion: '3'
+frameworkVersion: '4'
 
 plugins:
   - serverless-offline

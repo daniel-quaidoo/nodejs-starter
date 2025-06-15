@@ -19,14 +19,13 @@ import { UnauthorizedException } from '../../../core/common/exceptions/http.exce
 // decorator
 import { Component, COMPONENT_TYPE } from '../../../core/common/di/component.decorator';
 
-
 @Component({ type: COMPONENT_TYPE.SERVICE })
 export class AuthService {
     private readonly config = new ConfigService();
     private readonly JWT_SECRET: any = this.config.get('JWT_SECRET');
     private readonly JWT_EXPIRES_IN: any = this.config.get('JWT_EXPIRES_IN');
 
-    constructor(@Inject() private readonly userService: UserService) { }
+    constructor(@Inject() private readonly userService: UserService) {}
 
     async validateUser(email: string, password: string): Promise<Omit<User, 'password'>> {
         const user = await this.userService.findByEmail(email);
@@ -49,8 +48,6 @@ export class AuthService {
     async login(loginDto: LoginDto): Promise<LoginResponseDto> {
         const user = await this.validateUser(loginDto.email, loginDto.password);
 
-        // In a real application, you would generate a JWT token here
-        // For now, we'll just return the user without a token
         return {
             id: user.id,
             email: user.email,
@@ -65,13 +62,12 @@ export class AuthService {
         return userWithoutPassword;
     }
 
-
     public generateToken(user: User): string {
         return jwt.sign(
             {
                 sub: user.id,
                 email: user.email,
-                role: user.role
+                role: user.role,
             },
             this.JWT_SECRET,
             { expiresIn: this.JWT_EXPIRES_IN }

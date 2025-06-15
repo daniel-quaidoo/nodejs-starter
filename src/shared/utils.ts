@@ -1,6 +1,6 @@
 //utils.ts
 import Container from 'typedi';
-import { Request, Express, NextFunction, Response } from 'express';
+import { Request, Express, Response } from 'express';
 import { ProxyIntegrationResult } from 'aws-lambda-router/lib/proxyIntegration';
 import { APIGatewayEventRequestContext, APIGatewayProxyEvent } from 'aws-lambda';
 
@@ -8,10 +8,15 @@ import { APIGatewayEventRequestContext, APIGatewayProxyEvent } from 'aws-lambda'
 import { LoggerService } from '../core/logging/logger.service';
 
 // interface
-import { ApiResponse, ErrorResponse, LambdaResponse } from '../core/common/interfaces/route.interface';
+import {
+    ApiResponse,
+    ErrorResponse,
+    LambdaResponse,
+} from '../core/common/interfaces/route.interface';
 import { ConfigService } from '../config/configuration';
 
 const configService = new ConfigService();
+const logger = Container.get(LoggerService);
 const IS_DEV = configService.isDevelopment();
 
 /**
@@ -19,7 +24,7 @@ const IS_DEV = configService.isDevelopment();
  * @param path The path to normalize
  * @returns The normalized path
  */
-export const normalizePath = (path: string): string => path.startsWith('/') ? path : `/${path}`;
+export const normalizePath = (path: string): string => (path.startsWith('/') ? path : `/${path}`);
 
 /**
  * Creates an error response object
@@ -36,12 +41,10 @@ export const createErrorResponse = (
     error?: any
 ): ErrorResponse => {
     const isExpressRequest = 'url' in reqOrEvent && 'method' in reqOrEvent;
-    const path = isExpressRequest
-        ? reqOrEvent.url
-        : (reqOrEvent?.path || '');
+    const path = isExpressRequest ? reqOrEvent.url : reqOrEvent?.path || '';
     const method = isExpressRequest
         ? reqOrEvent.method
-        : (reqOrEvent?.httpMethod || reqOrEvent?.method || '');
+        : reqOrEvent?.httpMethod || reqOrEvent?.method || '';
 
     const errorData = {
         statusCode,
@@ -53,7 +56,7 @@ export const createErrorResponse = (
     const response: ErrorResponse = {
         success: false,
         data: errorData,
-        error: message
+        error: message,
     };
 
     if (error) {
@@ -93,7 +96,19 @@ export const createErrorResponse = (
 
         if (error && typeof error === 'object') {
             Object.entries(error).forEach(([key, value]) => {
-                if (!['message', 'statusCode', 'status', 'stack', 'response', 'name', 'timestamp', 'path', 'method'].includes(key)) {
+                if (
+                    ![
+                        'message',
+                        'statusCode',
+                        'status',
+                        'stack',
+                        'response',
+                        'name',
+                        'timestamp',
+                        'path',
+                        'method',
+                    ].includes(key)
+                ) {
                     response[key as keyof ErrorResponse] = value;
                 }
             });
@@ -109,7 +124,10 @@ export const createErrorResponse = (
  * @param existingHeaders Optional existing headers to include in the response
  * @returns A success response object
  */
-export const createSuccessResponse = (result: any, existingHeaders: Record<string, any> = {}): ApiResponse => ({
+export const createSuccessResponse = (
+    result: any,
+    existingHeaders: Record<string, any> = {}
+): ApiResponse => ({
     success: true,
     data: result,
     headers: {
@@ -129,7 +147,7 @@ export const createSuccessResponse = (result: any, existingHeaders: Record<strin
  * @param handler The handler function to wrap
  * @returns A wrapped handler function that handles errors and formats responses
  */
-export const wrapHandler = (handler: Function) => {
+export const wrapHandler = (handler: (...args: any[]) => Promise<any>) => {
     return async (event: any, context: any): Promise<LambdaResponse> => {
         try {
             const result = await handler(event, context);
@@ -169,9 +187,10 @@ export const wrapHandler = (handler: Function) => {
                         'Content-Type': 'application/json',
                         'Access-Control-Allow-Origin': '*',
                         'Access-Control-Allow-Credentials': true,
-                        ...(result.headers || {})
+                        ...(result.headers || {}),
                     },
-                    body: typeof result.body === 'string' ? result.body : JSON.stringify(result.body)
+                    body:
+                        typeof result.body === 'string' ? result.body : JSON.stringify(result.body),
                 };
             }
 
@@ -184,9 +203,8 @@ export const wrapHandler = (handler: Function) => {
                     'Access-Control-Allow-Origin': '*',
                     'Access-Control-Allow-Credentials': true,
                 },
-                body: JSON.stringify(successResponse)
+                body: JSON.stringify(successResponse),
             };
-
         } catch (error: any) {
             console.error('=== ROUTE ERROR ===', error);
 
@@ -197,7 +215,8 @@ export const wrapHandler = (handler: Function) => {
             // If the error has a body with an error message, use that
             if (error?.body) {
                 try {
-                    const body = typeof error.body === 'string' ? JSON.parse(error.body) : error.body;
+                    const body =
+                        typeof error.body === 'string' ? JSON.parse(error.body) : error.body;
                     if (body.error) {
                         message = body.error;
                     }
@@ -214,7 +233,7 @@ export const wrapHandler = (handler: Function) => {
                 data: errorResponse.data,
                 error: errorResponse.error,
                 ...(errorResponse.details && { details: errorResponse.details }),
-                ...(errorResponse.name && { name: errorResponse.name })
+                ...(errorResponse.name && { name: errorResponse.name }),
             };
 
             return {
@@ -224,7 +243,7 @@ export const wrapHandler = (handler: Function) => {
                     'Access-Control-Allow-Origin': '*',
                     'Access-Control-Allow-Credentials': true,
                 },
-                body: JSON.stringify(responseBody)
+                body: JSON.stringify(responseBody),
             };
         }
     };
@@ -235,22 +254,25 @@ export const wrapHandler = (handler: Function) => {
  * @param expressRouter The Express router to convert
  * @returns A Lambda-compatible handler function
  */
-export const createLambdaHandler = (expressRouter: any) => {
-    return async (event: any, context: APIGatewayEventRequestContext): Promise<ProxyIntegrationResult> => {
-
-        return new Promise((resolve) => {
-            // Extract parameters from the event
+export const createLambdaHandler = (expressRouter: any): any => {
+    return (
+        event: any,
+        context: APIGatewayEventRequestContext
+    ): Promise<ProxyIntegrationResult> => {
+        return new Promise(resolve => {
             const pathParams = event.paths || {};
             const path = event.path;
-            const routePath = event.routePath || ''
+            const routePath = event.routePath || '';
 
-            // Log the incoming request for debugging
-            console.log('Incoming request:', {
-                path,
-                routePath,
-                pathParams,
-                httpMethod: event.httpMethod
-            });
+            // use logger
+            if (process.env.NODE_ENV !== 'production') {
+                logger.info('Incoming request:', {
+                    path,
+                    routePath,
+                    pathParams,
+                    httpMethod: event.httpMethod,
+                });
+            }
 
             // Convert Lambda event to Express-like request
             const req = {
@@ -258,13 +280,17 @@ export const createLambdaHandler = (expressRouter: any) => {
                 path: event.path,
                 query: event.queryStringParameters || {},
                 headers: event.headers || {},
-                body: event.body ? (typeof event.body === 'string' ? JSON.parse(event.body) : event.body) : {},
+                body: event.body
+                    ? typeof event.body === 'string'
+                        ? JSON.parse(event.body)
+                        : event.body
+                    : {},
                 params: pathParams,
                 url: path,
                 originalUrl: path,
                 // Add raw event and context for advanced use cases
                 lambdaEvent: event,
-                lambdaContext: context
+                lambdaContext: context,
             } as any;
 
             // Create response object
@@ -272,16 +298,16 @@ export const createLambdaHandler = (expressRouter: any) => {
                 statusCode: 200,
                 headers: {},
                 body: '',
-                setHeader: function (key: string, value: string) {
+                setHeader(key: string, value: string) {
                     this.headers = this.headers || {};
                     this.headers[key] = value;
                     return this;
                 },
-                status: function (code: number) {
+                status(code: number) {
                     this.statusCode = code;
                     return this;
                 },
-                json: function (data: any) {
+                json(data: any) {
                     this.body = JSON.stringify(data);
                     this.setHeader('Content-Type', 'application/json');
 
@@ -294,11 +320,11 @@ export const createLambdaHandler = (expressRouter: any) => {
                                 statusCode: this.statusCode,
                                 timestamp: new Date().toISOString(),
                                 path: event.path,
-                                method: event.httpMethod
+                                method: event.httpMethod,
                             },
                             error: data?.message || data?.error || 'An error occurred',
                             ...(data?.name && { name: data.name }),
-                            ...(IS_DEV && data?.stack && { details: data.stack })
+                            ...(IS_DEV && data?.stack && { details: data.stack }),
                         };
                         responseData = errorData;
                     }
@@ -307,18 +333,18 @@ export const createLambdaHandler = (expressRouter: any) => {
                         statusCode: this.statusCode,
                         headers: this.headers,
                         body: JSON.stringify(responseData),
-                        isBase64Encoded: false
+                        isBase64Encoded: false,
                     } as ProxyIntegrationResult);
                 },
-                send: function (data: string) {
+                send(data: string) {
                     this.body = data;
                     resolve({
                         statusCode: this.statusCode,
                         headers: this.headers,
                         body: this.body,
-                        isBase64Encoded: false
+                        isBase64Encoded: false,
                     } as ProxyIntegrationResult);
-                }
+                },
             };
 
             // Call the Express router
@@ -328,7 +354,7 @@ export const createLambdaHandler = (expressRouter: any) => {
                         statusCode: error.statusCode || 500,
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ error: error.message || 'Internal Server Error' }),
-                        isBase64Encoded: false
+                        isBase64Encoded: false,
                     } as ProxyIntegrationResult);
                 } else if (!res.headersSent) {
                     res.status(404).json({ error: 'Not Found' });
@@ -348,7 +374,7 @@ export const createLambdaEvent = (req: Request): APIGatewayProxyEvent => {
         httpMethod: req.method,
         path: req.path,
         headers: req.headers as { [name: string]: string },
-        queryStringParameters: req.query as { [name: string]: string } || {},
+        queryStringParameters: (req.query as { [name: string]: string }) || {},
         pathParameters: req.params || {},
         body: req.body ? JSON.stringify(req.body) : null,
         isBase64Encoded: false,
@@ -399,7 +425,7 @@ export const registerAndLogRoutes = (
 ): void => {
     registeredRouters.forEach(router => {
         const routerName = router.controllerName || router.constructor.name;
-        console.log(`\n${routerName} Routes:`);
+        const logger = Container.get(LoggerService);
 
         // Register the router with Express
         app.use(apiPrefix, router.router);
@@ -408,7 +434,7 @@ export const registerAndLogRoutes = (
         if (typeof router.getRoutes === 'function') {
             const routes = router.getRoutes();
             routes.forEach((route: any) => {
-                console.log(`[${route.method}] ${apiPrefix}${route.path}`);
+                logger.info(`${routerName} [${route.method}] ${apiPrefix}${route.path}`);
             });
         }
         // Fallback to stack inspection if getRoutes() doesn't exist
@@ -416,7 +442,7 @@ export const registerAndLogRoutes = (
             router.router.stack.forEach((layer: any) => {
                 if (layer.route && layer.route.path) {
                     const method = Object.keys(layer.route.methods)[0].toUpperCase();
-                    console.log(`[${method}] ${apiPrefix}${layer.route.path}`);
+                    logger.info(`[${method}] ${apiPrefix}${layer.route.path}`);
                 }
             });
         }
@@ -428,22 +454,24 @@ export const registerAndLogRoutes = (
  * @param app Express application instance
  */
 export const setupGlobalErrorHandler = (app: Express): void => {
-    app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+    app.use((err: any, req: Request, res: Response) => {
         const logger = Container.get(LoggerService);
         logger.error('Unhandled error', {
             error: err.message,
             stack: err.stack,
             url: req.originalUrl,
-            method: req.method
+            method: req.method,
         });
 
-        res.status(err.statusCode || 500).json(createErrorResponse(500, err.message, req, {
-            ...err,
-            error: err.message,
-            stack: err.stack,
-            method: req.method,
-            details: err.stack
-        }));
+        res.status(err.statusCode || 500).json(
+            createErrorResponse(500, err.message, req, {
+                ...err,
+                error: err.message,
+                stack: err.stack,
+                method: req.method,
+                details: err.stack,
+            })
+        );
     });
 };
 

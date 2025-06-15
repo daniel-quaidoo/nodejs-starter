@@ -9,14 +9,19 @@ import { UserService } from '../../../modules/user/service/user.service';
  * @param userService - User service for database operations
  * @returns Configured LocalStrategy instance
  */
-export const createLocalStrategy = (userService: UserService) => {
+export const createLocalStrategy = (userService: UserService): any => {
     return new LocalStrategy(
         {
             usernameField: 'email',
             passwordField: 'password',
             passReqToCallback: true,
         },
-        async (req: any, email: string, password: string, done: (error: any, user?: any, options?: IVerifyOptions) => void) => {
+        async (
+            req: any,
+            email: string,
+            password: string,
+            done: (error: any, user?: any, options?: IVerifyOptions) => void
+        ) => {
             try {
                 const user = await userService.findByEmail(email);
 

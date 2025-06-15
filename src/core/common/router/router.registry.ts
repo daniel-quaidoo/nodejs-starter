@@ -5,14 +5,14 @@ import { IModuleRouter } from '../interfaces/route.interface';
 
 @Service()
 export class RouterRegistry {
-    private routers = new Map<Function, () => IModuleRouter>();
-    
+    private routers = new Map<string, () => IModuleRouter>();
+
     /**
      * Registers a router
      * @param token The token to register the router with
      * @param routerFactory The router factory
      */
-    registerRouter(token: any, routerFactory: () => IModuleRouter): void {
+    registerRouter(token: string, routerFactory: () => IModuleRouter): void {
         this.routers.set(token, routerFactory);
     }
 
@@ -24,10 +24,16 @@ export class RouterRegistry {
         return Array.from(this.routers.values()).map(factory => factory());
     }
 
-    getRouter<T extends IModuleRouter>(token: new (...args: any[]) => T): T | undefined {
+    /**
+     * Gets a router by token
+     * @param token The token to get the router for
+     * @returns The router instance or undefined if not found
+     */
+    getRouter<T extends IModuleRouter>(token: string): T | undefined {
         const factory = this.routers.get(token);
         return factory ? (factory() as T) : undefined;
     }
 }
 
+// Export a singleton instance
 export const routerRegistry = new RouterRegistry();

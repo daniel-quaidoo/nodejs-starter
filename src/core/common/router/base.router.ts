@@ -70,7 +70,7 @@ export abstract class BaseRouter<T extends BaseModel> {
             //         return this.controller.findById(req, res, next);
             //     },
             //     absolutePath: true
-            // },  
+            // },
             // {
             //     method: 'PUT',
             //     path: `/${this.basePath}/:id`,
@@ -95,7 +95,7 @@ export abstract class BaseRouter<T extends BaseModel> {
             //     },
             //     absolutePath: true
             // }
-        ];  
+        ];
     }
 
     /**
@@ -110,17 +110,17 @@ export abstract class BaseRouter<T extends BaseModel> {
      * Get routes defined by decorators
      */
     protected getDecoratorRoutes(): RouteDefinition[] {
-        const controller = (this.controller as any);
+        const controller = this.controller as any;
         const controllerPath = Reflect.getMetadata('basePath', controller.constructor) || '';
         const routeMetadata = getRouteMetadata(controller.constructor) as RouteMetadata[];
 
         return routeMetadata.map(route => ({
             method: route.method as HttpMethod,
             path: `${controllerPath}${route.path ? `/${route.path}` : ''}`.replace(/\/+/g, '/'),
-            handler: (req: Request, res: Response, next: NextFunction) => 
+            handler: (req: Request, res: Response, next: NextFunction) =>
                 controller[route.handlerName](req, res, next),
             middlewares: route.middlewares,
-            absolutePath: true
+            absolutePath: true,
         }));
     }
 
@@ -131,12 +131,8 @@ export abstract class BaseRouter<T extends BaseModel> {
         const decoratorRoutes = this.getDecoratorRoutes();
         const baseRoutes = this.getBaseRoutes();
         const customRoutes = this.getCustomRoutes();
-        
-        return [
-            ...decoratorRoutes,
-            ...baseRoutes,
-            ...customRoutes
-        ];
+
+        return [...decoratorRoutes, ...baseRoutes, ...customRoutes];
     }
 
     /**
@@ -150,15 +146,17 @@ export abstract class BaseRouter<T extends BaseModel> {
      * Register a single route
      * @param route The route to register
      */
-    protected registerRoute(route: RouteDefinition) {
-        const fullPath = route.absolutePath 
+    protected registerRoute(route: RouteDefinition): void {
+        const fullPath = route.absolutePath
             ? route.path
             : `/${this.basePath}${route.path.startsWith('/') ? '' : '/'}${route.path}`;
-        
+
         const method = route.method.toLowerCase() as Lowercase<HttpMethod>;
         const middlewares = [...(route.middlewares || [])];
 
-        (this.router as any)[method](fullPath, ...middlewares, 
+        (this.router as any)[method](
+            fullPath,
+            ...middlewares,
             (req: Request, res: Response, next: NextFunction) => {
                 return route.handler ? route.handler(req, res, next) : undefined;
             }

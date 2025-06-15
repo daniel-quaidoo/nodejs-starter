@@ -11,4 +11,4 @@ export type AwsLambdaRouterRoute = {
     path: string;
     method: string;
     action: LambdaHandler;
-}
+};

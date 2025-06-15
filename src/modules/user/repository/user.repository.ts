@@ -11,7 +11,7 @@ import { BaseDAO } from '../../../core/common/dao/base.dao';
 import { IUserRepository } from '../interfaces/user.interface';
 
 // decorator
-import { Component, COMPONENT_TYPE } from "../../../core/common/di/component.decorator";
+import { Component, COMPONENT_TYPE } from '../../../core/common/di/component.decorator';
 
 @Component({ type: COMPONENT_TYPE.REPOSITORY })
 export class UserRepository extends BaseDAO<User> implements IUserRepository {
@@ -26,12 +26,13 @@ export class UserRepository extends BaseDAO<User> implements IUserRepository {
      * @returns The user with the given email, or null if not found
      */
     async findByEmail(email: string): Promise<User | null> {
-        return this.repository.findOne({ 
-            where: { 
+        const user = await this.repository.findOne({
+            where: {
                 email,
-                deletedAt: IsNull()
-            } as FindOptionsWhere<User>
+                deletedAt: IsNull(),
+            } as FindOptionsWhere<User>,
         });
+        return user;
     }
 
     /**
@@ -39,12 +40,13 @@ export class UserRepository extends BaseDAO<User> implements IUserRepository {
      * @returns An array of active users
      */
     async findActiveUsers(): Promise<User[]> {
-        return this.repository.find({ 
-            where: { 
+        const users = await this.repository.find({
+            where: {
                 isActive: true,
-                deletedAt: IsNull()
-            } as FindOptionsWhere<User>
+                deletedAt: IsNull(),
+            } as FindOptionsWhere<User>,
         });
+        return users;
     }
 
     /**
@@ -54,11 +56,11 @@ export class UserRepository extends BaseDAO<User> implements IUserRepository {
      * @returns true if the email is taken, false otherwise
      */
     async isEmailTaken(email: string, excludeId?: string): Promise<boolean> {
-        const query: FindOptionsWhere<User> = { 
+        const query: FindOptionsWhere<User> = {
             email,
-            deletedAt: IsNull()
+            deletedAt: IsNull(),
         };
-        
+
         if (excludeId) {
             query.id = Not(excludeId) as any;
         }

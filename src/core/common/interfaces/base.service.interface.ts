@@ -30,10 +30,7 @@ export interface IBaseService<T extends BaseModel> {
     /**
      * Update an entity by id or conditions
      */
-    update(
-        id: string | number | FindOptionsWhere<T>,
-        entity: Partial<T>
-    ): Promise<T | null>;
+    update(id: string | number | FindOptionsWhere<T>, entity: Partial<T>): Promise<T | null>;
 
     /**
      * Delete an entity by id or conditions (soft delete)

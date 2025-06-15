@@ -8,7 +8,17 @@ const mongodb_config_1 = require("../config/mongodb.config");
 const postgres_config_1 = require("../config/postgres.config");
 // interface
 const database_interface_1 = require("../interfaces/database.interface");
+/**
+ * Database factory class
+ * @class
+ * @implements IDatabaseConfig
+ */
 class DatabaseFactory {
+    /**
+     * Creates a database configuration instance
+     * @param type The type of database to create
+     * @returns The database configuration instance
+     */
     static createDatabaseConfig(type = database_interface_1.DatabaseType.POSTGRES) {
         switch (type) {
             case database_interface_1.DatabaseType.POSTGRES:

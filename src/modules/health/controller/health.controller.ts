@@ -17,8 +17,8 @@ export class HealthController {
      * @param res The response object
      * @returns The health status of the system
      */
-    @Get('/status') 
-    public async getHealthStatus(_req: Request, res: Response) {
+    @Get('/status')
+    public async getHealthStatus(_req: Request, res: Response): Promise<void> {
         try {
             const status = await this.healthService.getHealthStatus();
             res.status(200).json(status);
@@ -35,10 +35,9 @@ export class HealthController {
      * @returns The health status of the system
      */
     @Get('/check')
-    public async checkHealth(_req: Request, res: Response, next: NextFunction) {
+    public async checkHealth(_req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const healthStatus = await this.getHealthStatus(_req, res);
-            res.status(200).json(healthStatus);
+            await this.getHealthStatus(_req, res);
         } catch (error) {
             next(error);
         }

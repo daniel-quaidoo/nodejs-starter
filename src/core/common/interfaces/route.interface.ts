@@ -1,5 +1,5 @@
 import { Token } from 'typedi';
-import { NextFunction, RequestHandler, Router } from 'express';
+import { RequestHandler, Router } from 'express';
 
 // types
 import { LambdaHandler } from '../types/route.types';
@@ -53,7 +53,16 @@ export interface IModuleRouter {
 /**
  * Route definition interface
  */
-export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS' | 'CONNECT' | 'TRACE';
+export type HttpMethod =
+    | 'GET'
+    | 'POST'
+    | 'PUT'
+    | 'DELETE'
+    | 'PATCH'
+    | 'HEAD'
+    | 'OPTIONS'
+    | 'CONNECT'
+    | 'TRACE';
 
 export interface RouteDefinition {
     method: HttpMethod | string;

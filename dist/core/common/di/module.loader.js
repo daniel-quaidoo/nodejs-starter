@@ -18,17 +18,25 @@ const module_decorator_1 = require("./module.decorator");
 const component_decorator_1 = require("./component.decorator");
 const component_decorator_2 = require("./component.decorator");
 // router registry
-const router_registry_1 = require("../router/router.registry");
 const controller_router_1 = require("./controller.router");
+const router_registry_1 = require("../router/router.registry");
 let ModuleLoader = class ModuleLoader {
     constructor(dataSource) {
         this.dataSource = dataSource;
     }
+    /**
+     * Loads modules
+     * @param modules The modules to load
+     */
     async loadModules(modules) {
         for (const module of modules) {
             await this.registerModule(module);
         }
     }
+    /**
+     * Registers a module
+     * @param Module The module to register
+     */
     async registerModule(Module) {
         const metadata = (0, module_decorator_1.getModuleMetadata)(Module);
         if (!metadata)
@@ -39,6 +47,11 @@ let ModuleLoader = class ModuleLoader {
         await this.registerComponents(metadata.controllers || [], component_decorator_1.COMPONENT_TYPE.CONTROLLER);
         await this.registerComponents(metadata.routers || [], component_decorator_1.COMPONENT_TYPE.ROUTER);
     }
+    /**
+     * Registers components
+     * @param components The components to register
+     * @param type The type of the components
+     */
     async registerComponents(components, type) {
         for (const Component of components) {
             const metadata = (0, component_decorator_2.getComponentMetadata)(Component) || { type };
@@ -60,15 +73,27 @@ let ModuleLoader = class ModuleLoader {
             }
         }
     }
+    /**
+     * Registers a repository
+     * @param Repository The repository to register
+     */
     async registerRepository(Repository) {
         const instance = new Repository(this.dataSource);
         typedi_2.Container.set(Repository, instance);
     }
+    /**
+     * Registers a service
+     * @param Service The service to register
+     */
     registerService(Service) {
         const deps = this.getDependencies(Service);
         const instance = new Service(...deps);
         typedi_2.Container.set(Service, instance);
     }
+    /**
+     * Registers a controller
+     * @param Controller The controller to register
+     */
     registerController(Controller) {
         try {
             // Get controller dependencies and create instance
@@ -89,12 +114,21 @@ let ModuleLoader = class ModuleLoader {
             throw error;
         }
     }
+    /**
+     * Registers a router
+     * @param Router The router to register
+     */
     registerRouter(Router) {
         const deps = this.getDependencies(Router);
         const instance = new Router(...deps);
         typedi_2.Container.set(Router.Token, instance);
         router_registry_1.routerRegistry.registerRouter(Router.Token, () => instance);
     }
+    /**
+     * Gets the dependencies for a target
+     * @param Target The target to get dependencies for
+     * @returns The dependencies for the target
+     */
     getDependencies(Target) {
         const paramTypes = Reflect.getMetadata('design:paramtypes', Target) || [];
         return paramTypes.map((param) => {

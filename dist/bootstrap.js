@@ -62,11 +62,13 @@ const request_logger_middleware_1 = require("./core/logging/request-logger.middl
 const passport_1 = require("./core/auth/passport");
 // utils
 const utils_1 = require("./shared/utils");
-// For AWS Lambda
 let app;
 let isWarm = false;
 let dataSource;
-// Initialize application services, database connections, etc.
+/**
+ * Initializes the application services, database connections, etc.
+ * @returns Promise<{ app: Express; dataSource: DataSource }> - Returns the Express app and DataSource
+ */
 const bootstrap = async () => {
     // Initialize configuration
     const configService = new configuration_1.ConfigService();
@@ -121,6 +123,12 @@ const bootstrap = async () => {
     }
 };
 exports.bootstrap = bootstrap;
+/**
+ * AWS Lambda handler function
+ * @param event API Gateway event object
+ * @param context AWS Lambda context object
+ * @returns Promise<APIGatewayProxyResult> - Returns the API Gateway proxy result
+ */
 const handler = async (event, context) => {
     // Cold start handling
     if (!isWarm) {

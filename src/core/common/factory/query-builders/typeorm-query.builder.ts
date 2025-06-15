@@ -12,9 +12,11 @@ interface QueryParams {
     [key: string]: any;
 }
 
-type WhereCondition<T> = {
-    [P in keyof T]?: FindOperator<any> | any;
-} | FindOperator<any>[];
+type WhereCondition<T> =
+    | {
+          [P in keyof T]?: FindOperator<any> | any;
+      }
+    | FindOperator<any>[];
 
 export class TypeORMQueryBuilder<T> implements IQueryBuilder<T> {
     /**
@@ -67,7 +69,7 @@ export class TypeORMQueryBuilder<T> implements IQueryBuilder<T> {
      */
     buildSearchCondition(field: string, search: string): Record<string, any> {
         return {
-            [field]: ILike(`%${search}%`)
+            [field]: ILike(`%${search}%`),
         };
     }
 }

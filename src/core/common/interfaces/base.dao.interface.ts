@@ -1,4 +1,11 @@
-import { DeleteResult, DeepPartial, FindManyOptions, FindOneOptions, FindOptionsWhere, UpdateResult } from 'typeorm';
+import {
+    DeleteResult,
+    DeepPartial,
+    FindManyOptions,
+    FindOneOptions,
+    FindOptionsWhere,
+    UpdateResult,
+} from 'typeorm';
 
 // model
 import { BaseModel } from '../entities/base.entity';
@@ -22,7 +29,9 @@ export interface IBaseDAO<T extends BaseModel> {
     /**
      * Find one entity by id or conditions
      */
-    findOne(idOrOptions: string | number | FindOneOptions<T> | FindOptionsWhere<T>): Promise<T | null>;
+    findOne(
+        idOrOptions: string | number | FindOneOptions<T> | FindOptionsWhere<T>
+    ): Promise<T | null>;
 
     /**
      * Update an entity by id or conditions

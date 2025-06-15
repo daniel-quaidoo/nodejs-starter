@@ -11,7 +11,7 @@ import { UserService } from '../../modules/user/service/user.service';
 
 // Initialize passport (since we don't have app.use in Lambda)
 export const initializePassport = () => {
-    return (req: Request, res: Response, next: NextFunction) => {
+    return (req: Request, res: Response, next: NextFunction): any => {
         passport.initialize()(req, res, next);
     };
 };
@@ -21,7 +21,7 @@ export const initializePassport = () => {
  * @param userService - User service for database operations
  * @returns Configured Passport instance
  */
-export const configurePassport = () => {
+export const configurePassport = (): any => {
     const userService = Container.get(UserService);
 
     // serialize user into the session

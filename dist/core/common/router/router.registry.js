@@ -12,9 +12,18 @@ let RouterRegistry = class RouterRegistry {
     constructor() {
         this.routers = new Map();
     }
+    /**
+     * Registers a router
+     * @param token The token to register the router with
+     * @param routerFactory The router factory
+     */
     registerRouter(token, routerFactory) {
         this.routers.set(token, routerFactory);
     }
+    /**
+     * Gets all routers
+     * @returns The routers
+     */
     getAllRouters() {
         return Array.from(this.routers.values()).map(factory => factory());
     }

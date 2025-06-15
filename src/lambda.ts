@@ -17,25 +17,17 @@ const configService = new ConfigService();
 const API_PREFIX = (configService.get('API_PREFIX') || '/api').replace(/\/+$/, '');
 
 // create routes
-const allRoutes = routerRegistry.getAllRouters().flatMap((moduleRouter) => {
-
+const allRoutes = routerRegistry.getAllRouters().flatMap(moduleRouter => {
     if (typeof moduleRouter.getRoutes === 'function') {
         return moduleRouter.getRoutes().map((route: RouteDefinition) => {
-            console.log("route", route)
-            const fullPath = route.path.startsWith('/')
-                ? route.path
-                : `/${route.path}`;
+            const fullPath = route.path.startsWith('/') ? route.path : `/${route.path}`;
 
             // Create a middleware chain that includes both route middlewares and the route handler
-            const handlerChain = [
-                ...(route.middlewares || []),
-                route.handler
-            ];
+            const handlerChain = [...(route.middlewares || []), route.handler];
 
             // Create a handler that chains all middlewares
-            const chainedHandler = (req: any, res: any, next: any) => {
-                
-                const executeHandler = async (index: number) => {
+            const chainedHandler = (req: any, res: any, next: any): any => {
+                const executeHandler = async (index: number): Promise<any> => {
                     try {
                         if (index >= handlerChain.length) return next();
                         const current = handlerChain[index];

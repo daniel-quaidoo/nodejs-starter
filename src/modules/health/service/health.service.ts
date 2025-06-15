@@ -29,12 +29,12 @@ export class HealthService {
         try {
             await this.dataSource.query('SELECT 1');
             const [seconds, nanoseconds] = process.hrtime(startTime);
-            const responseTime = Math.round((seconds * 1000) + (nanoseconds / 1000000));
+            const responseTime = Math.round(seconds * 1000 + nanoseconds / 1000000);
             return { status: true, responseTime };
         } catch (error) {
-            return { 
-                status: false, 
-                error: error instanceof Error ? error.message : 'Unknown database error'
+            return {
+                status: false,
+                error: error instanceof Error ? error.message : 'Unknown database error',
             };
         }
     }
@@ -43,7 +43,21 @@ export class HealthService {
      * Retrieves system information
      * @returns An object containing system information
      */
-    private getSystemInfo() {
+    private getSystemInfo(): {
+        id: string;
+        hostname: string;
+        platform: string;
+        arch: string;
+        uptime: number;
+        memory: {
+            total: number;
+            free: number;
+            used: number;
+            rss: number;
+        };
+        load: number[];
+        cpus: number;
+    } {
         return {
             id: this.nodeId,
             hostname: os.hostname(),
@@ -68,7 +82,7 @@ export class HealthService {
     async getHealthStatus(): Promise<HealthCheckResult> {
         const systemInfo = this.getSystemInfo();
         const databaseCheck = await this.checkDatabase();
-        
+
         const allServicesHealthy = databaseCheck.status;
         const status = allServicesHealthy ? 'healthy' : 'unhealthy';
 
@@ -86,7 +100,7 @@ export class HealthService {
                 database: {
                     status: databaseCheck.status ? 'connected' : 'disconnected',
                     responseTime: databaseCheck.responseTime,
-                    ...(databaseCheck.error ? { error: databaseCheck.error } : {})
+                    ...(databaseCheck.error ? { error: databaseCheck.error } : {}),
                 },
             },
             details: {

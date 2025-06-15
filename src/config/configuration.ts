@@ -12,7 +12,7 @@ export class ConfigService {
     constructor() {
         // load .env file
         dotenv.config({
-            path: path.resolve(process.cwd(), '.env')
+            path: path.resolve(process.cwd(), '.env'),
         });
 
         // validate configuration

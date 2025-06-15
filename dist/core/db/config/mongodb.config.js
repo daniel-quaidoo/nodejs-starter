@@ -4,6 +4,10 @@ exports.MongodbConfig = void 0;
 // config
 const base_database_config_1 = require("./base-database.config");
 class MongodbConfig extends base_database_config_1.BaseDatabaseConfig {
+    /**
+     * Retrieves the MongoDB connection configuration
+     * @returns The MongoDB connection configuration
+     */
     getConnectionConfig() {
         return {
             type: 'mongodb',

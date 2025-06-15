@@ -1,9 +1,7 @@
 import * as Joi from 'joi';
 
 export const configSchema = Joi.object({
-    NODE_ENV: Joi.string()
-        .valid('development', 'production', 'test')
-        .default('development'),
+    NODE_ENV: Joi.string().valid('development', 'production', 'test').default('development'),
 
     PORT: Joi.number().default(3000),
 
@@ -29,7 +27,7 @@ export const configSchema = Joi.object({
     // CORS
     CORS_ORIGIN: Joi.string().default('*'),
     CORS_METHODS: Joi.string().default('GET,HEAD,PUT,PATCH,POST,DELETE'),
-    CORS_CREDENTIALS: Joi.boolean().default(true)
+    CORS_CREDENTIALS: Joi.boolean().default(true),
 });
 
 export type ConfigSchema = {

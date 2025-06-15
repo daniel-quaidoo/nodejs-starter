@@ -9,8 +9,9 @@ import { AuthService } from '../../../modules/auth/service/auth.service';
  * @param options Options for the middleware
  * @returns The middleware function
  */
-export const authMiddleware = (options: { roles?: string[] } = {}) => {
-    return async (req: Request, res: Response, next: NextFunction) => {
+export const authMiddleware = (options: { roles?: string[] } = {}): any => {
+    // TODO: fix type
+    return (req: Request, res: Response, next: NextFunction) => {
         try {
             const authHeader = req.headers.authorization || req.headers.Authorization;
 
@@ -37,7 +38,7 @@ export const authMiddleware = (options: { roles?: string[] } = {}) => {
                 if (!hasRequiredRole) {
                     return res.status(403).json({
                         success: false,
-                        message: 'Insufficient permissions'
+                        message: 'Insufficient permissions',
                     });
                 }
             }

@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["node", "jest"],
+    "esModuleInterop": true,
+    "emitDecoratorMetadata": true
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/__tests__/*.ts",
+    "src/**/*.spec.ts",
+    "../misc/local.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}

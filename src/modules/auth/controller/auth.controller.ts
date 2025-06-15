@@ -25,7 +25,7 @@ import { BaseController } from '../../../core/common/controller/base.controller'
 
 // decorator
 import { UseMiddleware } from '../../../core/common/decorators/middleware.decorator';
-import { Controller, Get, Post } from "../../../core/common/decorators/route.decorator";
+import { Controller, Get, Post } from '../../../core/common/decorators/route.decorator';
 
 @Controller('/auth')
 export class AuthController extends BaseController<any> {
@@ -48,13 +48,17 @@ export class AuthController extends BaseController<any> {
      */
     @Post('/login')
     @UseMiddleware(LocalPassportGuard)
-    public async login(req: Request & { user: User }, res: Response, next: NextFunction): Promise<void> {
+    public async login(
+        req: Request & { user: User },
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
         try {
             const user = req.user as User;
             const token = this.authService.generateToken(user);
             const loginResponse = await this.authService.login({
                 email: user.email,
-                password: req.body.password as string
+                password: req.body.password as string,
             });
 
             res.status(200).json({
@@ -63,9 +67,9 @@ export class AuthController extends BaseController<any> {
                     ...loginResponse,
                     token,
                     token_type: 'Bearer',
-                    expires_in: 3600
+                    expires_in: 3600,
                 },
-                message: 'Login successful'
+                message: 'Login successful',
             });
         } catch (error) {
             next(error);
@@ -83,13 +87,13 @@ export class AuthController extends BaseController<any> {
     @Get('/profile')
     @UseMiddleware(authMiddleware({ roles: ['admin'] }))
     public getProfile(req: AuthenticatedRequest, res: Response, next: NextFunction): void {
-
-        this.authService.getProfile(req.user?.id as string)
+        this.authService
+            .getProfile(req.user?.id as string)
             .then(user => {
-                const { password, ...userWithoutPassword } = user;
+                const { password: _, ...userWithoutPassword } = user;
                 const response: ApiResponse = {
                     success: true,
-                    data: userWithoutPassword
+                    data: userWithoutPassword,
                 };
                 res.status(200).json(response);
             })
@@ -123,7 +127,7 @@ export class AuthController extends BaseController<any> {
 
             const response: ApiResponse = {
                 success: true,
-                message: 'Logout successful'
+                message: 'Logout successful',
             };
 
             res.status(200).json(response);

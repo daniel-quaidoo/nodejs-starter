@@ -215,7 +215,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UserController.prototype, "deleteUser", null);
 exports.UserController = UserController = __decorate([
-    (0, route_decorator_1.Controller)('/users'),
+    (0, route_decorator_1.Controller)('/user'),
     __param(0, (0, typedi_1.Inject)()),
     __param(1, (0, typedi_1.Inject)()),
     __metadata("design:paramtypes", [user_service_1.UserService, health_service_1.HealthService])

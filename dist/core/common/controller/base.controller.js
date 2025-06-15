@@ -147,7 +147,6 @@ let BaseController = class BaseController {
                     res.status(404).json(base_response_dto_1.BaseResponseDto.error('Resource not found'));
                 }
                 else {
-                    // Handle the case where res is NextFunction
                     const error = new Error('Resource not found');
                     error.status = 404;
                     res(error);
@@ -158,7 +157,6 @@ let BaseController = class BaseController {
                 res.status(200).json(base_response_dto_1.BaseResponseDto.success(null, undefined, 'Resource deleted successfully'));
             }
             else {
-                // If res is NextFunction, call it without arguments to proceed
                 res();
             }
         }
@@ -167,7 +165,6 @@ let BaseController = class BaseController {
                 next(error);
             }
             else if ('status' in res) {
-                // If next is not provided but res is a Response, send the error
                 res.status(500).json(base_response_dto_1.BaseResponseDto.error('Internal server error', error instanceof Error ? error.message : 'Unknown error'));
             }
             else {

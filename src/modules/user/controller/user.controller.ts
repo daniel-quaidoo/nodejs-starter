@@ -19,12 +19,20 @@ import { BaseController } from '../../../core/common/controller/base.controller'
 
 // decorator
 import { UseMiddleware } from '../../../core/common/decorators/middleware.decorator';
-import { Controller, Delete, Get, Post, Put } from "../../../core/common/decorators/route.decorator";
+import {
+    Controller,
+    Delete,
+    Get,
+    Post,
+    Put,
+} from '../../../core/common/decorators/route.decorator';
 
 @Controller('/user')
 export class UserController extends BaseController<User> {
-
-    constructor(@Inject() private userService: UserService, @Inject() private healthService: HealthService) {
+    constructor(
+        @Inject() private userService: UserService,
+        @Inject() private healthService: HealthService
+    ) {
         super(userService);
     }
 
@@ -56,11 +64,11 @@ export class UserController extends BaseController<User> {
             const result = await this.userService.findAndCount({
                 skip: (Number(page) - 1) * Number(limit),
                 take: Number(limit),
-                ...req.query
+                ...req.query,
             });
 
             const [users, count] = result;
-            
+
             const response: ApiResponse<User[]> = {
                 success: true,
                 data: users,
@@ -68,10 +76,10 @@ export class UserController extends BaseController<User> {
                     page: Number(page),
                     limit: Number(limit),
                     total: count,
-                    totalPages: Math.ceil(count / Number(limit))
-                }
+                    totalPages: Math.ceil(count / Number(limit)),
+                },
             };
-            
+
             res.status(200).json(response);
         } catch (error) {
             next(error);
@@ -96,7 +104,7 @@ export class UserController extends BaseController<User> {
             }
             const response: ApiResponse<User> = {
                 success: true,
-                data: user
+                data: user,
             };
             res.status(200).json(response);
         } catch (error) {
@@ -119,7 +127,7 @@ export class UserController extends BaseController<User> {
             const response: ApiResponse<User> = {
                 success: true,
                 data: user,
-                message: 'User created successfully'
+                message: 'User created successfully',
             };
             res.status(201).json(response);
         } catch (error) {
@@ -137,11 +145,10 @@ export class UserController extends BaseController<User> {
      */
     @Put('/:id')
     public async updateUser(req: Request, res: Response, next: NextFunction): Promise<void> {
-
         try {
             const { id } = req.params;
             const updateData = req.body;
-            
+
             // Validate that we have an ID and update data
             if (!id) {
                 throw new Error('ID is required for update');
@@ -150,7 +157,7 @@ export class UserController extends BaseController<User> {
             if (!updateData || Object.keys(updateData).length === 0) {
                 throw new Error('No update data provided');
             }
-            
+
             const user = await this.userService.updateUser(id, updateData);
 
             if (!user) {
@@ -160,7 +167,7 @@ export class UserController extends BaseController<User> {
             const response: ApiResponse<User> = {
                 success: true,
                 data: user,
-                message: 'User updated successfully'
+                message: 'User updated successfully',
             };
             res.status(200).json(response);
         } catch (error) {
@@ -178,12 +185,11 @@ export class UserController extends BaseController<User> {
      */
     @Delete('/:id')
     public async deleteUser(req: Request, res: Response, next: NextFunction): Promise<void> {
-
         try {
             await this.userService.delete(req.params.id);
             const response: ApiResponse<void> = {
                 success: true,
-                message: 'User deleted successfully'
+                message: 'User deleted successfully',
             };
             res.status(200).json(response);
         } catch (error) {

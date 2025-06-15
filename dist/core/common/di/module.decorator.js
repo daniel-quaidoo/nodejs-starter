@@ -5,6 +5,10 @@ exports.Module = Module;
 exports.getModuleMetadata = getModuleMetadata;
 require("reflect-metadata");
 exports.MODULE_METADATA_KEY = 'module:components';
+/**
+ * Decorator to define a module
+ * @param metadata Metadata for the module
+ */
 function Module(metadata) {
     return (target) => {
         // Show warning if routers are being used
@@ -23,6 +27,11 @@ function Module(metadata) {
         return target;
     };
 }
+/**
+ * Gets the module metadata
+ * @param target The target to get metadata for
+ * @returns The module metadata
+ */
 function getModuleMetadata(target) {
     return Reflect.getMetadata(exports.MODULE_METADATA_KEY, target);
 }

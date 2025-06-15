@@ -5,15 +5,23 @@ import { HttpMethod, RouteDefinition, RouteMetadata } from '../interfaces/route.
 
 // decorator
 import { MIDDLEWARE_METADATA_KEY } from './middleware.decorator';
-import { Component, COMPONENT_TYPE, CONTROLLER_METADATA_KEY, ROUTE_METADATA_KEY } from '../di/component.decorator';
+import {
+    Component,
+    COMPONENT_TYPE,
+    CONTROLLER_METADATA_KEY,
+    ROUTE_METADATA_KEY,
+} from '../di/component.decorator';
 
 /**
  * Decorator to define a controller
  * @param basePath Base path for the controller
  * @param options Optional options for the controller
  */
-export function Controller(basePath: string = '', options: { auth?: boolean | string[], roles?: string[], middlewares?: RequestHandler[] } = {}) {
-    return function (target: any) {
+export function Controller(
+    basePath: string = '',
+    options: { auth?: boolean | string[]; roles?: string[]; middlewares?: RequestHandler[] } = {}
+) {
+    return function (target: any): void {
         Component({ type: COMPONENT_TYPE.CONTROLLER })(target);
         Reflect.defineMetadata('basePath', basePath, target);
 
@@ -28,14 +36,17 @@ export function Controller(basePath: string = '', options: { auth?: boolean | st
         }
 
         // store the base path in metadata
-        Reflect.defineMetadata(CONTROLLER_METADATA_KEY, {
-            basePath, auth: {
-                required: !!options.auth || !!options.roles?.length,
-                roles: Array.isArray(options.auth)
-                    ? options.auth
-                    : (options.roles || [])
-            }
-        }, target);
+        Reflect.defineMetadata(
+            CONTROLLER_METADATA_KEY,
+            {
+                basePath,
+                auth: {
+                    required: !!options.auth || !!options.roles?.length,
+                    roles: Array.isArray(options.auth) ? options.auth : options.roles || [],
+                },
+            },
+            target
+        );
 
         // initialize routes array if it doesn't exist
         if (!Reflect.hasMetadata(ROUTE_METADATA_KEY, target)) {
@@ -52,13 +63,20 @@ export function Controller(basePath: string = '', options: { auth?: boolean | st
  */
 export function createMethodDecorator(
     method: HttpMethod,
-    path: string = '',
+    _path: string = '',
     options: { middlewares?: RequestHandler[] } = {}
 ): any {
-    return (path: string = '', ...middlewares: RequestHandler[]): MethodDecorator => {
+    return (
+        pathOrOptions: string | RequestHandler = '',
+        ...middlewares: RequestHandler[]
+    ): MethodDecorator => {
+        const path = typeof pathOrOptions === 'string' ? pathOrOptions : _path;
+        const actualMiddlewares =
+            typeof pathOrOptions === 'function' ? [pathOrOptions, ...middlewares] : middlewares;
         return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => {
             const controllerClass = target.constructor;
-            const routes: RouteDefinition[] = Reflect.getOwnMetadata(ROUTE_METADATA_KEY, controllerClass) || [];
+            const routes: RouteDefinition[] =
+                Reflect.getOwnMetadata(ROUTE_METADATA_KEY, controllerClass) || [];
 
             // Get middleware from @UseMiddleware decorator
             const methodMiddlewares = propertyKey
@@ -66,7 +84,8 @@ export function createMethodDecorator(
                 : [];
 
             // Get class-level middleware
-            const classMiddlewares = Reflect.getMetadata(MIDDLEWARE_METADATA_KEY, controllerClass) || [];
+            const classMiddlewares =
+                Reflect.getMetadata(MIDDLEWARE_METADATA_KEY, controllerClass) || [];
 
             const routeDef: RouteDefinition = {
                 method: method as HttpMethod,
@@ -74,17 +93,17 @@ export function createMethodDecorator(
                 handlerName: propertyKey as string,
                 handler: descriptor.value,
                 middlewares: [
-                    ...classMiddlewares,  // Class-level middleware first
+                    ...classMiddlewares, // Class-level middleware first
                     ...methodMiddlewares, // Then method-level middleware
                     ...(options.middlewares || []), // Then inline middleware
-                    ...middlewares, // Then any additional middleware
+                    ...actualMiddlewares, // Then any additional middleware
                 ],
             };
 
             routes.push(routeDef);
             Reflect.defineMetadata(ROUTE_METADATA_KEY, routes, controllerClass);
         };
-    }
+    };
 }
 
 /**
@@ -98,17 +117,22 @@ export function createControllerRouter(controller: any, basePath: string = ''): 
     const controllerClass = controller.constructor;
     const routes = getControllerRoutes(controller) || [];
 
-    console.log(`Creating router for ${controllerClass.name} with ${routes.length} routes`);
+    // Log route creation in development only
+    if (process.env.NODE_ENV === 'development') {
+        // eslint-disable-next-line no-console
+        console.log(`Creating router for ${controllerClass.name} with ${routes.length} routes`);
+    }
 
     // get class-level middlewares
     const classMiddlewares = Reflect.getMetadata(MIDDLEWARE_METADATA_KEY, controllerClass) || [];
 
     // bind all controller methods to maintain 'this' context
     Object.getOwnPropertyNames(Object.getPrototypeOf(controller))
-        .filter(prop =>
-            typeof controller[prop] === 'function' &&
-            prop !== 'constructor' &&
-            prop !== 'initializeRoutes'
+        .filter(
+            prop =>
+                typeof controller[prop] === 'function' &&
+                prop !== 'constructor' &&
+                prop !== 'initializeRoutes'
         )
         .forEach(method => {
             controller[method] = controller[method].bind(controller);
@@ -117,17 +141,14 @@ export function createControllerRouter(controller: any, basePath: string = ''): 
     routes.forEach(route => {
         const fullPath = `${basePath}${route.path ? `/${route.path}` : ''}`.replace(/\/+/g, '/');
         const methodName = route.handlerName?.replace('bound ', '') || '';
-        
+
         // combine class and method middlewares
-        const routeMiddlewares = [
-            ...(classMiddlewares || []),
-            ...(route.middlewares || [])
-        ];
+        const routeMiddlewares = [...(classMiddlewares || []), ...(route.middlewares || [])];
 
         // apply all middlewares to the route
         const routeHandlers = [
             ...routeMiddlewares,
-            async (req: Request, res: Response, next: NextFunction) => {
+            async (req: Request, res: Response, next: NextFunction): Promise<void> => {
                 try {
                     if (methodName) {
                         const method = controller[methodName];
@@ -138,10 +159,16 @@ export function createControllerRouter(controller: any, basePath: string = ''): 
                 } catch (error) {
                     next(error);
                 }
-            }
+            },
         ].filter(Boolean);
 
-        console.log(`Registering route: ${route.method.toUpperCase()} ${fullPath} -> ${methodName}`);
+        // Log route registration in development only
+        if (process.env.NODE_ENV === 'development') {
+            // eslint-disable-next-line no-console
+            console.log(
+                `Registering route: ${route.method.toUpperCase()} ${fullPath} -> ${methodName}`
+            );
+        }
 
         // register the route with the router
         (router as any)[route.method.toLowerCase()](fullPath, ...routeHandlers);
@@ -155,7 +182,8 @@ export function createControllerRouter(controller: any, basePath: string = ''): 
  * @param controller The controller to get metadata for
  * @returns The controller metadata
  */
-export function getControllerMetadata(controller: any) {
+export function getControllerMetadata(controller: any): any {
+    // TODO: Check return type
     return Reflect.getMetadata(CONTROLLER_METADATA_KEY, controller.constructor) || { basePath: '' };
 }
 
@@ -181,10 +209,11 @@ export function getRouteMetadata(target: any): RouteMetadata[] {
             path: Reflect.getMetadata('path', target.prototype, method) || '',
             method: Reflect.getMetadata('method', target.prototype, method) || '',
             handlerName: method,
-            middlewares: Reflect.getMetadata('middlewares', target.prototype, method) || []
+            middlewares: Reflect.getMetadata('middlewares', target.prototype, method) || [],
         }));
 }
 
+// HTTP method decorators
 export const Get = createMethodDecorator('GET');
 export const Put = createMethodDecorator('PUT');
 export const Post = createMethodDecorator('POST');

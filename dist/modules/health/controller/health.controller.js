@@ -19,6 +19,12 @@ let HealthController = class HealthController {
     constructor(healthService) {
         this.healthService = healthService;
     }
+    /**
+     * Retrieves the health status of the system
+     * @param _req The request object
+     * @param res The response object
+     * @returns The health status of the system
+     */
     async getHealthStatus(_req, res) {
         try {
             const status = await this.healthService.getHealthStatus();
@@ -28,6 +34,13 @@ let HealthController = class HealthController {
             res.status(500).json({ error: 'Failed to get health status' });
         }
     }
+    /**
+     * Checks the health of the system
+     * @param _req The request object
+     * @param res The response object
+     * @param next The next function
+     * @returns The health status of the system
+     */
     async checkHealth(_req, res, next) {
         try {
             const healthStatus = await this.getHealthStatus(_req, res);

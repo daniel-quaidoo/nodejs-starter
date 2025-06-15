@@ -1,6 +1,6 @@
 import { FindManyOptions, FindOneOptions, FindOptionsWhere, DeepPartial } from 'typeorm';
 
-// model    
+// model
 import { BaseModel } from '../entities/base.entity';
 
 // interface
@@ -20,7 +20,8 @@ export abstract class BaseService<T extends BaseModel> implements IBaseService<T
      * @returns The created entity
      */
     async create(entity: Partial<T>): Promise<T> {
-        return this.repository.create(entity as DeepPartial<T>);
+        const createdEntity = await this.repository.create(entity as DeepPartial<T>);
+        return createdEntity;
     }
 
     /**
@@ -39,7 +40,8 @@ export abstract class BaseService<T extends BaseModel> implements IBaseService<T
      * @returns The found entities
      */
     async findAndCount(options?: FindManyOptions<T>): Promise<[T[], number]> {
-        return this.repository.findAndCount(options);
+        const result = await this.repository.findAndCount(options);
+        return result;
     }
 
     /**
@@ -53,15 +55,17 @@ export abstract class BaseService<T extends BaseModel> implements IBaseService<T
         options?: FindOneOptions<T>
     ): Promise<T | null> {
         if (typeof idOrConditions === 'object') {
-            return this.repository.findOne({
+            const entity = await this.repository.findOne({
                 where: idOrConditions,
                 ...options,
             });
+            return entity;
         }
-        return this.repository.findOne({
+        const entity = await this.repository.findOne({
             where: { id: idOrConditions } as any,
             ...options,
         });
+        return entity;
     }
 
     /**
@@ -110,6 +114,7 @@ export abstract class BaseService<T extends BaseModel> implements IBaseService<T
      * @returns The count of entities
      */
     async count(options?: FindManyOptions<T>): Promise<number> {
-        return this.repository.count(options);
+        const count = await this.repository.count(options);
+        return count;
     }
 }

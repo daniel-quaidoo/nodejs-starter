@@ -22,6 +22,10 @@ let HealthService = class HealthService {
         this.dataSource = typedi_1.Container.get(typeorm_1.DataSource);
         this.nodeId = process.env.NODE_ID || (0, uuid_1.v4)();
     }
+    /**
+     * Checks the database connection
+     * @returns A promise that resolves to an object containing the status of the database connection
+     */
     async checkDatabase() {
         const startTime = process.hrtime();
         try {
@@ -37,6 +41,10 @@ let HealthService = class HealthService {
             };
         }
     }
+    /**
+     * Retrieves system information
+     * @returns An object containing system information
+     */
     getSystemInfo() {
         return {
             id: this.nodeId,
@@ -54,6 +62,10 @@ let HealthService = class HealthService {
             cpus: os_1.default.cpus().length,
         };
     }
+    /**
+     * Retrieves the health status of the system
+     * @returns An object containing the health status of the system
+     */
     async getHealthStatus() {
         const systemInfo = this.getSystemInfo();
         const databaseCheck = await this.checkDatabase();

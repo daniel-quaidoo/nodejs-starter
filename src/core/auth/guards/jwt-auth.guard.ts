@@ -10,11 +10,11 @@ import { AuthService } from '../../../modules/auth/service/auth.service';
  * @param res Response object
  * @param next Next function for error handling
  */
-export const JwtAuthGuard = async (req: any, res: Response, next: NextFunction) => {
+export const JwtAuthGuard = async (req: any, res: Response, next: NextFunction): Promise<void> => {
     try {
         const authHeader = req.headers.authorization || req.headers.Authorization;
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return res.status(401).json({ message: 'No token provided' });
+            await res.status(401).json({ message: 'No token provided' });
         }
 
         const token = authHeader.split(' ')[1];
@@ -22,13 +22,13 @@ export const JwtAuthGuard = async (req: any, res: Response, next: NextFunction) 
         const decoded = authService.verifyToken(token);
 
         if (!decoded) {
-            return res.status(401).json({ message: 'Invalid or expired token' });
+            await res.status(401).json({ message: 'Invalid or expired token' });
         }
 
         // add user to request
         req.user = decoded;
         next();
     } catch (error) {
-        return res.status(500).json({ message: 'Authentication failed' });
+        await res.status(500).json({ message: 'Authentication failed' });
     }
 };

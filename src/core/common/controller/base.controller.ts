@@ -10,7 +10,14 @@ import { BaseQueryDto } from '../dto/base-query.dto';
 import { BaseResponseDto } from '../dto/base-response.dto';
 
 // decorator
-import { Controller, Delete, Get, Post, Put, getRouteMetadata } from '../decorators/route.decorator';
+import {
+    Controller,
+    Delete,
+    Get,
+    Post,
+    Put,
+    getRouteMetadata,
+} from '../decorators/route.decorator';
 
 // interfaces
 import { IBaseService } from '../interfaces/base.service.interface';
@@ -22,12 +29,12 @@ export abstract class BaseController<T extends BaseModel> implements IBaseContro
     public router: Router;
     private basePath: string;
 
-    constructor(protected service: IBaseService<T>) { 
+    constructor(protected service: IBaseService<T>) {
         this.router = Router();
         this.basePath = this.constructor.name.replace(/Controller$/, '').toLowerCase();
     }
 
-     /**
+    /**
      * Create a new user
      * @param req Request object containing user data in body
      * @param res Response object
@@ -40,11 +47,7 @@ export abstract class BaseController<T extends BaseModel> implements IBaseContro
         try {
             const entity = await this.service.create(req.body);
             res.status(201).json(
-                BaseResponseDto.success(
-                    entity,
-                    undefined,
-                    'Resource created successfully'
-                )
+                BaseResponseDto.success(entity, undefined, 'Resource created successfully')
             );
         } catch (error) {
             next(error);
@@ -67,22 +70,22 @@ export abstract class BaseController<T extends BaseModel> implements IBaseContro
             // Transform and validate query parameters
             const queryDto = plainToInstance(BaseQueryDto, req.query);
             const errors = await validate(queryDto);
-            
+
             if (errors.length > 0) {
-                const errorMessages = errors.map(error => Object.values(error.constraints || {})).flat();
-                res.status(400).json(
-                    BaseResponseDto.error('Validation failed', errorMessages)
-                );
+                const errorMessages = errors
+                    .map(error => Object.values(error.constraints || {}))
+                    .flat();
+                res.status(400).json(BaseResponseDto.error('Validation failed', errorMessages));
                 return;
             }
-    
+
             // Convert DTO to TypeORM options
             const options = queryDto.toFindOptions();
-            
+
             // Get data from service
             let count = 0;
             let entities: any[] = [];
-            
+
             if (typeof this.service.findAndCount === 'function') {
                 [entities, count] = await (this.service as any).findAndCount(options);
             } else if (typeof this.service.findAll === 'function') {
@@ -91,18 +94,18 @@ export abstract class BaseController<T extends BaseModel> implements IBaseContro
             } else {
                 throw new Error('Service does not implement required methods');
             }
-            
+
             // Prepare pagination data
             const page = parseInt(queryDto.page || '1', 10);
             const limit = parseInt(queryDto.limit || '10', 10);
-            
+
             res.status(200).json(
                 BaseResponseDto.success(
                     entities,
-                    { 
-                        page, 
-                        limit, 
-                        total: count 
+                    {
+                        page,
+                        limit,
+                        total: count,
                     },
                     'Data retrieved successfully'
                 )
@@ -111,7 +114,6 @@ export abstract class BaseController<T extends BaseModel> implements IBaseContro
             next(error);
         }
     }
-
 
     /**
      * Get a single user by ID
@@ -126,17 +128,11 @@ export abstract class BaseController<T extends BaseModel> implements IBaseContro
         try {
             const entity = await (this.service as any).findOne(req.params.id);
             if (!entity) {
-                res.status(404).json(
-                    BaseResponseDto.error('Resource not found')
-                );
+                res.status(404).json(BaseResponseDto.error('Resource not found'));
                 return;
             }
             res.status(200).json(
-                BaseResponseDto.success(
-                    entity,
-                    undefined,
-                    'Resource retrieved successfully'
-                )
+                BaseResponseDto.success(entity, undefined, 'Resource retrieved successfully')
             );
         } catch (error) {
             next(error);
@@ -156,17 +152,11 @@ export abstract class BaseController<T extends BaseModel> implements IBaseContro
         try {
             const entity = await (this.service as any).update(req.params.id, req.body);
             if (!entity) {
-                res.status(404).json(
-                    BaseResponseDto.error('Resource not found')
-                );
+                res.status(404).json(BaseResponseDto.error('Resource not found'));
                 return;
             }
             res.status(200).json(
-                BaseResponseDto.success(
-                    entity,
-                    undefined,
-                    'Resource updated successfully'
-                )
+                BaseResponseDto.success(entity, undefined, 'Resource updated successfully')
             );
         } catch (error) {
             next(error);
@@ -187,9 +177,7 @@ export abstract class BaseController<T extends BaseModel> implements IBaseContro
             const success = await (this.service as any).delete(req.params.id);
             if (!success) {
                 if ('status' in res) {
-                    res.status(404).json(
-                        BaseResponseDto.error('Resource not found')
-                    );
+                    res.status(404).json(BaseResponseDto.error('Resource not found'));
                 } else {
                     const error = new Error('Resource not found');
                     (error as any).status = 404;
@@ -197,14 +185,10 @@ export abstract class BaseController<T extends BaseModel> implements IBaseContro
                 }
                 return;
             }
-            
+
             if ('status' in res) {
                 res.status(200).json(
-                    BaseResponseDto.success(
-                        null,
-                        undefined,
-                        'Resource deleted successfully'
-                    )
+                    BaseResponseDto.success(null, undefined, 'Resource deleted successfully')
                 );
             } else {
                 (res as NextFunction)();
@@ -213,12 +197,14 @@ export abstract class BaseController<T extends BaseModel> implements IBaseContro
             if (next) {
                 next(error);
             } else if ('status' in res) {
-                (res as Response).status(500).json(
-                    BaseResponseDto.error(
-                        'Internal server error',
-                        error instanceof Error ? error.message : 'Unknown error'
-                    )
-                );
+                (res as Response)
+                    .status(500)
+                    .json(
+                        BaseResponseDto.error(
+                            'Internal server error',
+                            error instanceof Error ? error.message : 'Unknown error'
+                        )
+                    );
             } else {
                 (res as NextFunction)(error);
             }
@@ -229,17 +215,17 @@ export abstract class BaseController<T extends BaseModel> implements IBaseContro
      * Get routes defined by decorators
      */
     protected getDecoratorRoutes(): RouteDefinition[] {
-        const controller = (this as any);
+        const controller = this as any;
         const controllerPath = Reflect.getMetadata('basePath', controller.constructor) || '';
         const routeMetadata = getRouteMetadata(controller.constructor) as RouteMetadata[];
 
         return routeMetadata.map(route => ({
             method: route.method as HttpMethod,
             path: `${controllerPath}${route.path ? `/${route.path}` : ''}`.replace(/\/+/g, '/'),
-            handler: (req: Request, res: Response, next: NextFunction) => 
+            handler: (req: Request, res: Response, next: NextFunction) =>
                 controller[route.handlerName](req, res, next),
             middlewares: route.middlewares,
-            absolutePath: true
+            absolutePath: true,
         }));
     }
 
@@ -249,9 +235,7 @@ export abstract class BaseController<T extends BaseModel> implements IBaseContro
     public getRoutes(): RouteDefinition[] {
         const decoratorRoutes = this.getDecoratorRoutes();
 
-        return [
-            ...decoratorRoutes
-        ];
+        return [...decoratorRoutes];
     }
 
     /**
@@ -261,19 +245,20 @@ export abstract class BaseController<T extends BaseModel> implements IBaseContro
         this.getRoutes().forEach(route => this.registerRoute(route));
     }
 
-    protected registerRoute(route: RouteDefinition) {
-        const fullPath = route.absolutePath 
+    protected registerRoute(route: RouteDefinition): void {
+        const fullPath = route.absolutePath
             ? route.path
             : `/${this.basePath}${route.path.startsWith('/') ? '' : '/'}${route.path}`;
-        
+
         const method = route.method.toLowerCase() as Lowercase<HttpMethod>;
         const middlewares = [...(route.middlewares || [])];
 
-        (this.router as any)[method](fullPath, ...middlewares, 
+        (this.router as any)[method](
+            fullPath,
+            ...middlewares,
             (req: Request, res: Response, next: NextFunction) => {
                 return route.handler ? route.handler(req, res, next) : undefined;
             }
         );
     }
-
 }

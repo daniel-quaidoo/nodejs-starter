@@ -19,7 +19,9 @@ export function Module(metadata: ModuleMetadata): ClassDecorator {
     return (target: any) => {
         // Show warning if routers are being used
         if (metadata.routers && metadata.routers.length > 0) {
-            console.warn('The "routers" property in @Module is deprecated. Use @Controller with route decorators instead.');
+            console.warn(
+                'The "routers" property in @Module is deprecated. Use @Controller with route decorators instead.'
+            );
         }
 
         const normalizedMetadata: ModuleMetadata = {
@@ -28,9 +30,9 @@ export function Module(metadata: ModuleMetadata): ClassDecorator {
             repositories: [],
             imports: [],
             exports: [],
-            ...metadata
+            ...metadata,
         };
-        
+
         Reflect.defineMetadata(MODULE_METADATA_KEY, normalizedMetadata, target);
         return target;
     };

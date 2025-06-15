@@ -4,23 +4,23 @@ import { DataSource } from 'typeorm';
 
 // Mock database connection for tests
 const mockDataSource = {
-  query: jest.fn(),
-  getRepository: jest.fn(),
-  initialize: jest.fn().mockResolvedValue(undefined),
-  destroy: jest.fn().mockResolvedValue(undefined),
+    query: jest.fn(),
+    getRepository: jest.fn(),
+    initialize: jest.fn().mockResolvedValue(undefined),
+    destroy: jest.fn().mockResolvedValue(undefined),
 } as unknown as DataSource;
 
 // Global test setup
 beforeAll(async () => {
-  Container.set('DATA_SOURCE', mockDataSource);
+    Container.set('DATA_SOURCE', mockDataSource);
 });
 
 afterEach(() => {
-  jest.clearAllMocks();
+    jest.clearAllMocks();
 });
 
 afterAll(async () => {
-  await Container.reset();
+    await Container.reset();
 });
 
 export { mockDataSource };

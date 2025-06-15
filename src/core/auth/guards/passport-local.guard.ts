@@ -5,8 +5,8 @@ import { Request, Response, NextFunction } from 'express';
  * Local authentication guard using Passport
  * Provides better error responses for local authentication
  */
-export const LocalPassportGuard = (req: Request, res: Response, next: NextFunction) => {
-    passport.authenticate('local', { session: false }, (err: any, user: any, info: any) => {
+export const LocalPassportGuard = (req: Request, res: Response, next: NextFunction): void => {
+    passport.authenticate('local', { session: false }, (err: any, user: any, info: any): any => {
         if (err) {
             return next(err);
         }
@@ -20,11 +20,13 @@ export const LocalPassportGuard = (req: Request, res: Response, next: NextFuncti
             // handle different types of authentication failures
             if (info?.message) {
                 message = info.message;
-                
+
                 // map specific error messages to error codes
-                if (message.toLowerCase().includes('password') || 
-                    message.toLowerCase().includes('email') || 
-                    message.toLowerCase().includes('credentials')) {
+                if (
+                    message.toLowerCase().includes('password') ||
+                    message.toLowerCase().includes('email') ||
+                    message.toLowerCase().includes('credentials')
+                ) {
                     code = 'INVALID_CREDENTIALS';
                 } else if (message.toLowerCase().includes('missing')) {
                     code = 'MISSING_CREDENTIALS';
@@ -38,7 +40,7 @@ export const LocalPassportGuard = (req: Request, res: Response, next: NextFuncti
                 success: false,
                 message,
                 code,
-                ...(process.env.NODE_ENV === 'development' && info ? { details: info } : {})
+                ...(process.env.NODE_ENV === 'development' && info ? { details: info } : {}),
             });
         }
 
@@ -48,12 +50,13 @@ export const LocalPassportGuard = (req: Request, res: Response, next: NextFuncti
 };
 
 export class LocalAuthGuard {
-    public canActivate(context: any): boolean | Promise<boolean> | import('rxjs').Observable<boolean> {
+    public canActivate(
+        context: any
+    ): boolean | Promise<boolean> | import('rxjs').Observable<boolean> {
         const request = context.switchToHttp().getRequest();
         const response = context.switchToHttp().getResponse();
-        const next = context.getNext();
-        
-        return new Promise((resolve) => {
+
+        return new Promise(resolve => {
             LocalPassportGuard(request, response, (err: any) => {
                 if (err) {
                     resolve(false);

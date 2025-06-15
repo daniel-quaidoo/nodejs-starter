@@ -23,6 +23,11 @@ let UserRepository = class UserRepository extends base_dao_1.BaseDAO {
         const dataSource = typedi_1.Container.get(typeorm_1.DataSource);
         super(dataSource, user_entity_1.User);
     }
+    /**
+     * Finds a user by email
+     * @param email The email of the user to find
+     * @returns The user with the given email, or null if not found
+     */
     async findByEmail(email) {
         return this.repository.findOne({
             where: {
@@ -31,6 +36,10 @@ let UserRepository = class UserRepository extends base_dao_1.BaseDAO {
             }
         });
     }
+    /**
+     * Finds all active users
+     * @returns An array of active users
+     */
     async findActiveUsers() {
         return this.repository.find({
             where: {
@@ -39,6 +48,12 @@ let UserRepository = class UserRepository extends base_dao_1.BaseDAO {
             }
         });
     }
+    /**
+     * Checks if an email is taken
+     * @param email The email to check
+     * @param excludeId Optional ID to exclude from the check
+     * @returns true if the email is taken, false otherwise
+     */
     async isEmailTaken(email, excludeId) {
         const query = {
             email,

@@ -4,6 +4,10 @@ exports.SqliteConfig = void 0;
 // config
 const base_database_config_1 = require("./base-database.config");
 class SqliteConfig extends base_database_config_1.BaseDatabaseConfig {
+    /**
+     * Retrieves the SQLite connection configuration
+     * @returns The SQLite connection configuration
+     */
     getConnectionConfig() {
         return {
             type: 'better-sqlite3',

@@ -10,7 +10,7 @@ const typedi_1 = __importDefault(require("typedi"));
 const logger_service_1 = require("../core/logging/logger.service");
 const configuration_1 = require("../config/configuration");
 const configService = new configuration_1.ConfigService();
-const IS_DEV = configService.get('NODE_ENV') === 'development';
+const IS_DEV = configService.isDevelopment();
 /**
  * Normalizes a path by ensuring it starts with a forward slash
  * @param path The path to normalize

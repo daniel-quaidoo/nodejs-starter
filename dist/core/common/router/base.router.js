@@ -12,6 +12,10 @@ class BaseRouter {
         this.basePath = this.constructor.name.replace(/Router$/, '').toLowerCase();
         this.initializeRoutes();
     }
+    /**
+     * Gets the router
+     * @returns The router
+     */
     getRouter() {
         return this.router;
     }
@@ -124,6 +128,10 @@ class BaseRouter {
     initializeRoutes() {
         this.getRoutes().forEach(route => this.registerRoute(route));
     }
+    /**
+     * Register a single route
+     * @param route The route to register
+     */
     registerRoute(route) {
         const fullPath = route.absolutePath
             ? route.path

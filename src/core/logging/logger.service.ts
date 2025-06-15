@@ -14,24 +14,22 @@ export class LoggerService {
 
         this.logger = winston.createLogger({
             level: process.env.LOG_LEVEL || 'info',
-            format: combine(
-                timestamp(),
-                json()
-            ),
-            defaultMeta: { 
+            format: combine(timestamp(), json()),
+            defaultMeta: {
                 service: process.env.SERVICE_NAME || 'nodejs-starter',
-                environment: process.env.NODE_ENV || 'development'
+                environment: process.env.NODE_ENV || 'development',
             },
             transports: [
                 new winston.transports.Console({
-                    format: process.env.NODE_ENV === 'development' 
-                        ? winston.format.combine(
-                            winston.format.colorize(),
-                            winston.format.simple()
-                        )
-                        : winston.format.json()
-                })
-            ]
+                    format:
+                        process.env.NODE_ENV === 'development'
+                            ? winston.format.combine(
+                                  winston.format.colorize(),
+                                  winston.format.simple()
+                              )
+                            : winston.format.json(),
+                }),
+            ],
         });
     }
 
@@ -40,7 +38,7 @@ export class LoggerService {
      * @param message The message to log
      * @param meta Optional metadata to include in the log
      */
-    info(message: string, meta?: Record<string, any>) {
+    info(message: string, meta?: Record<string, any>): void {
         this.logger.info(message, meta);
     }
 
@@ -49,7 +47,7 @@ export class LoggerService {
      * @param message The message to log
      * @param meta Optional metadata to include in the log
      */
-    error(message: string, meta?: Record<string, any>) {
+    error(message: string, meta?: Record<string, any>): void {
         this.logger.error(message, meta);
     }
 
@@ -58,7 +56,7 @@ export class LoggerService {
      * @param message The message to log
      * @param meta Optional metadata to include in the log
      */
-    warn(message: string, meta?: Record<string, any>) {
+    warn(message: string, meta?: Record<string, any>): void {
         this.logger.warn(message, meta);
     }
 
@@ -67,7 +65,7 @@ export class LoggerService {
      * @param message The message to log
      * @param meta Optional metadata to include in the log
      */
-    debug(message: string, meta?: Record<string, any>) {
+    debug(message: string, meta?: Record<string, any>): void {
         if (process.env.NODE_ENV !== 'production') {
             this.logger.debug(message, meta);
         }

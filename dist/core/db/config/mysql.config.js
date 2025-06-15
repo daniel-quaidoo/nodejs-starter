@@ -4,6 +4,10 @@ exports.MySqlConfig = void 0;
 // config
 const base_database_config_1 = require("./base-database.config");
 class MySqlConfig extends base_database_config_1.BaseDatabaseConfig {
+    /**
+     * Retrieves the MySQL connection configuration
+     * @returns The MySQL connection configuration
+     */
     getConnectionConfig() {
         return {
             type: 'mysql',

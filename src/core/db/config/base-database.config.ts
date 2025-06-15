@@ -7,7 +7,7 @@ import { IDatabaseConfig } from '../interfaces/database.interface';
  * Base database configuration class
  * @abstract
  * @implements IDatabaseConfig
- */ 
+ */
 export abstract class BaseDatabaseConfig implements IDatabaseConfig {
     protected dataSource: DataSource | null = null;
     protected abstract getConnectionConfig(): DataSourceOptions;
@@ -17,7 +17,8 @@ export abstract class BaseDatabaseConfig implements IDatabaseConfig {
      * @returns The database configuration
      */
     async getConfig(): Promise<DataSourceOptions> {
-        return this.getConnectionConfig();
+        const config = await Promise.resolve().then(() => this.getConnectionConfig());
+        return config;
     }
 
     /**
