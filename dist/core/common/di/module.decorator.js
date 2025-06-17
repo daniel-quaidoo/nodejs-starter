@@ -21,7 +21,7 @@ function Module(metadata) {
             repositories: [],
             imports: [],
             exports: [],
-            ...metadata
+            ...metadata,
         };
         Reflect.defineMetadata(exports.MODULE_METADATA_KEY, normalizedMetadata, target);
         return target;

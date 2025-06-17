@@ -10,13 +10,14 @@ const typedi_1 = __importDefault(require("typedi"));
 const logger_service_1 = require("../core/logging/logger.service");
 const configuration_1 = require("../config/configuration");
 const configService = new configuration_1.ConfigService();
+const logger = typedi_1.default.get(logger_service_1.LoggerService);
 const IS_DEV = configService.isDevelopment();
 /**
  * Normalizes a path by ensuring it starts with a forward slash
  * @param path The path to normalize
  * @returns The normalized path
  */
-const normalizePath = (path) => path.startsWith('/') ? path : `/${path}`;
+const normalizePath = (path) => (path.startsWith('/') ? path : `/${path}`);
 exports.normalizePath = normalizePath;
 /**
  * Creates an error response object
@@ -28,12 +29,10 @@ exports.normalizePath = normalizePath;
  */
 const createErrorResponse = (statusCode, message, reqOrEvent, error) => {
     const isExpressRequest = 'url' in reqOrEvent && 'method' in reqOrEvent;
-    const path = isExpressRequest
-        ? reqOrEvent.url
-        : (reqOrEvent?.path || '');
+    const path = isExpressRequest ? reqOrEvent.url : reqOrEvent?.path || '';
     const method = isExpressRequest
         ? reqOrEvent.method
-        : (reqOrEvent?.httpMethod || reqOrEvent?.method || '');
+        : reqOrEvent?.httpMethod || reqOrEvent?.method || '';
     const errorData = {
         statusCode,
         timestamp: new Date().toISOString(),
@@ -43,7 +42,7 @@ const createErrorResponse = (statusCode, message, reqOrEvent, error) => {
     const response = {
         success: false,
         data: errorData,
-        error: message
+        error: message,
     };
     if (error) {
         // Preserve the error name if it exists
@@ -75,13 +74,23 @@ const createErrorResponse = (statusCode, message, reqOrEvent, error) => {
                     response.details = body.details;
                 }
             }
-            catch (e) {
+            catch {
                 console.error('Failed to parse error body:', error.body);
             }
         }
         if (error && typeof error === 'object') {
             Object.entries(error).forEach(([key, value]) => {
-                if (!['message', 'statusCode', 'status', 'stack', 'response', 'name', 'timestamp', 'path', 'method'].includes(key)) {
+                if (![
+                    'message',
+                    'statusCode',
+                    'status',
+                    'stack',
+                    'response',
+                    'name',
+                    'timestamp',
+                    'path',
+                    'method',
+                ].includes(key)) {
                     response[key] = value;
                 }
             });
@@ -129,7 +138,7 @@ const wrapHandler = (handler) => {
                         try {
                             error = JSON.parse(result.body);
                         }
-                        catch (e) {
+                        catch {
                             error = { message: result.body };
                         }
                     }
@@ -151,9 +160,9 @@ const wrapHandler = (handler) => {
                         'Content-Type': 'application/json',
                         'Access-Control-Allow-Origin': '*',
                         'Access-Control-Allow-Credentials': true,
-                        ...(result.headers || {})
+                        ...(result.headers || {}),
                     },
-                    body: typeof result.body === 'string' ? result.body : JSON.stringify(result.body)
+                    body: typeof result.body === 'string' ? result.body : JSON.stringify(result.body),
                 };
             }
             // Convert ApiResponse to Lambda response
@@ -165,7 +174,7 @@ const wrapHandler = (handler) => {
                     'Access-Control-Allow-Origin': '*',
                     'Access-Control-Allow-Credentials': true,
                 },
-                body: JSON.stringify(successResponse)
+                body: JSON.stringify(successResponse),
             };
         }
         catch (error) {
@@ -181,8 +190,8 @@ const wrapHandler = (handler) => {
                         message = body.error;
                     }
                 }
-                catch (e) {
-                    // If we can't parse the body, use it as is
+                catch {
+                    console.error('Failed to parse error body:', error.body);
                     message = error.body;
                 }
             }
@@ -192,7 +201,7 @@ const wrapHandler = (handler) => {
                 data: errorResponse.data,
                 error: errorResponse.error,
                 ...(errorResponse.details && { details: errorResponse.details }),
-                ...(errorResponse.name && { name: errorResponse.name })
+                ...(errorResponse.name && { name: errorResponse.name }),
             };
             return {
                 statusCode,
@@ -201,7 +210,7 @@ const wrapHandler = (handler) => {
                     'Access-Control-Allow-Origin': '*',
                     'Access-Control-Allow-Credentials': true,
                 },
-                body: JSON.stringify(responseBody)
+                body: JSON.stringify(responseBody),
             };
         }
     };
@@ -213,48 +222,53 @@ exports.wrapHandler = wrapHandler;
  * @returns A Lambda-compatible handler function
  */
 const createLambdaHandler = (expressRouter) => {
-    return async (event, context) => {
-        return new Promise((resolve) => {
-            // Extract parameters from the event
+    return (event, context) => {
+        return new Promise(resolve => {
             const pathParams = event.paths || {};
             const path = event.path;
             const routePath = event.routePath || '';
-            // Log the incoming request for debugging
-            console.log('Incoming request:', {
-                path,
-                routePath,
-                pathParams,
-                httpMethod: event.httpMethod
-            });
+            // use logger
+            if (process.env.NODE_ENV !== 'production') {
+                logger.info('Incoming request:', {
+                    path,
+                    routePath,
+                    pathParams,
+                    httpMethod: event.httpMethod,
+                });
+            }
             // Convert Lambda event to Express-like request
             const req = {
                 method: event.httpMethod,
                 path: event.path,
                 query: event.queryStringParameters || {},
                 headers: event.headers || {},
-                body: event.body ? (typeof event.body === 'string' ? JSON.parse(event.body) : event.body) : {},
+                body: event.body
+                    ? typeof event.body === 'string'
+                        ? JSON.parse(event.body)
+                        : event.body
+                    : {},
                 params: pathParams,
                 url: path,
                 originalUrl: path,
                 // Add raw event and context for advanced use cases
                 lambdaEvent: event,
-                lambdaContext: context
+                lambdaContext: context,
             };
             // Create response object
             const res = {
                 statusCode: 200,
                 headers: {},
                 body: '',
-                setHeader: function (key, value) {
+                setHeader(key, value) {
                     this.headers = this.headers || {};
                     this.headers[key] = value;
                     return this;
                 },
-                status: function (code) {
+                status(code) {
                     this.statusCode = code;
                     return this;
                 },
-                json: function (data) {
+                json(data) {
                     this.body = JSON.stringify(data);
                     this.setHeader('Content-Type', 'application/json');
                     let responseData = data;
@@ -265,11 +279,11 @@ const createLambdaHandler = (expressRouter) => {
                                 statusCode: this.statusCode,
                                 timestamp: new Date().toISOString(),
                                 path: event.path,
-                                method: event.httpMethod
+                                method: event.httpMethod,
                             },
                             error: data?.message || data?.error || 'An error occurred',
                             ...(data?.name && { name: data.name }),
-                            ...(IS_DEV && data?.stack && { details: data.stack })
+                            ...(IS_DEV && data?.stack && { details: data.stack }),
                         };
                         responseData = errorData;
                     }
@@ -277,18 +291,18 @@ const createLambdaHandler = (expressRouter) => {
                         statusCode: this.statusCode,
                         headers: this.headers,
                         body: JSON.stringify(responseData),
-                        isBase64Encoded: false
+                        isBase64Encoded: false,
                     });
                 },
-                send: function (data) {
+                send(data) {
                     this.body = data;
                     resolve({
                         statusCode: this.statusCode,
                         headers: this.headers,
                         body: this.body,
-                        isBase64Encoded: false
+                        isBase64Encoded: false,
                     });
-                }
+                },
             };
             // Call the Express router
             expressRouter(req, res, (error) => {
@@ -297,7 +311,7 @@ const createLambdaHandler = (expressRouter) => {
                         statusCode: error.statusCode || 500,
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ error: error.message || 'Internal Server Error' }),
-                        isBase64Encoded: false
+                        isBase64Encoded: false,
                     });
                 }
                 else if (!res.headersSent) {
@@ -365,14 +379,14 @@ exports.createLambdaEvent = createLambdaEvent;
 const registerAndLogRoutes = (app, registeredRouters, apiPrefix) => {
     registeredRouters.forEach(router => {
         const routerName = router.controllerName || router.constructor.name;
-        console.log(`\n${routerName} Routes:`);
+        const logger = typedi_1.default.get(logger_service_1.LoggerService);
         // Register the router with Express
         app.use(apiPrefix, router.router);
         // Log the routes from the router's getRoutes() method if it exists
         if (typeof router.getRoutes === 'function') {
             const routes = router.getRoutes();
             routes.forEach((route) => {
-                console.log(`[${route.method}] ${apiPrefix}${route.path}`);
+                logger.info(`${routerName} [${route.method}] ${apiPrefix}${route.path}`);
             });
         }
         // Fallback to stack inspection if getRoutes() doesn't exist
@@ -380,7 +394,7 @@ const registerAndLogRoutes = (app, registeredRouters, apiPrefix) => {
             router.router.stack.forEach((layer) => {
                 if (layer.route && layer.route.path) {
                     const method = Object.keys(layer.route.methods)[0].toUpperCase();
-                    console.log(`[${method}] ${apiPrefix}${layer.route.path}`);
+                    logger.info(`[${method}] ${apiPrefix}${layer.route.path}`);
                 }
             });
         }
@@ -398,15 +412,24 @@ const setupGlobalErrorHandler = (app) => {
             error: err.message,
             stack: err.stack,
             url: req.originalUrl,
-            method: req.method
-        });
-        res.status(err.statusCode || 500).json((0, exports.createErrorResponse)(500, err.message, req, {
-            ...err,
-            error: err.message,
-            stack: err.stack,
             method: req.method,
-            details: err.stack
-        }));
+        });
+        // check if headers sent
+        if (res.headersSent) {
+            return next(err);
+        }
+        // Check if we have a valid response object
+        if (res && typeof res.status === 'function') {
+            return res.status(err.statusCode || 500).json((0, exports.createErrorResponse)(500, err.message, req, {
+                error: err.message,
+                ...err,
+                stack: err.stack,
+                method: req.method,
+                details: err.stack,
+            }));
+        }
+        logger.error('Invalid response object in error handler');
+        next(err);
     });
 };
 exports.setupGlobalErrorHandler = setupGlobalErrorHandler;

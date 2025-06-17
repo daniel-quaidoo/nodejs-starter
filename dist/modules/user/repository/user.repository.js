@@ -29,24 +29,26 @@ let UserRepository = class UserRepository extends base_dao_1.BaseDAO {
      * @returns The user with the given email, or null if not found
      */
     async findByEmail(email) {
-        return this.repository.findOne({
+        const user = await this.repository.findOne({
             where: {
                 email,
-                deletedAt: (0, typeorm_1.IsNull)()
-            }
+                deletedAt: (0, typeorm_1.IsNull)(),
+            },
         });
+        return user;
     }
     /**
      * Finds all active users
      * @returns An array of active users
      */
     async findActiveUsers() {
-        return this.repository.find({
+        const users = await this.repository.find({
             where: {
                 isActive: true,
-                deletedAt: (0, typeorm_1.IsNull)()
-            }
+                deletedAt: (0, typeorm_1.IsNull)(),
+            },
         });
+        return users;
     }
     /**
      * Checks if an email is taken
@@ -57,7 +59,7 @@ let UserRepository = class UserRepository extends base_dao_1.BaseDAO {
     async isEmailTaken(email, excludeId) {
         const query = {
             email,
-            deletedAt: (0, typeorm_1.IsNull)()
+            deletedAt: (0, typeorm_1.IsNull)(),
         };
         if (excludeId) {
             query.id = (0, typeorm_1.Not)(excludeId);

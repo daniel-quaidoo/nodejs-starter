@@ -34,6 +34,22 @@ export abstract class BaseController<T extends BaseModel> implements IBaseContro
         this.basePath = this.constructor.name.replace(/Controller$/, '').toLowerCase();
     }
 
+    protected async handleRequest(
+        handler: (req: Request, res: Response, next: NextFunction) => Promise<any>,
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<any> {
+        try {
+            const result = await handler(req, res, next);
+            if (!res.headersSent && result !== undefined) {
+                res.json(result);
+            }
+        } catch (error) {
+            next(error);
+        }
+    }
+
     /**
      * Create a new user
      * @param req Request object containing user data in body

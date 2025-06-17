@@ -11,7 +11,8 @@ class BaseService {
      * @returns The created entity
      */
     async create(entity) {
-        return this.repository.create(entity);
+        const createdEntity = await this.repository.create(entity);
+        return createdEntity;
     }
     /**
      * Find all entities that match given options
@@ -28,7 +29,8 @@ class BaseService {
      * @returns The found entities
      */
     async findAndCount(options) {
-        return this.repository.findAndCount(options);
+        const result = await this.repository.findAndCount(options);
+        return result;
     }
     /**
      * Find a single entity by id or conditions
@@ -38,15 +40,17 @@ class BaseService {
      */
     async findOne(idOrConditions, options) {
         if (typeof idOrConditions === 'object') {
-            return this.repository.findOne({
+            const entity = await this.repository.findOne({
                 where: idOrConditions,
                 ...options,
             });
+            return entity;
         }
-        return this.repository.findOne({
+        const entity = await this.repository.findOne({
             where: { id: idOrConditions },
             ...options,
         });
+        return entity;
     }
     /**
      * Update an entity by id or conditions
@@ -88,7 +92,8 @@ class BaseService {
      * @returns The count of entities
      */
     async count(options) {
-        return this.repository.count(options);
+        const count = await this.repository.count(options);
+        return count;
     }
 }
 exports.BaseService = BaseService;

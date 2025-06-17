@@ -24,14 +24,25 @@ let BaseController = class BaseController {
         this.router = (0, express_1.Router)();
         this.basePath = this.constructor.name.replace(/Controller$/, '').toLowerCase();
     }
+    async handleRequest(handler, req, res, next) {
+        try {
+            const result = await handler(req, res, next);
+            if (!res.headersSent && result !== undefined) {
+                res.json(result);
+            }
+        }
+        catch (error) {
+            next(error);
+        }
+    }
     /**
-    * Create a new user
-    * @param req Request object containing user data in body
-    * @param res Response object
-    * @param next Next function
-    * @returns Promise<void> - Returns the created user
-    * @throws Error if user creation fails
-    */
+     * Create a new user
+     * @param req Request object containing user data in body
+     * @param res Response object
+     * @param next Next function
+     * @returns Promise<void> - Returns the created user
+     * @throws Error if user creation fails
+     */
     async create(req, res, next) {
         try {
             const entity = await this.service.create(req.body);
@@ -57,7 +68,9 @@ let BaseController = class BaseController {
             const queryDto = (0, class_transformer_1.plainToInstance)(base_query_dto_1.BaseQueryDto, req.query);
             const errors = await (0, class_validator_1.validate)(queryDto);
             if (errors.length > 0) {
-                const errorMessages = errors.map(error => Object.values(error.constraints || {})).flat();
+                const errorMessages = errors
+                    .map(error => Object.values(error.constraints || {}))
+                    .flat();
                 res.status(400).json(base_response_dto_1.BaseResponseDto.error('Validation failed', errorMessages));
                 return;
             }
@@ -82,7 +95,7 @@ let BaseController = class BaseController {
             res.status(200).json(base_response_dto_1.BaseResponseDto.success(entities, {
                 page,
                 limit,
-                total: count
+                total: count,
             }, 'Data retrieved successfully'));
         }
         catch (error) {
@@ -165,7 +178,9 @@ let BaseController = class BaseController {
                 next(error);
             }
             else if ('status' in res) {
-                res.status(500).json(base_response_dto_1.BaseResponseDto.error('Internal server error', error instanceof Error ? error.message : 'Unknown error'));
+                res
+                    .status(500)
+                    .json(base_response_dto_1.BaseResponseDto.error('Internal server error', error instanceof Error ? error.message : 'Unknown error'));
             }
             else {
                 res(error);
@@ -184,7 +199,7 @@ let BaseController = class BaseController {
             path: `${controllerPath}${route.path ? `/${route.path}` : ''}`.replace(/\/+/g, '/'),
             handler: (req, res, next) => controller[route.handlerName](req, res, next),
             middlewares: route.middlewares,
-            absolutePath: true
+            absolutePath: true,
         }));
     }
     /**
@@ -192,9 +207,7 @@ let BaseController = class BaseController {
      */
     getRoutes() {
         const decoratorRoutes = this.getDecoratorRoutes();
-        return [
-            ...decoratorRoutes
-        ];
+        return [...decoratorRoutes];
     }
     /**
      * Register all routes (decorator-based, base, and custom)

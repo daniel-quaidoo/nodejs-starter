@@ -17,7 +17,7 @@ export interface ApiResponse<T = any> {
     error?: string;
     meta?: PaginationMeta;
     headers?: Record<string, any>;
-    body?: string;
+    body?: any;
     statusCode?: number;
 }
 

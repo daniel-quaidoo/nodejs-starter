@@ -27,6 +27,11 @@ let RouterRegistry = class RouterRegistry {
     getAllRouters() {
         return Array.from(this.routers.values()).map(factory => factory());
     }
+    /**
+     * Gets a router by token
+     * @param token The token to get the router for
+     * @returns The router instance or undefined if not found
+     */
     getRouter(token) {
         const factory = this.routers.get(token);
         return factory ? factory() : undefined;
@@ -36,5 +41,6 @@ exports.RouterRegistry = RouterRegistry;
 exports.RouterRegistry = RouterRegistry = __decorate([
     (0, typedi_1.Service)()
 ], RouterRegistry);
+// Export a singleton instance
 exports.routerRegistry = new RouterRegistry();
 //# sourceMappingURL=router.registry.js.map

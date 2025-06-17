@@ -60,7 +60,7 @@ class BaseRouter {
         //         return this.controller.findById(req, res, next);
         //     },
         //     absolutePath: true
-        // },  
+        // },
         // {
         //     method: 'PUT',
         //     path: `/${this.basePath}/:id`,
@@ -106,7 +106,7 @@ class BaseRouter {
             path: `${controllerPath}${route.path ? `/${route.path}` : ''}`.replace(/\/+/g, '/'),
             handler: (req, res, next) => controller[route.handlerName](req, res, next),
             middlewares: route.middlewares,
-            absolutePath: true
+            absolutePath: true,
         }));
     }
     /**
@@ -116,11 +116,7 @@ class BaseRouter {
         const decoratorRoutes = this.getDecoratorRoutes();
         const baseRoutes = this.getBaseRoutes();
         const customRoutes = this.getCustomRoutes();
-        return [
-            ...decoratorRoutes,
-            ...baseRoutes,
-            ...customRoutes
-        ];
+        return [...decoratorRoutes, ...baseRoutes, ...customRoutes];
     }
     /**
      * Register all routes (decorator-based, base, and custom)

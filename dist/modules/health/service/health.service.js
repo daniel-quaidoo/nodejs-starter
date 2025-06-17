@@ -31,13 +31,13 @@ let HealthService = class HealthService {
         try {
             await this.dataSource.query('SELECT 1');
             const [seconds, nanoseconds] = process.hrtime(startTime);
-            const responseTime = Math.round((seconds * 1000) + (nanoseconds / 1000000));
+            const responseTime = Math.round(seconds * 1000 + nanoseconds / 1000000);
             return { status: true, responseTime };
         }
         catch (error) {
             return {
                 status: false,
-                error: error instanceof Error ? error.message : 'Unknown database error'
+                error: error instanceof Error ? error.message : 'Unknown database error',
             };
         }
     }
@@ -85,7 +85,7 @@ let HealthService = class HealthService {
                 database: {
                     status: databaseCheck.status ? 'connected' : 'disconnected',
                     responseTime: databaseCheck.responseTime,
-                    ...(databaseCheck.error ? { error: databaseCheck.error } : {})
+                    ...(databaseCheck.error ? { error: databaseCheck.error } : {}),
                 },
             },
             details: {

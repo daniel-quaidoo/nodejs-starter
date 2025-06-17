@@ -36,9 +36,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.configSchema = void 0;
 const Joi = __importStar(require("joi"));
 exports.configSchema = Joi.object({
-    NODE_ENV: Joi.string()
-        .valid('development', 'production', 'test')
-        .default('development'),
+    NODE_ENV: Joi.string().valid('development', 'production', 'test').default('development'),
     PORT: Joi.number().default(3000),
     // Database
     DB_HOST: Joi.string().required(),
@@ -58,6 +56,6 @@ exports.configSchema = Joi.object({
     // CORS
     CORS_ORIGIN: Joi.string().default('*'),
     CORS_METHODS: Joi.string().default('GET,HEAD,PUT,PATCH,POST,DELETE'),
-    CORS_CREDENTIALS: Joi.boolean().default(true)
+    CORS_CREDENTIALS: Joi.boolean().default(true),
 });
 //# sourceMappingURL=schema.js.map

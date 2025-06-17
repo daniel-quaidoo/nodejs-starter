@@ -42,6 +42,8 @@ const typedi_1 = require("typedi");
 const typeorm_1 = require("typeorm");
 const express_session_1 = __importDefault(require("express-session"));
 const express_1 = __importDefault(require("express"));
+// logger
+const logging_1 = require("./core/logging");
 // config
 const configuration_1 = require("./config/configuration");
 // module
@@ -62,9 +64,9 @@ const request_logger_middleware_1 = require("./core/logging/request-logger.middl
 const passport_1 = require("./core/auth/passport");
 // utils
 const utils_1 = require("./shared/utils");
-let app;
 let isWarm = false;
 let dataSource;
+const logger = typedi_1.Container.get(logging_1.LoggerService);
 /**
  * Initializes the application services, database connections, etc.
  * @returns Promise<{ app: Express; dataSource: DataSource }> - Returns the Express app and DataSource
@@ -114,11 +116,11 @@ const bootstrap = async () => {
         (0, utils_1.setupGlobalErrorHandler)(app);
         // 404 handler
         (0, utils_1.setupNotFoundHandler)(app);
-        console.log('Application bootstrapped successfully');
+        logger.info('Application bootstrapped successfully');
         return { app, dataSource };
     }
     catch (error) {
-        console.error('Failed to bootstrap application:', error);
+        logger.error('Failed to bootstrap application:', error);
         throw error;
     }
 };
@@ -132,7 +134,7 @@ exports.bootstrap = bootstrap;
 const handler = async (event, context) => {
     // Cold start handling
     if (!isWarm) {
-        app = await (0, exports.bootstrap)();
+        await (0, exports.bootstrap)();
         isWarm = true;
     }
     const { handler: routerHandler } = await Promise.resolve().then(() => __importStar(require('./lambda')));

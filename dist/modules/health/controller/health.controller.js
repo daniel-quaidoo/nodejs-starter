@@ -30,7 +30,7 @@ let HealthController = class HealthController {
             const status = await this.healthService.getHealthStatus();
             res.status(200).json(status);
         }
-        catch (error) {
+        catch {
             res.status(500).json({ error: 'Failed to get health status' });
         }
     }
@@ -43,8 +43,7 @@ let HealthController = class HealthController {
      */
     async checkHealth(_req, res, next) {
         try {
-            const healthStatus = await this.getHealthStatus(_req, res);
-            res.status(200).json(healthStatus);
+            await this.getHealthStatus(_req, res);
         }
         catch (error) {
             next(error);

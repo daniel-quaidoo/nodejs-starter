@@ -28,15 +28,15 @@ let LoggerService = LoggerService_1 = class LoggerService {
             format: combine(timestamp(), json()),
             defaultMeta: {
                 service: process.env.SERVICE_NAME || 'nodejs-starter',
-                environment: process.env.NODE_ENV || 'development'
+                environment: process.env.NODE_ENV || 'development',
             },
             transports: [
                 new winston_1.default.transports.Console({
                     format: process.env.NODE_ENV === 'development'
                         ? winston_1.default.format.combine(winston_1.default.format.colorize(), winston_1.default.format.simple())
-                        : winston_1.default.format.json()
-                })
-            ]
+                        : winston_1.default.format.json(),
+                }),
+            ],
         });
     }
     /**

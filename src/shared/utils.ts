@@ -1,6 +1,6 @@
 //utils.ts
 import Container from 'typedi';
-import { Request, Express, Response } from 'express';
+import { Request, Express, Response, NextFunction } from 'express';
 import { ProxyIntegrationResult } from 'aws-lambda-router/lib/proxyIntegration';
 import { APIGatewayEventRequestContext, APIGatewayProxyEvent } from 'aws-lambda';
 
@@ -454,7 +454,7 @@ export const registerAndLogRoutes = (
  * @param app Express application instance
  */
 export const setupGlobalErrorHandler = (app: Express): void => {
-    app.use((err: any, req: Request, res: Response) => {
+    app.use((err: any, req: Request, res: Response, next: NextFunction) => {
         const logger = Container.get(LoggerService);
         logger.error('Unhandled error', {
             error: err.message,
@@ -463,15 +463,26 @@ export const setupGlobalErrorHandler = (app: Express): void => {
             method: req.method,
         });
 
-        res.status(err.statusCode || 500).json(
-            createErrorResponse(500, err.message, req, {
-                ...err,
-                error: err.message,
-                stack: err.stack,
-                method: req.method,
-                details: err.stack,
-            })
-        );
+        // check if headers sent
+        if (res.headersSent) {
+            return next(err);
+        }
+
+        // Check if we have a valid response object
+        if (res && typeof res.status === 'function') {
+            return res.status(err.statusCode || 500).json(
+                createErrorResponse(500, err.message, req, {
+                    error: err.message,
+                    ...err,
+                    stack: err.stack,
+                    method: req.method,
+                    details: err.stack,
+                })
+            );
+        }
+
+        logger.error('Invalid response object in error handler');
+        next(err);
     });
 };
 

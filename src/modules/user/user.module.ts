@@ -9,10 +9,11 @@ import { UserRepository } from './repository/user.repository';
 
 // controller
 import { UserController } from './controller/user.controller';
+import { TestController } from './controller/test.controller';
 
 @Module({
     services: [UserService],
-    controllers: [UserController],
+    controllers: [UserController, TestController],
     repositories: [UserRepository],
     exports: [UserService],
 })

@@ -39,7 +39,7 @@ class MongoDBQueryBuilder {
     }
     buildSearchCondition(field, search) {
         return {
-            [field]: { $regex: search, $options: 'i' }
+            [field]: { $regex: search, $options: 'i' },
         };
     }
 }

@@ -12,10 +12,12 @@ HTTP Request → API Gateway → Lambda Handler → Express Router → Controlle
 ### 2. Key Components
 
 #### Base Components
-- **BaseController**: Abstract class providing common CRUD operations and request/response handling
-- **BaseRouter**: Handles route registration and middleware chaining with automatic path prefixing
-- **BaseService**: Implements common service layer logic and error handling
-- **BaseRepository**: Provides common database operations and query building
+- **BaseController**: Abstract class providing common CRUD operations, request/response handling, and standardized response formatting
+- **BaseRouter**: Handles route registration, middleware chaining, and automatic path prefixing with support for decorator-based routing
+- **BaseService**: Implements common service layer logic, transaction management, and error handling
+- **BaseRepository**: Provides common database operations, query building, and TypeORM integration
+- **BaseEntity**: Base class for all TypeORM entities with common fields and methods
+- **BaseDTO**: Base class for Data Transfer Objects with validation decorators
 
 #### Module Structure
 Each feature module (e.g., User, Health) follows this structure:
@@ -23,12 +25,16 @@ Each feature module (e.g., User, Health) follows this structure:
 modules/
   {module-name}/
     controller/    # Handles HTTP requests/responses
-    service/       # Business logic
-    router/        # Route definitions
-    dto/           # Data Transfer Objects
+    service/       # Business logic and domain services
+    router/        # Route definitions and middleware
+    dto/           # Data Transfer Objects with validation
+      requests/    # Request DTOs
+      responses/   # Response DTOs
     entities/      # TypeORM entities
-    interfaces/    # TypeScript interfaces
-    __tests__/     # Module-specific tests
+    interfaces/    # TypeScript interfaces and types
+    constants/     # Module-specific constants
+    __tests__/     # Unit and integration tests
+    index.ts       # Module exports
 ```
 
 ### 3. Dependency Injection

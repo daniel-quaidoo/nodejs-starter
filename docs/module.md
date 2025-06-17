@@ -1,103 +1,167 @@
-# Module Loading System
+# Module System
 
-The module loading system is a core component of the application's dependency injection and component registration mechanism. It provides a structured way to organize and register different types of components (controllers, services, repositories, routers) while maintaining proper dependency injection.
+The module system provides a structured way to organize application code into cohesive blocks of functionality. It leverages dependency injection to manage dependencies between components and ensures proper initialization order.
 
-## Core Components
+## Core Concepts
 
-### 1. Module Decorator
-The `@Module` decorator is used to define metadata about a module. It accepts an object with the following properties:
+### 1. Module Definition
+
+A module is defined using the `@Module` decorator, which accepts the following configuration:
 
 ```typescript
 interface ModuleMetadata {
-    controllers?: any[];    // Controllers to register
-    services?: any[];       // Services to register
-    repositories?: any[];   // Repositories to register
-    routers?: any[];        // Routers to register
-    imports?: any[];        // Other modules to import
-    exports?: any[];        // Components to export
+    // Core components
+    controllers?: Type<any>[];     // Request handlers
+    services?: Type<any>[];        // Business logic
+    repositories?: Type<any>[];    // Data access
+    routers?: Type<IRouter>[];      // Route definitions
+    
+    // Module composition
+    imports?: Type<any>[];         // Other modules to import
+    exports?: (string | symbol | Function)[]; // Components to expose
+    
+    // Lifecycle hooks
+    onInit?: () => Promise<void>;  // Called after module initialization
+    onDestroy?: () => Promise<void>; // Called before application shutdown
 }
 ```
 
-### 2. ModuleLoader Class
-The `ModuleLoader` class is responsible for loading and registering all components defined in a module. It uses TypeDI's container for dependency injection.
+### 2. Module Lifecycle
 
-## Registration Process
+1. **Registration**: Modules are registered with the `ModuleLoader`
+2. **Initialization**: Components are created in dependency order
+3. **Runtime**: Module components handle requests
+4. **Destruction**: Cleanup resources during shutdown
 
-The registration process follows a specific order to ensure proper dependency injection:
+## Component Types
 
-1. **Repositories**: Registered first as they often provide data access that other components depend on
-2. **Services**: Registered next as they typically depend on repositories
-3. **Controllers**: Registered after services as they depend on service layer
-4. **Routers**: Registered last as they depend on controllers
-
-### Component Registration Details
-
-#### Repositories
-- Created with a DataSource instance
-- Registered in TypeDI container
-- Used for database operations
-
-#### Services
-- Dependencies are resolved using TypeDI
-- Registered in container
-- Can depend on repositories and other services
-
-#### Controllers
-- Dependencies are resolved using TypeDI
-- Registered in container
+### 1. Controllers
 - Handle HTTP requests
+- Use decorators for routing (`@Get`, `@Post`, etc.)
+- Should be thin, delegating business logic to services
 
-#### Routers
-- Special handling for router registration
-- Registered in both TypeDI container and router registry
-- Use a unique Token for identification
+### 2. Services
+- Contain business logic
+- Can depend on repositories and other services
+- Should be stateless and thread-safe
 
-## Dependency Injection
+### 3. Repositories
+- Handle data access
+- Extend `BaseRepository` for common operations
+- Use TypeORM for database interactions
 
-The system uses TypeDI's dependency injection system to resolve dependencies. When creating a component:
+### 4. Routers
+- Define API routes
+- Can use decorator-based or traditional route definitions
+- Handle middleware and request validation
 
-1. The `getDependencies` method retrieves parameter types using `Reflect.getMetadata`
-2. Each dependency is resolved from the TypeDI container
-3. If a dependency cannot be resolved, an error is thrown
+## Advanced Features
 
-## Usage Example
+### 1. Dynamic Modules
+
+Create modules with dynamic configuration:
+
+```typescript
+@Module({
+    // ...
+    providers: [
+        {
+            provide: 'CONFIG_OPTIONS',
+            useValue: options,
+        },
+    ],
+})
+class ConfigModule {
+    static forRoot(options: ConfigOptions): DynamicModule {
+        return {
+            module: ConfigModule,
+            providers: [
+                {
+                    provide: 'CONFIG_OPTIONS',
+                    useValue: options,
+                },
+            ],
+            exports: ['CONFIG_OPTIONS'],
+        };
+    }
+}
+```
+
+### 2. Scoped Providers
+
+Control provider scope:
+- `SINGLETON` (default): Single instance for the entire application
+- `REQUEST`: New instance for each request
+- `TRANSIENT`: New instance for each dependency
+
+```typescript
+@Injectable({ scope: Scope.REQUEST })
+export class RequestScopedService {}
+```
+
+## Best Practices
+
+1. **Module Organization**
+   - Group related functionality
+   - Keep modules small and focused
+   - Use feature modules to separate concerns
+
+2. **Dependency Management**
+   - Depend on abstractions, not implementations
+   - Use constructor injection
+   - Avoid circular dependencies
+
+3. **Performance**
+   - Use singleton scope for stateless services
+   - Be mindful of request-scoped dependencies
+   - Clean up resources in `onDestroy`
+
+## Example: User Module
 
 ```typescript
 @Module({
     controllers: [UserController],
-    services: [UserService],
+    services: [UserService, AuthService],
     repositories: [UserRepository],
-    routers: [UserRouter]
+    routers: [UserRouter],
+    imports: [AuthModule],
+    exports: [UserService]
 })
-export class UserModule {}
+export class UserModule {
+    async onInit() {
+        console.log('UserModule initialized');
+    }
+    
+    async onDestroy() {
+        console.log('Cleaning up UserModule');
+    }
+}
 ```
 
-## Error Handling
+## Troubleshooting
 
-The system includes robust error handling:
-- Dependencies that cannot be resolved throw descriptive errors
-- Invalid module metadata is handled gracefully
-- Type mismatches are caught during registration
+### Common Issues
 
-## Performance Considerations
+1. **Circular Dependencies**
+   - Use forwardRef() for circular dependencies
+   - Reconsider module boundaries
+   
+2. **Missing Dependencies**
+   - Check if the provider is registered
+   - Verify module imports
+   
+3. **Scope Mismatch**
+   - Ensure scopes are compatible
+   - Avoid request-scoped dependencies in singletons
 
-1. **Lazy Loading**: Components are only created when needed
-2. **Caching**: TypeDI container caches instances to avoid recreation
-3. **Order of Operations**: Components are registered in dependency order to prevent circular dependencies
+### Debugging
 
-## Best Practices
-
-1. Always define clear dependencies in your components
-2. Use proper typing for better dependency resolution
-3. Follow the registration order (repositories -> services -> controllers -> routers)
-4. Keep modules focused and cohesive
-5. Use exports properly when sharing components between modules
-
-## Common Issues and Solutions
-
-1. **Circular Dependencies**: Ensure proper component order and avoid circular references
-2. **Missing Dependencies**: Make sure all required dependencies are properly registered
-3. **Type Resolution**: Use proper TypeScript types for better dependency injection
-4. **Router Registration**: Ensure routers are properly registered with their tokens
+Enable debug logging:
+```typescript
+Container.set({
+    global: true,
+    debug: true
+});
+```
 
 This module loading system provides a robust foundation for organizing and managing application components while maintaining proper dependency injection and separation of concerns.

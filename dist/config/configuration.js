@@ -52,7 +52,7 @@ let ConfigService = class ConfigService {
     constructor() {
         // load .env file
         dotenv.config({
-            path: path.resolve(process.cwd(), '.env')
+            path: path.resolve(process.cwd(), '.env'),
         });
         // validate configuration
         const { error, value } = schema_1.configSchema.validate(process.env, {

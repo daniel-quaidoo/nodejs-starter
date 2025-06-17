@@ -1,8 +1,12 @@
+import { UUID } from 'crypto';
 import { Inject } from 'typedi';
 import { Request, Response, NextFunction } from 'express';
 
 // model
 import { User } from '../entities/user.entity';
+
+// dto
+import { CreateUserDto } from '../dto/create-user.dto';
 
 // service
 import { UserService } from '../service/user.service';
@@ -18,6 +22,7 @@ import { ApiResponse } from '../../../core/common/interfaces/route.interface';
 import { BaseController } from '../../../core/common/controller/base.controller';
 
 // decorator
+import { Body, Param, Params, Query } from '../../../core/common/decorators/param.decorator';
 import { UseMiddleware } from '../../../core/common/decorators/middleware.decorator';
 import {
     Controller,
@@ -37,12 +42,12 @@ export class UserController extends BaseController<User> {
     }
 
     @Get('/health')
-    public async healthCheck(req: Request, res: Response, next: NextFunction): Promise<void> {
+    public async healthCheck(): Promise<any> {
         try {
             const healthCheck = await this.healthService.getHealthStatus();
-            res.status(200).json(healthCheck);
+            return healthCheck;
         } catch (error) {
-            next(error);
+            throw error;
         }
     }
 
@@ -112,7 +117,12 @@ export class UserController extends BaseController<User> {
         }
     }
 
-    /**
+    /** 
+    @UseMiddleware(validateDto(CreateUserDto))
+    @Param('userId') userId:string,
+    @Params() params: SomeType,
+    @Body() dto: AssignRoleDto,
+    @Query() pageOptionsDto: UserQueryPageOptionDto,
      * Create a new user
      * @param req Request object containing user data in body
      * @param res Response object
@@ -121,9 +131,14 @@ export class UserController extends BaseController<User> {
      * @throws Error if user creation fails
      */
     @Post('')
-    public async createUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+    public async createUser(
+        @Body() createUserDto: CreateUserDto,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
         try {
-            const user = await this.userService.create(req.body);
+            const user = await this.userService.create(createUserDto.body as Partial<User>);
+
             const response: ApiResponse<User> = {
                 success: true,
                 data: user,
@@ -132,6 +147,48 @@ export class UserController extends BaseController<User> {
             res.status(201).json(response);
         } catch (error) {
             next(error);
+        }
+    }
+
+    /** 
+    @UseMiddleware(validateDto(CreateUserDto))
+    @Param('userId') userId:string,
+    @Params() params: SomeType,
+    @Body() dto: AssignRoleDto,
+    @Query() pageOptionsDto: UserQueryPageOptionDto,
+     * Create a new user
+     * @param req Request object containing user data in body
+     * @param res Response object
+     * @param next Next function
+     * @returns Promise<void> - Returns the created user
+     * @throws Error if user creation fails
+     */
+    @Post('/:userId/another/:id')
+    public async createUserTest(
+        @Param('userId') userId: string,
+        @Param('id') id: UUID,
+        @Body() createUserDto: CreateUserDto,
+        @Query() query: Record<string, any>,
+        @Params() params: Record<string, any>
+    ): Promise<any> {
+        try {
+            const user = await this.userService.create(createUserDto as Partial<User>);
+
+            const response: ApiResponse<User> = {
+                success: true,
+                data: user,
+                body: {
+                    userId,
+                    id,
+                    createUserDto,
+                    query,
+                    params,
+                },
+                message: 'User created successfully',
+            };
+            return response;
+        } catch (error) {
+            throw error;
         }
     }
 

@@ -46,7 +46,7 @@ class TypeORMQueryBuilder {
      */
     buildSearchCondition(field, search) {
         return {
-            [field]: (0, typeorm_1.ILike)(`%${search}%`)
+            [field]: (0, typeorm_1.ILike)(`%${search}%`),
         };
     }
 }

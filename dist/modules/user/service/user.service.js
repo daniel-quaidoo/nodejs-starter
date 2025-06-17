@@ -17,13 +17,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserService = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
+const typedi_1 = require("typedi");
 // repository
 const user_repository_1 = require("../repository/user.repository");
 // service
 const base_service_1 = require("../../../core/common/service/base.service");
 // decorator
 const component_decorator_1 = require("../../../core/common/di/component.decorator");
-const typedi_1 = require("typedi");
 // exception
 const http_exception_1 = require("../../../core/common/exceptions/http.exception");
 let UserService = class UserService extends base_service_1.BaseService {
@@ -33,13 +33,13 @@ let UserService = class UserService extends base_service_1.BaseService {
         this.SALT_ROUNDS = 10;
     }
     async create(userData) {
-        if (userData.email && await this.userRepository.isEmailTaken(userData.email)) {
+        if (userData.email && (await this.userRepository.isEmailTaken(userData.email))) {
             throw new http_exception_1.ConflictException('Email already in use');
         }
         return this.userRepository.create(userData);
     }
     async updateUser(id, updateData) {
-        if (updateData.email && await this.userRepository.isEmailTaken(updateData.email, id)) {
+        if (updateData.email && (await this.userRepository.isEmailTaken(updateData.email, id))) {
             throw new http_exception_1.ConflictException('Email already in use');
         }
         // Hash new password if provided
@@ -57,7 +57,8 @@ let UserService = class UserService extends base_service_1.BaseService {
      * Hash a password
      */
     async hashPassword(password) {
-        return bcrypt_1.default.hash(password, this.SALT_ROUNDS);
+        const hashedPassword = await bcrypt_1.default.hash(password, this.SALT_ROUNDS);
+        return hashedPassword;
     }
     /**
      * Validate user credentials
@@ -74,13 +75,16 @@ let UserService = class UserService extends base_service_1.BaseService {
         return user;
     }
     async findByEmail(email) {
-        return this.userRepository.findByEmail(email);
+        const user = await this.userRepository.findByEmail(email);
+        return user;
     }
     async findActiveUsers() {
-        return this.userRepository.findActiveUsers();
+        const users = await this.userRepository.findActiveUsers();
+        return users;
     }
     async isEmailTaken(email, excludeId) {
-        return this.userRepository.isEmailTaken(email, excludeId);
+        const isTaken = await this.userRepository.isEmailTaken(email, excludeId);
+        return isTaken;
     }
     async findById(id) {
         const user = await this.userRepository.findOne({ where: { id } });

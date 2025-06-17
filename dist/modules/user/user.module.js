@@ -15,15 +15,16 @@ const module_decorator_1 = require("../../core/common/di/module.decorator");
 const user_repository_1 = require("./repository/user.repository");
 // controller
 const user_controller_1 = require("./controller/user.controller");
+const test_controller_1 = require("./controller/test.controller");
 let UserModule = class UserModule {
 };
 exports.UserModule = UserModule;
 exports.UserModule = UserModule = __decorate([
     (0, module_decorator_1.Module)({
         services: [user_service_1.UserService],
-        controllers: [user_controller_1.UserController],
+        controllers: [user_controller_1.UserController, test_controller_1.TestController],
         repositories: [user_repository_1.UserRepository],
-        exports: [user_service_1.UserService]
+        exports: [user_service_1.UserService],
     })
 ], UserModule);
 //# sourceMappingURL=user.module.js.map

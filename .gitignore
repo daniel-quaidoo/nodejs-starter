@@ -10,5 +10,6 @@ events
 docker-compose.yml
 serverless.yml
 template.yaml
-# coverage
-# dist
+coverage
+coverage/
+dist

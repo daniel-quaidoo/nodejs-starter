@@ -1,9 +1,6 @@
 import { Inject } from 'typedi';
 import { Router, Request, Response, NextFunction } from 'express';
 
-// types
-import { AuthenticatedRequest } from '../types';
-
 // service
 import { AuthService } from '../service/auth.service';
 
@@ -26,6 +23,8 @@ import { BaseController } from '../../../core/common/controller/base.controller'
 // decorator
 import { UseMiddleware } from '../../../core/common/decorators/middleware.decorator';
 import { Controller, Get, Post } from '../../../core/common/decorators/route.decorator';
+import { Body } from '../../../core/common/decorators/param.decorator';
+import { LoginDto } from '../dto/login.dto';
 
 @Controller('/auth')
 export class AuthController extends BaseController<any> {
@@ -48,20 +47,16 @@ export class AuthController extends BaseController<any> {
      */
     @Post('/login')
     @UseMiddleware(LocalPassportGuard)
-    public async login(
-        req: Request & { user: User },
-        res: Response,
-        next: NextFunction
-    ): Promise<void> {
+    public async login(@Body() loginDto: LoginDto): Promise<any> {
         try {
-            const user = req.user as User;
+            const user = (this as any).req.user as User;
             const token = this.authService.generateToken(user);
             const loginResponse = await this.authService.login({
                 email: user.email,
-                password: req.body.password as string,
+                password: loginDto.password as string,
             });
 
-            res.status(200).json({
+            return {
                 success: true,
                 data: {
                     ...loginResponse,
@@ -70,9 +65,9 @@ export class AuthController extends BaseController<any> {
                     expires_in: 3600,
                 },
                 message: 'Login successful',
-            });
+            };
         } catch (error) {
-            next(error);
+            throw error;
         }
     }
 
@@ -86,8 +81,9 @@ export class AuthController extends BaseController<any> {
      */
     @Get('/profile')
     @UseMiddleware(authMiddleware({ roles: ['admin'] }))
-    public getProfile(req: AuthenticatedRequest, res: Response, next: NextFunction): void {
-        this.authService
+    public getProfile(): Promise<any> {
+        const req = (this as any).req;
+        return this.authService
             .getProfile(req.user?.id as string)
             .then(user => {
                 const { password: _, ...userWithoutPassword } = user;
@@ -95,10 +91,11 @@ export class AuthController extends BaseController<any> {
                     success: true,
                     data: userWithoutPassword,
                 };
-                res.status(200).json(response);
+
+                return response;
             })
             .catch(error => {
-                next(error);
+                throw error;
             });
     }
 

@@ -10,9 +10,8 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ModuleLoader = void 0;
-const typedi_1 = require("typedi");
-const typedi_2 = require("typedi");
 const typeorm_1 = require("typeorm");
+const typedi_1 = require("typedi");
 // decoratos
 const module_decorator_1 = require("./module.decorator");
 const component_decorator_1 = require("./component.decorator");
@@ -20,6 +19,9 @@ const component_decorator_2 = require("./component.decorator");
 // router registry
 const controller_router_1 = require("./controller.router");
 const router_registry_1 = require("../router/router.registry");
+// logger
+const logger_service_1 = require("../../logging/logger.service");
+const logger = typedi_1.Container.get(logger_service_1.LoggerService);
 let ModuleLoader = class ModuleLoader {
     constructor(dataSource) {
         this.dataSource = dataSource;
@@ -78,8 +80,8 @@ let ModuleLoader = class ModuleLoader {
      * @param Repository The repository to register
      */
     async registerRepository(Repository) {
-        const instance = new Repository(this.dataSource);
-        typedi_2.Container.set(Repository, instance);
+        const instance = await Promise.resolve().then(() => new Repository(this.dataSource));
+        typedi_1.Container.set(Repository, instance);
     }
     /**
      * Registers a service
@@ -88,7 +90,7 @@ let ModuleLoader = class ModuleLoader {
     registerService(Service) {
         const deps = this.getDependencies(Service);
         const instance = new Service(...deps);
-        typedi_2.Container.set(Service, instance);
+        typedi_1.Container.set(Service, instance);
     }
     /**
      * Registers a controller
@@ -100,17 +102,17 @@ let ModuleLoader = class ModuleLoader {
             const deps = this.getDependencies(Controller);
             const controller = new Controller(...deps);
             // Register the controller in the container
-            typedi_2.Container.set(Controller, controller);
+            typedi_1.Container.set(Controller, controller);
             // Create and register the router
             const controllerRouter = new controller_router_1.ControllerRouter(controller);
             // Add router to the registry
             if (controllerRouter.Token) {
-                console.log(`✓ Registered controller: ${Controller.name}`);
+                logger.info(`✓ Registered controller: ${Controller.name}`);
                 router_registry_1.routerRegistry.registerRouter(controllerRouter.Token, () => controllerRouter);
             }
         }
         catch (error) {
-            console.error(`Failed to register controller ${Controller?.name || 'unknown'}:`, error);
+            logger.error(`Failed to register controller ${Controller?.name || 'unknown'}:`, error);
             throw error;
         }
     }
@@ -121,7 +123,7 @@ let ModuleLoader = class ModuleLoader {
     registerRouter(Router) {
         const deps = this.getDependencies(Router);
         const instance = new Router(...deps);
-        typedi_2.Container.set(Router.Token, instance);
+        typedi_1.Container.set(Router.Token, instance);
         router_registry_1.routerRegistry.registerRouter(Router.Token, () => instance);
     }
     /**
@@ -131,11 +133,11 @@ let ModuleLoader = class ModuleLoader {
      */
     getDependencies(Target) {
         const paramTypes = Reflect.getMetadata('design:paramtypes', Target) || [];
-        return paramTypes.map((param) => {
+        return paramTypes.map(param => {
             try {
-                return typedi_2.Container.get(param);
+                return typedi_1.Container.get(param);
             }
-            catch (error) {
+            catch {
                 throw new Error(`Failed to resolve dependency ${param?.name} for ${Target.name}`);
             }
         });

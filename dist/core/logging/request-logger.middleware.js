@@ -26,7 +26,7 @@ const requestLogger = (req, res, next) => {
         // Only log request body for non-GET requests
         ...(req.method !== 'GET' && req.body && Object.keys(req.body).length > 0
             ? { body: req.body }
-            : {})
+            : {}),
     });
     // Capture response finish event to log the response
     response.on('finish', () => {
@@ -35,7 +35,7 @@ const requestLogger = (req, res, next) => {
             requestId,
             statusCode: res.statusCode,
             duration: `${duration}ms`,
-            responseTime: duration
+            responseTime: duration,
         };
         // Include response body for error statuses
         if (res.statusCode >= 400) {
@@ -44,7 +44,7 @@ const requestLogger = (req, res, next) => {
                 try {
                     logData.response = JSON.parse(responseBody);
                 }
-                catch (e) {
+                catch {
                     logData.response = responseBody;
                 }
             }
@@ -76,13 +76,13 @@ const errorLogger = (err, req, res, next) => {
         error: {
             name: err.name,
             message: err.message,
-            stack: process.env.NODE_ENV === 'production' ? undefined : err.stack
+            stack: process.env.NODE_ENV === 'production' ? undefined : err.stack,
         },
         url: req.originalUrl,
         method: req.method,
         body: req.body,
         params: req.params,
-        query: req.query
+        query: req.query,
     });
     next(err);
 };

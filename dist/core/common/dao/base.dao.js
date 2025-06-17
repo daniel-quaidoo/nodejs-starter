@@ -13,7 +13,7 @@ class BaseDAO {
      * @returns The created entity
      */
     async create(entity) {
-        const newEntity = this.repository.create(entity);
+        const newEntity = await this.repository.create(entity);
         return this.repository.save(newEntity);
     }
     /**
@@ -22,10 +22,11 @@ class BaseDAO {
      * @returns Array of entities and total count
      */
     async findAll(options) {
-        return this.repository.findAndCount({
+        const result = await this.repository.findAndCount({
             where: { deletedAt: null, ...options?.where },
             ...options,
         });
+        return result;
     }
     /**
      * Finds entities in the database
@@ -42,10 +43,11 @@ class BaseDAO {
      * @returns Array of entities and total count
      */
     async findAndCount(options) {
-        return this.repository.findAndCount({
+        const result = await this.repository.findAndCount({
             where: { deletedAt: null, ...options?.where },
             ...options,
         });
+        return result;
     }
     /**
      * Finds a single entity by ID or options
@@ -54,17 +56,22 @@ class BaseDAO {
      */
     async findOne(idOrOptions) {
         if (typeof idOrOptions === 'string' || typeof idOrOptions === 'number') {
-            return this.repository.findOne({
+            const result = await this.repository.findOne({
                 where: { id: idOrOptions, deletedAt: null },
             });
+            return result;
         }
         if ('where' in idOrOptions) {
-            return this.repository.findOne({
+            const result = await this.repository.findOne({
                 ...idOrOptions,
                 where: { deletedAt: null, ...idOrOptions.where },
             });
+            return result;
         }
-        return this.repository.findOne({ where: { ...idOrOptions, deletedAt: null } });
+        const result = await this.repository.findOne({
+            where: { ...idOrOptions, deletedAt: null },
+        });
+        return result;
     }
     /**
      * Updates an entity in the database
@@ -78,8 +85,8 @@ class BaseDAO {
             updatedAt: new Date(),
         };
         if (typeof idOrConditions === 'string' || typeof idOrConditions === 'number') {
-            const result = await this.repository.update(idOrConditions, updateData);
-            if (!result.affected) {
+            const updateResult = await this.repository.update(idOrConditions, updateData);
+            if (!updateResult.affected) {
                 return null;
             }
             return this.findOne(idOrConditions);
@@ -96,7 +103,8 @@ class BaseDAO {
      * @returns The deleted entity
      */
     async delete(idOrConditions) {
-        return this.softDelete(idOrConditions);
+        const result = await this.repository.delete(idOrConditions);
+        return result;
     }
     /**
      * Soft deletes an entity from the database
@@ -104,7 +112,8 @@ class BaseDAO {
      * @returns The deleted entity
      */
     async softDelete(idOrConditions) {
-        return this.repository.softDelete(idOrConditions);
+        const result = await this.repository.softDelete(idOrConditions);
+        return result;
     }
     /**
      * Counts the number of entities in the database
@@ -112,10 +121,11 @@ class BaseDAO {
      * @returns The count of entities
      */
     async count(options) {
-        return this.repository.count({
+        const result = await this.repository.count({
             where: { deletedAt: null, ...options?.where },
             ...options,
         });
+        return result;
     }
 }
 exports.BaseDAO = BaseDAO;

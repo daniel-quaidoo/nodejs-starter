@@ -1,16 +1,25 @@
-import { NextFunction, RequestHandler, Router } from 'express';
-
-// interface
-import { HttpMethod, RouteDefinition, RouteMetadata } from '../interfaces/route.interface';
+import { NextFunction, Request, RequestHandler, Response, Router } from 'express';
 
 // decorator
-import { MIDDLEWARE_METADATA_KEY } from './middleware.decorator';
+import { Component } from '../di/component.decorator';
+
+// middleware
+import { createValidationMiddleware } from '../../middleware/validation.middleware';
+
+// interface
+import { COMPONENT_TYPE } from '../interfaces/module.interface';
+import { HttpMethod, RouteDefinition, RouteMetadata } from '../interfaces/route.interface';
+
+// constant
 import {
-    Component,
-    COMPONENT_TYPE,
     CONTROLLER_METADATA_KEY,
     ROUTE_METADATA_KEY,
-} from '../di/component.decorator';
+    MIDDLEWARE_METADATA_KEY,
+    BODY_METADATA_KEY,
+    PARAM_METADATA_KEY,
+    PARAMS_METADATA_KEY,
+    QUERY_METADATA_KEY,
+} from '../di/di-token.constant';
 
 /**
  * Decorator to define a controller
@@ -73,30 +82,109 @@ export function createMethodDecorator(
         const path = typeof pathOrOptions === 'string' ? pathOrOptions : _path;
         const actualMiddlewares =
             typeof pathOrOptions === 'function' ? [pathOrOptions, ...middlewares] : middlewares;
-        return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => {
+
+        return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor): any => {
+            const originalMethod = descriptor.value;
             const controllerClass = target.constructor;
+
+            // Get parameter metadata
+            const paramTypes = Reflect.getMetadata('design:paramtypes', target, propertyKey) || [];
+            const bodyParams = Reflect.getOwnMetadata(BODY_METADATA_KEY, target, propertyKey) || {};
+            const queryParams =
+                Reflect.getOwnMetadata(QUERY_METADATA_KEY, target, propertyKey) || {};
+            const paramParams =
+                Reflect.getOwnMetadata(PARAM_METADATA_KEY, target, propertyKey) || {};
+            const paramsParams =
+                Reflect.getOwnMetadata(PARAMS_METADATA_KEY, target, propertyKey) || {};
+
+            // Create validation middlewares for each parameter type
+            const validationMiddlewares = [
+                bodyParams &&
+                    Object.keys(bodyParams).length > 0 &&
+                    createValidationMiddleware('body', bodyParams),
+                queryParams &&
+                    Object.keys(queryParams).length > 0 &&
+                    createValidationMiddleware('query', queryParams),
+                paramParams &&
+                    Object.keys(paramParams).length > 0 &&
+                    createValidationMiddleware('param', paramParams),
+                paramsParams &&
+                    Object.keys(paramsParams).length > 0 &&
+                    createValidationMiddleware('params', paramsParams),
+            ].filter(Boolean) as RequestHandler[];
+
+            // Create the wrapped handler
+            descriptor.value = async function (
+                req: Request,
+                res: Response,
+                next: NextFunction
+            ): Promise<any> {
+                // Bind the request to the controller instance
+                (this as any).req = req;
+                (this as any).res = res;
+                (this as any).next = next;
+
+                try {
+                    const args = new Array(paramTypes.length);
+
+                    // Process @Body() parameters (already validated)
+                    Object.entries(bodyParams).forEach(([index]) => {
+                        const i = parseInt(index);
+                        args[i] = req.body;
+                    });
+
+                    // Process @Query() parameters (already validated)
+                    Object.entries(queryParams).forEach(([index]) => {
+                        const i = parseInt(index);
+                        args[i] = req.query;
+                    });
+
+                    // Process @Param() parameters (already validated)
+                    Object.entries(paramParams).forEach(([index, { name }]: any) => {
+                        const i = parseInt(index);
+                        args[i] = req.params[name];
+                    });
+
+                    // Process @Params() parameter (already validated)
+                    Object.entries(paramsParams).forEach(([index]) => {
+                        const i = parseInt(index);
+                        args[i] = req.params;
+                    });
+
+                    // Call the original method with transformed parameters
+                    const result = await originalMethod.apply(this, args);
+
+                    // If the method returns a value and response hasn't been sent, send it
+                    if (!res.headersSent && result !== undefined) {
+                        res.json(result);
+                    }
+                } catch (error) {
+                    next(error);
+                }
+            };
+
+            // Store route metadata
             const routes: RouteDefinition[] =
                 Reflect.getOwnMetadata(ROUTE_METADATA_KEY, controllerClass) || [];
 
-            // Get middleware from @UseMiddleware decorator
             const methodMiddlewares = propertyKey
                 ? Reflect.getMetadata(MIDDLEWARE_METADATA_KEY, controllerClass, propertyKey) || []
                 : [];
 
-            // Get class-level middleware
             const classMiddlewares =
                 Reflect.getMetadata(MIDDLEWARE_METADATA_KEY, controllerClass) || [];
 
             const routeDef: RouteDefinition = {
-                method: method as HttpMethod,
+                method,
                 path,
                 handlerName: propertyKey as string,
                 handler: descriptor.value,
                 middlewares: [
-                    ...classMiddlewares, // Class-level middleware first
-                    ...methodMiddlewares, // Then method-level middleware
-                    ...(options.middlewares || []), // Then inline middleware
-                    ...actualMiddlewares, // Then any additional middleware
+                    ...classMiddlewares,
+                    ...methodMiddlewares,
+                    ...validationMiddlewares,
+                    ...(options.middlewares || []),
+                    ...actualMiddlewares,
                 ],
             };
 
@@ -209,7 +297,8 @@ export function getRouteMetadata(target: any): RouteMetadata[] {
             path: Reflect.getMetadata('path', target.prototype, method) || '',
             method: Reflect.getMetadata('method', target.prototype, method) || '',
             handlerName: method,
-            middlewares: Reflect.getMetadata('middlewares', target.prototype, method) || [],
+            middlewares:
+                Reflect.getMetadata(MIDDLEWARE_METADATA_KEY, target.prototype, method) || [],
         }));
 }
 

@@ -11,7 +11,10 @@ import { BaseDAO } from '../../../core/common/dao/base.dao';
 import { IUserRepository } from '../interfaces/user.interface';
 
 // decorator
-import { Component, COMPONENT_TYPE } from '../../../core/common/di/component.decorator';
+import { Component } from '../../../core/common/di/component.decorator';
+
+// interface
+import { COMPONENT_TYPE } from '../../../core/common/interfaces/module.interface';
 
 @Component({ type: COMPONENT_TYPE.REPOSITORY })
 export class UserRepository extends BaseDAO<User> implements IUserRepository {

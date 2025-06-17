@@ -14,6 +14,8 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserController = void 0;
 const typedi_1 = require("typedi");
+// dto
+const create_user_dto_1 = require("../dto/create-user.dto");
 // service
 const user_service_1 = require("../service/user.service");
 const health_service_1 = require("../../../modules/health/service/health.service");
@@ -22,6 +24,7 @@ const local_guard_1 = require("../../../core/auth/guards/local.guard");
 // controller
 const base_controller_1 = require("../../../core/common/controller/base.controller");
 // decorator
+const param_decorator_1 = require("../../../core/common/decorators/param.decorator");
 const middleware_decorator_1 = require("../../../core/common/decorators/middleware.decorator");
 const route_decorator_1 = require("../../../core/common/decorators/route.decorator");
 let UserController = class UserController extends base_controller_1.BaseController {
@@ -30,13 +33,13 @@ let UserController = class UserController extends base_controller_1.BaseControll
         this.userService = userService;
         this.healthService = healthService;
     }
-    async healthCheck(req, res, next) {
+    async healthCheck() {
         try {
             const healthCheck = await this.healthService.getHealthStatus();
-            res.status(200).json(healthCheck);
+            return healthCheck;
         }
         catch (error) {
-            next(error);
+            throw error;
         }
     }
     /**
@@ -55,7 +58,7 @@ let UserController = class UserController extends base_controller_1.BaseControll
             const result = await this.userService.findAndCount({
                 skip: (Number(page) - 1) * Number(limit),
                 take: Number(limit),
-                ...req.query
+                ...req.query,
             });
             const [users, count] = result;
             const response = {
@@ -65,8 +68,8 @@ let UserController = class UserController extends base_controller_1.BaseControll
                     page: Number(page),
                     limit: Number(limit),
                     total: count,
-                    totalPages: Math.ceil(count / Number(limit))
-                }
+                    totalPages: Math.ceil(count / Number(limit)),
+                },
             };
             res.status(200).json(response);
         }
@@ -90,7 +93,7 @@ let UserController = class UserController extends base_controller_1.BaseControll
             }
             const response = {
                 success: true,
-                data: user
+                data: user,
             };
             res.status(200).json(response);
         }
@@ -99,6 +102,11 @@ let UserController = class UserController extends base_controller_1.BaseControll
         }
     }
     /**
+    @UseMiddleware(validateDto(CreateUserDto))
+    @Param('userId') userId:string,
+    @Params() params: SomeType,
+    @Body() dto: AssignRoleDto,
+    @Query() pageOptionsDto: UserQueryPageOptionDto,
      * Create a new user
      * @param req Request object containing user data in body
      * @param res Response object
@@ -106,18 +114,51 @@ let UserController = class UserController extends base_controller_1.BaseControll
      * @returns Promise<void> - Returns the created user
      * @throws Error if user creation fails
      */
-    async createUser(req, res, next) {
+    async createUser(createUserDto, res, next) {
         try {
-            const user = await this.userService.create(req.body);
+            console.log(createUserDto);
+            const user = await this.userService.create(createUserDto.body);
             const response = {
                 success: true,
                 data: user,
-                message: 'User created successfully'
+                message: 'User created successfully',
             };
             res.status(201).json(response);
         }
         catch (error) {
             next(error);
+        }
+    }
+    /**
+    @UseMiddleware(validateDto(CreateUserDto))
+    @Param('userId') userId:string,
+    @Params() params: SomeType,
+    @Body() dto: AssignRoleDto,
+    @Query() pageOptionsDto: UserQueryPageOptionDto,
+     * Create a new user
+     * @param req Request object containing user data in body
+     * @param res Response object
+     * @param next Next function
+     * @returns Promise<void> - Returns the created user
+     * @throws Error if user creation fails
+     */
+    async createUserTest(userId, id, createUserDto, query, params) {
+        try {
+            console.log("BODY::", createUserDto);
+            console.log("PARAM::userId:", userId);
+            console.log("PARAM::id:", id);
+            console.log("QUERY::", query);
+            console.log("PARAMS::", params);
+            const user = await this.userService.create(createUserDto);
+            const response = {
+                success: true,
+                data: user,
+                message: 'User created successfully',
+            };
+            return response;
+        }
+        catch (error) {
+            throw error;
         }
     }
     /**
@@ -146,7 +187,7 @@ let UserController = class UserController extends base_controller_1.BaseControll
             const response = {
                 success: true,
                 data: user,
-                message: 'User updated successfully'
+                message: 'User updated successfully',
             };
             res.status(200).json(response);
         }
@@ -167,7 +208,7 @@ let UserController = class UserController extends base_controller_1.BaseControll
             await this.userService.delete(req.params.id);
             const response = {
                 success: true,
-                message: 'User deleted successfully'
+                message: 'User deleted successfully',
             };
             res.status(200).json(response);
         }
@@ -180,7 +221,7 @@ exports.UserController = UserController;
 __decorate([
     (0, route_decorator_1.Get)('/health'),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object, Function]),
+    __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], UserController.prototype, "healthCheck", null);
 __decorate([
@@ -198,10 +239,22 @@ __decorate([
 ], UserController.prototype, "getUserById", null);
 __decorate([
     (0, route_decorator_1.Post)(''),
+    __param(0, (0, param_decorator_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object, Function]),
+    __metadata("design:paramtypes", [create_user_dto_1.CreateUserDto, Object, Function]),
     __metadata("design:returntype", Promise)
 ], UserController.prototype, "createUser", null);
+__decorate([
+    (0, route_decorator_1.Post)('/:userId/another/:id'),
+    __param(0, (0, param_decorator_1.Param)('userId')),
+    __param(1, (0, param_decorator_1.Param)('id')),
+    __param(2, (0, param_decorator_1.Body)()),
+    __param(3, (0, param_decorator_1.Query)()),
+    __param(4, (0, param_decorator_1.Params)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, create_user_dto_1.CreateUserDto, Object, Object]),
+    __metadata("design:returntype", Promise)
+], UserController.prototype, "createUserTest", null);
 __decorate([
     (0, route_decorator_1.Put)('/:id'),
     __metadata("design:type", Function),
@@ -218,6 +271,7 @@ exports.UserController = UserController = __decorate([
     (0, route_decorator_1.Controller)('/user'),
     __param(0, (0, typedi_1.Inject)()),
     __param(1, (0, typedi_1.Inject)()),
-    __metadata("design:paramtypes", [user_service_1.UserService, health_service_1.HealthService])
+    __metadata("design:paramtypes", [user_service_1.UserService,
+        health_service_1.HealthService])
 ], UserController);
 //# sourceMappingURL=user.controller.js.map

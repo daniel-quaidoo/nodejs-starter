@@ -51,6 +51,9 @@ export class ControllerRouter implements IModuleRouter {
 
             logger.info('Processing route:', routeInfo);
 
+            // eslint-disable-next-line no-console
+            console.log(routeInfo);
+
             // If we have a direct handler, use it and preserve its middlewares
             if (route.handler) {
                 return {
@@ -68,7 +71,6 @@ export class ControllerRouter implements IModuleRouter {
                 res: Response,
                 next: NextFunction
             ): Promise<any> => {
-                // TODO: fix type
                 const methodName = route.handlerName?.replace('bound ', '');
                 if (!methodName || typeof this.controller[methodName] !== 'function') {
                     throw new Error(

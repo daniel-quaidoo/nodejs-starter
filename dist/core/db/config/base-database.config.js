@@ -16,7 +16,8 @@ class BaseDatabaseConfig {
      * @returns The database configuration
      */
     async getConfig() {
-        return this.getConnectionConfig();
+        const config = await Promise.resolve().then(() => this.getConnectionConfig());
+        return config;
     }
     /**
      * Retrieves the database connection

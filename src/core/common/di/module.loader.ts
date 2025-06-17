@@ -1,9 +1,8 @@
 import { DataSource } from 'typeorm';
 import { Container, Service } from 'typedi';
 
-// decoratos
+// decorator
 import { getModuleMetadata } from './module.decorator';
-import { COMPONENT_TYPE } from './component.decorator';
 import { getComponentMetadata } from './component.decorator';
 
 // router registry
@@ -12,6 +11,9 @@ import { routerRegistry } from '../router/router.registry';
 
 // logger
 import { LoggerService } from '../../logging/logger.service';
+
+// interface
+import { COMPONENT_TYPE } from '../interfaces/module.interface';
 
 const logger = Container.get(LoggerService);
 

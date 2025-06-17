@@ -19,9 +19,10 @@ class BaseQueryDto {
      * @param dbType The database type to generate options for
      */
     toFindOptions(dbType = 'typeorm') {
-        const { page = '1', limit = '10', sortBy, sortOrder, search, ...filters } = this;
+        const page = parseInt(this.page || '1', 10);
+        const limit = parseInt(this.limit || '10', 10);
         const builder = query_builder_factory_1.queryBuilderFactory.create(dbType);
-        return builder.buildFindOptions(this);
+        return builder.buildFindOptions({ ...this, page, limit });
     }
 }
 exports.BaseQueryDto = BaseQueryDto;

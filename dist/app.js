@@ -1,10 +1,16 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handler = void 0;
+const typedi_1 = __importDefault(require("typedi"));
+const logger_service_1 = require("./core/logging/logger.service");
 // local import
 const configuration_1 = require("./config/configuration");
 const bootstrap_1 = require("./bootstrap");
 const configService = new configuration_1.ConfigService();
+const logger = typedi_1.default.get(logger_service_1.LoggerService);
 /**
  * AWS Lambda handler function
  * @param event API Gateway event object
@@ -13,10 +19,10 @@ const configService = new configuration_1.ConfigService();
  */
 const handler = async (event, context) => {
     try {
-        return (0, bootstrap_1.handler)(event, context);
+        return await (0, bootstrap_1.handler)(event, context);
     }
     catch (error) {
-        console.error('Error processing request:', error);
+        logger.error('Error processing request:', error);
         return {
             statusCode: 500,
             headers: {
@@ -26,7 +32,7 @@ const handler = async (event, context) => {
                 status: 'error',
                 message: 'Internal server error',
                 error: error instanceof Error ? error.message : 'Unknown error',
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
             }),
         };
     }
@@ -37,14 +43,16 @@ exports.handler = handler;
  * @returns Promise<void> - Returns void
  */
 if (configService.isDevelopment() && require.main === module) {
-    (0, bootstrap_1.bootstrap)().then(({ app }) => {
+    (0, bootstrap_1.bootstrap)()
+        .then(({ app }) => {
         const port = process.env.PORT || 3000;
         app.listen(port, () => {
-            console.log(`Server is running on http://localhost:${port}`);
-            console.log(`Health check: http://localhost:${port}/api/health`);
+            logger.info(`Server is running on http://localhost:${port}`);
+            logger.info(`Health check: http://localhost:${port}/api/health`);
         });
-    }).catch(error => {
-        console.error('Failed to start application:', error);
+    })
+        .catch(error => {
+        logger.error('Failed to start application:', error);
         process.exit(1);
     });
 }

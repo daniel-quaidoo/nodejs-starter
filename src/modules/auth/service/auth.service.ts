@@ -13,11 +13,14 @@ import { UserService } from '../../user/service/user.service';
 // config
 import { ConfigService } from '../../../config/configuration';
 
+// decorator
+import { Component } from '../../../core/common/di/component.decorator';
+
+// interface
+import { COMPONENT_TYPE } from '../../../core/common/interfaces/module.interface';
+
 // exception
 import { UnauthorizedException } from '../../../core/common/exceptions/http.exception';
-
-// decorator
-import { Component, COMPONENT_TYPE } from '../../../core/common/di/component.decorator';
 
 @Component({ type: COMPONENT_TYPE.SERVICE })
 export class AuthService {

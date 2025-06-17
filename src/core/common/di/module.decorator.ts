@@ -1,15 +1,10 @@
 import 'reflect-metadata';
 
-export interface ModuleMetadata {
-    controllers?: any[];
-    services?: any[];
-    repositories?: any[];
-    routers?: any[]; // @deprecated - Use controllers with route decorators instead
-    imports?: any[];
-    exports?: any[];
-}
+// constant
+import { MODULE_METADATA_KEY } from './di-token.constant';
 
-export const MODULE_METADATA_KEY = 'module:components';
+// interface
+import { ModuleMetadata } from '../interfaces/module.interface';
 
 /**
  * Decorator to define a module

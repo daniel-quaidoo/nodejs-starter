@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 
-export const MIDDLEWARE_METADATA_KEY = 'middleware:middlewares';
+// constant
+import { MIDDLEWARE_METADATA_KEY } from '../di/di-token.constant';
 
 /**
  * Decorator to apply middleware to a controller or controller method

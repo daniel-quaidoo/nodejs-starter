@@ -1,4 +1,5 @@
 import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { User } from '../types';
 
 export class LoginDto {
     @IsEmail()
@@ -8,6 +9,8 @@ export class LoginDto {
     @IsString()
     @IsNotEmpty()
     password: string;
+
+    user?: User;
 }
 
 export class LoginResponseDto {

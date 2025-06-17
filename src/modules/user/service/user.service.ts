@@ -11,13 +11,16 @@ import { UserRepository } from '../repository/user.repository';
 import { BaseService } from '../../../core/common/service/base.service';
 
 // decorator
-import { Component, COMPONENT_TYPE } from '../../../core/common/di/component.decorator';
+import { Component } from '../../../core/common/di/component.decorator';
 
 // exception
 import {
     ConflictException,
     NotFoundException,
 } from '../../../core/common/exceptions/http.exception';
+
+// interface
+import { COMPONENT_TYPE } from '../../../core/common/interfaces/module.interface';
 
 @Service()
 @Component({ type: COMPONENT_TYPE.SERVICE })
