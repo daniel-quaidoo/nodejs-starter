@@ -1,6 +1,9 @@
 import { Inject } from 'typedi';
 import { Router, Request, Response, NextFunction } from 'express';
 
+// dto
+import { LoginDto } from '../dto/login.dto';
+
 // service
 import { AuthService } from '../service/auth.service';
 
@@ -21,10 +24,9 @@ import { ApiResponse } from '../../../core/common/interfaces/route.interface';
 import { BaseController } from '../../../core/common/controller/base.controller';
 
 // decorator
+import { Body } from '../../../core/common/decorators/param.decorator';
 import { UseMiddleware } from '../../../core/common/decorators/middleware.decorator';
 import { Controller, Get, Post } from '../../../core/common/decorators/route.decorator';
-import { Body } from '../../../core/common/decorators/param.decorator';
-import { LoginDto } from '../dto/login.dto';
 
 @Controller('/auth')
 export class AuthController extends BaseController<any> {
@@ -39,9 +41,7 @@ export class AuthController extends BaseController<any> {
 
     /**
      * User login
-     * @param req Request object containing email and password in body
-     * @param res Response object
-     * @param next Next function
+     * @param loginDto LoginDto object containing email and password in body
      * @returns Promise<void> - Returns user data and authentication token
      * @throws Error if authentication fails
      */
@@ -74,8 +74,6 @@ export class AuthController extends BaseController<any> {
     /**
      * Get current user profile
      * @param req Authenticated request object
-     * @param res Response object
-     * @param next Next function
      * @returns Promise<void> - Returns the authenticated user's profile
      * @throws Error if user is not authenticated
      */
@@ -99,13 +97,6 @@ export class AuthController extends BaseController<any> {
             });
     }
 
-    /**
-     * User logout
-     * @param req Request object
-     * @param res Response object
-     * @param next Next function
-     * @returns Promise<void> - Returns success message
-     */
     /**
      * Logout endpoint
      * @param req Request object

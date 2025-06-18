@@ -1,10 +1,12 @@
-import { Request, Response, NextFunction } from 'express';
-
 // service
 import { HealthService } from '../service/health.service';
+
+// guard
+import { authMiddleware } from '../../../core/auth/guards/local.guard';
+
+// decorator
 import { Controller, Get } from '../../../core/common/decorators/route.decorator';
 import { UseMiddleware } from '../../../core/common/decorators/middleware.decorator';
-import { authMiddleware } from '../../../core/auth/guards/local.guard';
 
 @Controller('/healthy')
 @UseMiddleware(authMiddleware({ roles: ['admin'] }))
@@ -13,33 +15,28 @@ export class HealthController {
 
     /**
      * Retrieves the health status of the system
-     * @param _req The request object
-     * @param res The response object
      * @returns The health status of the system
      */
     @Get('/status')
-    public async getHealthStatus(_req: Request, res: Response): Promise<void> {
+    public async getHealthStatus(): Promise<any> {
         try {
             const status = await this.healthService.getHealthStatus();
-            res.status(200).json(status);
+            return status;
         } catch {
-            res.status(500).json({ error: 'Failed to get health status' });
+            throw new Error('Failed to get health status');
         }
     }
 
     /**
      * Checks the health of the system
-     * @param _req The request object
-     * @param res The response object
-     * @param next The next function
      * @returns The health status of the system
      */
     @Get('/check')
-    public async checkHealth(_req: Request, res: Response, next: NextFunction): Promise<void> {
+    public async checkHealth(): Promise<any> {
         try {
-            await this.getHealthStatus(_req, res);
+            await this.getHealthStatus();
         } catch (error) {
-            next(error);
+            throw error;
         }
     }
 }
