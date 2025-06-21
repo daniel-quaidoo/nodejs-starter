@@ -27,5 +27,4 @@ export class CreateUserGroupDto {
     @IsDate()
     @Type(() => Date)
     updated_at: Date;
-
 }

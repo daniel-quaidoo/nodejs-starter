@@ -10,4 +10,3 @@ export class CreateGroupDto {
     userGroups?: UserGroupDto[];
     permissions?: PermissionDto[];
 }
-

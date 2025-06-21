@@ -1,5 +1,5 @@
 // entity
-import { User } from '../entities/user.entity'
+import { User } from '../entities/user.entity';
 
 // interface
 import { IBaseRepository } from '@/core/common/interfaces/base.repository.interface';

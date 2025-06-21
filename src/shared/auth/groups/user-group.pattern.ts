@@ -3,5 +3,5 @@ export const USERGROUP_PATTERNS = {
     FIND_ONE: 'user-group.findOne',
     CREATE: 'user-group.create',
     UPDATE: 'user-group.update',
-    DELETE: 'user-group.remove'
+    DELETE: 'user-group.remove',
 };

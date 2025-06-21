@@ -30,5 +30,4 @@ export class GroupDto {
     @IsArray()
     @Type(() => PermissionDto)
     permissions: PermissionDto[];
-
 }

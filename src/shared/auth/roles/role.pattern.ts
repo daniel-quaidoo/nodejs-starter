@@ -3,5 +3,5 @@ export const ROLE_PATTERNS = {
     FIND_ONE: 'role.findOne',
     CREATE: 'role.create',
     UPDATE: 'role.update',
-    DELETE: 'role.remove'
+    DELETE: 'role.remove',
 };

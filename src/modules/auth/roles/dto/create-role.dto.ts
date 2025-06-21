@@ -24,5 +24,4 @@ export class CreateRoleDto {
     @IsOptional()
     @Type(() => PermissionDto)
     permissions: PermissionDto[];
-
 }

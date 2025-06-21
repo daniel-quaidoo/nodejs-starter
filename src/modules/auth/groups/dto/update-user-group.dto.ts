@@ -33,5 +33,4 @@ export class UpdateUserGroupDto {
     @IsOptional()
     @Type(() => Date)
     updated_at?: Date;
-
 }

@@ -1,13 +1,11 @@
-
-import Container from "typedi";
-import { DataSource } from "typeorm";
+import Container from 'typedi';
+import { DataSource } from 'typeorm';
 
 // dao
-import { BaseDAO } from "../../../../core/common/dao/base.dao";
+import { BaseDAO } from '../../../../core/common/dao/base.dao';
 
 // entity
-import { UserCredentials } from "../entities/user-credentials.entity";
-
+import { UserCredentials } from '../entities/user-credentials.entity';
 
 // decorator
 import { Repository } from '../../../../core/common/di/component.decorator';

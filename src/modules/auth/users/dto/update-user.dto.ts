@@ -72,5 +72,4 @@ export class UpdateUserDto extends BaseMapper<UpdateUserContractDto> {
     @IsOptional()
     @Type(() => ContactDto)
     contacts?: ContactDto[];
-
 }

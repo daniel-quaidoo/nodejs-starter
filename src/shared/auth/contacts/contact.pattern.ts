@@ -3,5 +3,5 @@ export const CONTACT_PATTERNS = {
     FIND_ONE: 'contact.findOne',
     CREATE: 'contact.create',
     UPDATE: 'contact.update',
-    DELETE: 'contact.remove'
+    DELETE: 'contact.remove',
 };

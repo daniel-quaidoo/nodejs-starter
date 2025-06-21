@@ -17,14 +17,10 @@ export class DuplicateEntryException extends HttpException {
 
     constructor(field: string, message?: string) {
         const errorMessage = message || `A record with this ${field} already exists.`;
-        super(
-            HttpStatus.CONFLICT,
-            errorMessage,
-            {
-                error: 'Conflict',
-                field,
-            }
-        );
+        super(HttpStatus.CONFLICT, errorMessage, {
+            error: 'Conflict',
+            field,
+        });
         Object.setPrototypeOf(this, DuplicateEntryException.prototype);
         this.name = 'DuplicateEntryException';
         this.field = field;
@@ -41,14 +37,20 @@ export class DuplicateEntryException extends HttpException {
             const detail = error.detail || '';
             const fieldMatch = detail.match(/Key \(([^)]+)\)=/);
             const field = fieldMatch ? fieldMatch[1] : 'field';
-            return new DuplicateEntryException(field, `A record with this ${field} already exists.`);
+            return new DuplicateEntryException(
+                field,
+                `A record with this ${field} already exists.`
+            );
         }
 
         // Handle MySQL/MariaDB error
         if (error.code === 'ER_DUP_ENTRY') {
             const fieldMatch = error.message.match(/for key '(.+?)'/);
             const field = fieldMatch ? fieldMatch[1] : 'field';
-            return new DuplicateEntryException(field, `A record with this ${field} already exists.`);
+            return new DuplicateEntryException(
+                field,
+                `A record with this ${field} already exists.`
+            );
         }
 
         // Default case

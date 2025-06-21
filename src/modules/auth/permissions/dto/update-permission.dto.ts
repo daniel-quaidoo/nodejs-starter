@@ -31,5 +31,4 @@ export class UpdatePermissionDto {
     @IsOptional()
     @Type(() => GroupDto)
     groups?: GroupDto[];
-
 }

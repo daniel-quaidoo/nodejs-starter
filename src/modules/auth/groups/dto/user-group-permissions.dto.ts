@@ -32,5 +32,4 @@ export class UserGroupPermissionDto {
     @IsDate()
     @Type(() => Date)
     expires_at: Date;
-
 }

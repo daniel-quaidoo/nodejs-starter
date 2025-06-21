@@ -24,11 +24,19 @@ import { BadRequestException } from '../../../core/common/exceptions/http.except
 // decorator
 import { Body, Param } from '../../../core/common/decorators/param.decorator';
 import { UseMiddleware } from '../../../core/common/decorators/middleware.decorator';
-import { Controller, Post, Get, Delete, Patch } from '../../../core/common/decorators/route.decorator';
+import {
+    Controller,
+    Post,
+    Get,
+    Delete,
+    Patch,
+} from '../../../core/common/decorators/route.decorator';
 
 @Controller('/users')
 export class UserController extends BaseController<User> {
-    constructor(private readonly userService: UserService) { super(userService) }
+    constructor(private readonly userService: UserService) {
+        super(userService);
+    }
 
     @Post('')
     public async createUser(@Body() body: CreateUserDto): Promise<ApiResponse<User>> {
@@ -39,7 +47,7 @@ export class UserController extends BaseController<User> {
 
         const response: ApiResponse<User> = {
             success: true,
-            data: user
+            data: user,
         };
 
         return response;
@@ -48,14 +56,13 @@ export class UserController extends BaseController<User> {
     @Get('')
     @UseMiddleware(authMiddleware({ roles: ['USER'] }))
     public async findAllUsers(): Promise<ApiResponse<User[]>> {
-
         const page = 1;
         const limit = 10;
 
         const result = await this.userService.findAndCount({
             skip: (Number(page) - 1) * Number(limit),
             take: Number(limit),
-            relations: ['roles']
+            relations: ['roles'],
         });
 
         const [users, count] = result;
@@ -76,7 +83,7 @@ export class UserController extends BaseController<User> {
 
     @Get(':userId')
     public async findOneUser(@Param('userId') userId: string): Promise<ApiResponse<User>> {
-        const user = await this.userService.findOne({ where: { userId } })
+        const user = await this.userService.findOne({ where: { userId } });
 
         const response: ApiResponse<User> = {
             success: true,
@@ -89,7 +96,7 @@ export class UserController extends BaseController<User> {
     @Patch(':userId')
     public async updateUser(
         @Body() body: UpdateUserDto,
-        @Param('userId') userId: string,
+        @Param('userId') userId: string
     ): Promise<ApiResponse<User>> {
         if (!body || Object.keys(body).length === 0) {
             throw new BadRequestException('No update data provided');
@@ -105,7 +112,7 @@ export class UserController extends BaseController<User> {
         const response: ApiResponse<User> = {
             success: true,
             data: user,
-            message: 'User updated successfully'
+            message: 'User updated successfully',
         };
 
         return response;
@@ -130,9 +137,9 @@ export class UserController extends BaseController<User> {
     @Post(':userId/roles')
     public async assignRoles(
         @Param('userId') userId: string,
-        @Body() dto: AssignRoleDto,
+        @Body() dto: AssignRoleDto
     ): Promise<ApiResponse<User>> {
-        const user = await this.userService.assignRoleToUser(userId, dto.role_ids)
+        const user = await this.userService.assignRoleToUser(userId, dto.role_ids);
 
         const response: ApiResponse<User> = {
             success: true,
@@ -145,9 +152,9 @@ export class UserController extends BaseController<User> {
     @Delete(':userId/roles/:roleId')
     public async removeRole(
         @Param('userId') userId: string,
-        @Param('roleId') roleId: string,
+        @Param('roleId') roleId: string
     ): Promise<ApiResponse<void>> {
-        await this.userService.removeRoleFromUser(userId, roleId)
+        await this.userService.removeRoleFromUser(userId, roleId);
 
         const response: ApiResponse<void> = {
             success: true,

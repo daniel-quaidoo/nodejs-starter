@@ -4,5 +4,5 @@ export const GROUP_PATTERNS = {
     FIND_ONE: 'group.findOne',
     CREATE: 'group.create',
     UPDATE: 'group.update',
-    DELETE: 'group.remove'
+    DELETE: 'group.remove',
 };

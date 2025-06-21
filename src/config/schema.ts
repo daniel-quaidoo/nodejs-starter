@@ -55,7 +55,7 @@ export type ConfigSchema = {
     CORS_METHODS: string;
     CORS_CREDENTIALS: boolean;
     FE_BASE_URL: string;
-    
+
     // Redis
     REDIS_HOST: string;
     REDIS_PORT: number;

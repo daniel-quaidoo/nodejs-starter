@@ -31,5 +31,4 @@ export class UpdateRoleDto {
     @IsOptional()
     @Type(() => PermissionDto)
     permissions?: PermissionDto[];
-
 }

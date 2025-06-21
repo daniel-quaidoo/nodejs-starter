@@ -10,4 +10,3 @@ export class UserGroupDto {
     created_at: Date;
     updated_at: Date;
 }
-

@@ -1,47 +1,46 @@
 import bcrypt from 'bcrypt';
-import { Inject } from "typedi";
-import { FindOneOptions, FindOptionsWhere, DeepPartial, IsNull } from "typeorm";
+import { Inject } from 'typedi';
+import { FindOneOptions, FindOptionsWhere, DeepPartial, IsNull } from 'typeorm';
 
 // model
-import { User } from "../entities/user.entity";
-import { BaseService } from "../../../../core/common";
-import { Role } from "../../roles/entities/role.entity";
+import { User } from '../entities/user.entity';
+import { BaseService } from '../../../../core/common';
+import { Role } from '../../roles/entities/role.entity';
 
 // service
-import { RoleService } from "../../roles/role.service";
+import { RoleService } from '../../roles/role.service';
 
 // repository
-import { UserRepository } from "../repository/user.repository";
+import { UserRepository } from '../repository/user.repository';
 
 // entity
-import { UserCredentials } from "../entities/user-credentials.entity";
+import { UserCredentials } from '../entities/user-credentials.entity';
 
 // decorator
-import { Service } from "../../../../core/common/di/component.decorator";
+import { Service } from '../../../../core/common/di/component.decorator';
 
 // dto
-import { CreateUserContractDto } from "../../../../shared/auth/users/create-user.dto";
-import { UpdateUserContractDto } from "../../../../shared/auth/users/update-user.dto";
-import { CreateRoleContractDto } from "../../../../shared/auth/roles/create-role.dto";
+import { CreateUserContractDto } from '../../../../shared/auth/users/create-user.dto';
+import { UpdateUserContractDto } from '../../../../shared/auth/users/update-user.dto';
+import { CreateRoleContractDto } from '../../../../shared/auth/roles/create-role.dto';
 
 // exception
-import { ConflictException, NotFoundException } from "../../../../core/common/exceptions/http.exception";
+import {
+    ConflictException,
+    NotFoundException,
+} from '../../../../core/common/exceptions/http.exception';
 
 @Service()
 export class UserService extends BaseService<User> {
-
     constructor(
         @Inject() private roleService: RoleService,
-        @Inject() private userRepository: UserRepository,
+        @Inject() private userRepository: UserRepository
     ) {
         super(userRepository);
     }
 
-    async createUser(dto: CreateUserContractDto): Promise<User> {
-
+    public async createUser(dto: CreateUserContractDto): Promise<User> {
         try {
-
-
             let roles: Role[] = [];
 
             // if roles are objects, create them
@@ -52,8 +51,7 @@ export class UserService extends BaseService<User> {
                             this.roleService.createRole(roleData as CreateRoleContractDto)
                         )
                     );
-                }
-                else if (typeof dto.roles[0] === 'string') {
+                } else if (typeof dto.roles[0] === 'string') {
                     roles = await this.roleService.findRolesByIds(dto.roles as string[]);
                 }
             }
@@ -73,14 +71,14 @@ export class UserService extends BaseService<User> {
                     user: savedUser,
                     password: bcrypt.hashSync(dto.password, 10),
                     isVerified: false,
-                    isDisabled: false
+                    isDisabled: false,
                 });
                 await this.userRepository.manager.save(userCreds);
             }
 
             const userWithRelations = await this.userRepository.findOne({
                 where: { userId: savedUser.userId },
-                relations: ['roles']
+                relations: ['roles'],
             });
 
             if (!userWithRelations) {
@@ -96,46 +94,59 @@ export class UserService extends BaseService<User> {
         }
     }
 
-    async findAll(): Promise<User[]> {
-        return await this.userRepository.find({ relations: ['roles', 'roles.permissions'] });
+    public findAll(): Promise<User[]> {
+        return this.userRepository.find({ relations: ['roles', 'roles.permissions'] });
     }
 
-    async findOne(idOrOptions: string | number | FindOneOptions<User> | FindOptionsWhere<User>): Promise<User> {
+    public async findOne(
+        idOrOptions: string | number | FindOneOptions<User> | FindOptionsWhere<User>
+    ): Promise<User> {
         const user = await this.userRepository.findOne(idOrOptions);
 
-        if (!user) throw new NotFoundException("User not found")
+        if (!user) throw new NotFoundException('User not found');
 
-        return user
+        return user;
     }
 
-    async updateUser(userId: string, updateData: UpdateUserContractDto | DeepPartial<User>): Promise<User> {
-        if (updateData.email && (await this.userRepository.isEmailTaken(updateData.email, userId))) {
+    async updateUser(
+        userId: string,
+        updateData: UpdateUserContractDto | DeepPartial<User>
+    ): Promise<User> {
+        if (
+            updateData.email &&
+            (await this.userRepository.isEmailTaken(updateData.email, userId))
+        ) {
             throw new ConflictException('Email already in use');
         }
 
-        const updatedUser = await this.userRepository.update({
-            userId,
-            deletedAt: IsNull(),
-        } as FindOptionsWhere<User>, updateData as DeepPartial<User>);
+        const updatedUser = await this.userRepository.update(
+            {
+                userId,
+                deletedAt: IsNull(),
+            } as FindOptionsWhere<User>,
+            updateData as DeepPartial<User>
+        );
 
-        if (!updatedUser) throw new NotFoundException("User not found")
+        if (!updatedUser) throw new NotFoundException('User not found');
 
-        return updatedUser
+        return updatedUser;
     }
 
-    async assignRoleToUser(userId: string, roleIds: string[]): Promise<User> {
-        return await this.userRepository.addRolesToUser(userId, roleIds);
+    public assignRoleToUser(userId: string, roleIds: string[]): Promise<User> {
+        return this.userRepository.addRolesToUser(userId, roleIds);
     }
 
-    async removeRoleFromUser(userId: string, roleId: string): Promise<User> {
-        return await this.userRepository.removeRoleFromUser(userId, roleId);
+    public removeRoleFromUser(userId: string, roleId: string): Promise<User> {
+        return this.userRepository.removeRoleFromUser(userId, roleId);
     }
 
-
-    async findUserByEmail(email: string, withCredentials = false): Promise<Omit<User, 'credentials'> | User | null> {
+    async findUserByEmail(
+        email: string,
+        withCredentials = false
+    ): Promise<Omit<User, 'credentials'> | User | null> {
         const user = await this.userRepository.findOne({
-            where: { email: email },
-            relations: withCredentials ? ["credentials", "roles"] : ["roles"],
+            where: { email },
+            relations: withCredentials ? ['credentials', 'roles'] : ['roles'],
         });
 
         if (!user) {
@@ -152,5 +163,4 @@ export class UserService extends BaseService<User> {
 
         return user;
     }
-
 }

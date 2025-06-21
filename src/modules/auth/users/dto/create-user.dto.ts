@@ -61,5 +61,4 @@ export class CreateUserDto extends BaseMapper<CreateUserContractDto> {
     @IsOptional()
     @Type(() => ContactDto)
     contacts: ContactDto[];
-
 }

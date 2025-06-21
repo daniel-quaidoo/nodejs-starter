@@ -37,5 +37,4 @@ export class UpdateGroupDto {
     @IsOptional()
     @Type(() => PermissionDto)
     permissions?: PermissionDto[];
-
 }

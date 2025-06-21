@@ -1,3 +1,4 @@
+import { Redis } from 'ioredis';
 import { Service } from 'typedi';
 
 // service
@@ -9,8 +10,8 @@ export class TokenBlacklistService {
 
     constructor(private redisService: RedisService) {}
 
-    private get client() {
-        return this.redisService.getClient();
+    private get client(): Redis {
+        return this.redisService.getClient() as Redis;
     }
 
     async addToBlacklist(token: string, expiresIn: number): Promise<void> {

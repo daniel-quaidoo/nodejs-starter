@@ -6,25 +6,25 @@ import { UserDto } from '../../users/dto/user.dto';
 
 export class ContactDto {
     @IsString()
-    id: String;
+    id: string;
 
     @Type(() => UserDto)
     user: UserDto;
 
     @IsString()
-    first_name: String;
+    first_name: string;
 
     @IsString()
-    last_name: String;
+    last_name: string;
 
     @IsString()
-    email: String;
+    email: string;
 
     @IsString()
-    relation: String;
+    relation: string;
 
     @IsString()
-    number: String;
+    number: string;
 
     @IsBoolean()
     is_emergency_contact: boolean;

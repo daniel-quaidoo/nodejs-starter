@@ -1,5 +1,5 @@
 // entity
-import { Role } from '../entities/role.entity'
+import { Role } from '../entities/role.entity';
 
 // interface
 import { IBaseRepository } from '@/core/common/interfaces/base.repository.interface';

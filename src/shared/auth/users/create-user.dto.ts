@@ -1,7 +1,7 @@
 // enum
 import { Gender } from './enums/gender.enum';
 
-// dto  
+// dto
 import { RoleDto } from '../roles/role.dto';
 import { ContactDto } from '../contacts/contact.dto';
 import { UserGroupDto } from '../groups/user-group.dto';

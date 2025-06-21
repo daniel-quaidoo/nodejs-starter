@@ -1,36 +1,35 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 // entity
-import { User } from "../../users/entities/user.entity";
-
+import { User } from '../../users/entities/user.entity';
 
 @Entity('contacts')
-export class Contact{
+export class Contact {
     @PrimaryGeneratedColumn('uuid')
-    contactId: String;
+    contactId: string;
 
-    @ManyToOne(() => User, (user) => user.contacts, { nullable: true })
-    @JoinColumn({name: 'user_id'})
+    @ManyToOne(() => User, user => user.contacts, { nullable: true })
+    @JoinColumn({ name: 'user_id' })
     user: User | null;
-    
-    @Column({ length: 128 })
-    firstName: String;
 
     @Column({ length: 128 })
-    lastName: String;
+    firstName: string;
 
     @Column({ length: 128 })
-    email: String;
+    lastName: string;
 
     @Column({ length: 128 })
-    relation: String;
+    email: string;
+
+    @Column({ length: 128 })
+    relation: string;
 
     //add ooccupation
     @Column({ length: 128, nullable: true })
-    occupation: String; 
+    occupation: string;
 
     @Column({ length: 128 })
-    phoneNumber: String;
+    phoneNumber: string;
 
     @Column({ default: false })
     isEmergencyContact: boolean;

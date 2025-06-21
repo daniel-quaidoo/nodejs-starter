@@ -24,5 +24,4 @@ export class CreatePermissionDto {
     @IsOptional()
     @Type(() => GroupDto)
     groups: GroupDto[];
-
 }

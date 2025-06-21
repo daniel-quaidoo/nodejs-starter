@@ -1,27 +1,37 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { Inject } from "typedi";
+import { Inject } from 'typedi';
 
 // interface
 import { JwtPayload } from './core/auth.interface';
 
 // config
-import { ConfigService } from "../../config/configuration";
+import { ConfigService } from '../../config/configuration';
 
 // decorator
-import { Service } from "../../core/common/di/component.decorator";
+import { Service } from '../../core/common/di/component.decorator';
 
 // service
-import { UserService } from "./users/service/user.service";
-import { UserCredsService } from "./users/service/user-creds.service";
+import { UserService } from './users/service/user.service';
+import { UserCredsService } from './users/service/user-creds.service';
 import { TokenBlacklistService } from './core/token-blacklist.service';
 
 // exception
-import { BadRequestException, NotFoundException, UnauthorizedException } from "../../core/common/exceptions/http.exception";
+import {
+    BadRequestException,
+    NotFoundException,
+    UnauthorizedException,
+} from '../../core/common/exceptions/http.exception';
 
 // dto
-import { ChangePasswordContractDto, MailActionContractDto, ResetPasswordContractDto, LoginResponseContractDto, LoginContractDto, LoginValidateContractDto } from "../../shared/auth/auth.dto";
-
+import {
+    ChangePasswordContractDto,
+    MailActionContractDto,
+    ResetPasswordContractDto,
+    LoginResponseContractDto,
+    LoginContractDto,
+    LoginValidateContractDto,
+} from '../../shared/auth/auth.dto';
 
 @Service()
 export class AuthService {
@@ -60,15 +70,18 @@ export class AuthService {
     // validate user credentials
     public async validateUser(input: LoginContractDto): Promise<LoginValidateContractDto | null> {
         const user = await this.userService.findUserByEmail(input.email, true);
-        
+
         if (!user || !('credentials' in user)) {
             return null;
         }
-        const isPasswordValid = await bcrypt.compare(input.password, user.credentials.password as string);
+        const isPasswordValid = await bcrypt.compare(
+            input.password,
+            user.credentials.password as string
+        );
 
         // check if verified
         if (!user.credentials.isVerified) {
-            throw new UnauthorizedException("Email not verified");
+            throw new UnauthorizedException('Email not verified');
         }
 
         if (isPasswordValid) {
@@ -82,29 +95,29 @@ export class AuthService {
         }
 
         return null;
-    }   
+    }
 
     public async signIn(loginDto: LoginContractDto): Promise<LoginResponseContractDto> {
-
         const user = await this.validateUser(loginDto);
-        console.log(user, "USER")
+
         if (!user) {
-            throw new UnauthorizedException("Invalid credentials");
+            throw new UnauthorizedException('Invalid credentials');
         }
 
         const tokenPayload = {
             sub: user.user_id,
             ...user,
         };
-        console.log(tokenPayload, "tokenPayload")
-        const accessToken = jwt.sign(tokenPayload, this.JWT_SECRET, { expiresIn: this.JWT_EXPIRES_IN });
+        const accessToken = jwt.sign(tokenPayload, this.JWT_SECRET, {
+            expiresIn: this.JWT_EXPIRES_IN,
+        });
 
         return {
             access_token: accessToken,
             email: user.email,
             user_id: user.user_id,
             first_name: user.first_name,
-            last_name: user.last_name
+            last_name: user.last_name,
         };
     }
 
@@ -114,7 +127,9 @@ export class AuthService {
         }
 
         try {
-            const decoded = jwt.verify(token, this.JWT_SECRET, { ignoreExpiration: true }) as JwtPayload;
+            const decoded = jwt.verify(token, this.JWT_SECRET, {
+                ignoreExpiration: true,
+            }) as JwtPayload;
             const expiresIn = decoded.exp - Math.floor(Date.now() / 1000);
 
             if (expiresIn > 0) {
@@ -122,13 +137,15 @@ export class AuthService {
             }
 
             return { message: 'Successfully signed out' };
-        } catch (error) {
-            throw new UnauthorizedException('Invalid token');
+        } catch (error: any) {
+            throw new UnauthorizedException(error.message);
         }
     }
 
     // reset password
-    public async resetPassword(input: ResetPasswordContractDto): Promise<{ message: string } | any> {
+    public async resetPassword(
+        input: ResetPasswordContractDto
+    ): Promise<{ message: string } | any> {
         const user = await this.userService.findUserByEmail(input.email, true);
 
         if (!user || !('credentials' in user)) {
@@ -139,8 +156,8 @@ export class AuthService {
         await this.userService.update(user.userId, user);
 
         // reset link
-        const feBaseUrl = this.configService.get("FE_BASE_URL");
-        const resetLink = `${feBaseUrl}/account/change-password?email=${user.email}&token=${user.credentials.resetToken}`;
+        // const feBaseUrl = this.configService.get('FE_BASE_URL');
+        // const resetLink = `${feBaseUrl}/account/change-password?email=${user.email}&token=${user.credentials.resetToken}`;
 
         // send reset token link
         // if (user) {
@@ -152,29 +169,29 @@ export class AuthService {
         //     } as ResetPasswordMailDto);
         // }
 
-        return { message: "Reset link sent successfully" };
+        return { message: 'Reset link sent successfully' };
     }
 
     public async changePassword(input: ChangePasswordContractDto): Promise<{ message: string }> {
         const user = await this.userService.findUserByEmail(input.email, true);
 
         if (!user || !('credentials' in user)) {
-            throw new UnauthorizedException("User not found");
+            throw new UnauthorizedException('User not found');
         }
 
         const isValidToken = input.token === user.credentials.resetToken;
 
         if (!isValidToken) {
-            throw new UnauthorizedException("Invalid reset token");
+            throw new UnauthorizedException('Invalid reset token');
         }
 
         // update password
         user.credentials.password = bcrypt.hashSync(input.newPassword, 10);
-        user.credentials.resetToken = "";
+        user.credentials.resetToken = '';
         await this.userService.update(user.userId, user);
 
         // send confirmation email
-        return { message: "Password changed successfully" };
+        return { message: 'Password changed successfully' };
     }
 
     // verify email
@@ -189,7 +206,7 @@ export class AuthService {
 
         // Mark email as verified
         userCreds.isVerified = true;
-        userCreds.verificationToken = "";
+        userCreds.verificationToken = '';
         await this.userCredsService.update(userCreds.userCredentialsId, userCreds);
 
         // Send welcome email
@@ -230,10 +247,9 @@ export class AuthService {
             user.credentials.isSubscribed = true;
             await this.userService.update(user.userId, user);
 
-            return { message: "Successfully subscribed to emails" };
+            return { message: 'Successfully subscribed to emails' };
         }
 
-        throw new BadRequestException("Error subscribing email!");
+        throw new BadRequestException('Error subscribing email!');
     }
-
 }

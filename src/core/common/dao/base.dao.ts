@@ -6,6 +6,7 @@ import {
     FindOneOptions,
     FindOptionsWhere,
     Repository,
+    EntityManager,
 } from 'typeorm';
 
 // model
@@ -30,7 +31,7 @@ export abstract class BaseDAO<T extends BaseModel> implements IBaseDAO<T> {
     /**
      * Returns the manager of the repository
      */
-    get manager() {
+    get manager(): EntityManager {
         return this.repository.manager;
     }
 
@@ -44,13 +45,15 @@ export abstract class BaseDAO<T extends BaseModel> implements IBaseDAO<T> {
             const newEntity = this.repository.create(entity);
             return await this.repository.save(newEntity);
         } catch (error: any) {
-            if (error.code === '23505' || 
-                error.code === 'ER_DUP_ENTRY' || 
+            if (
+                error.code === '23505' ||
+                error.code === 'ER_DUP_ENTRY' ||
                 error.name === 'QueryFailedError' ||
-                error.message?.includes('duplicate key')) {
+                error.message?.includes('duplicate key')
+            ) {
                 throw DuplicateEntryException.fromError(error);
             }
-            
+
             throw error;
         }
     }
@@ -184,7 +187,7 @@ export abstract class BaseDAO<T extends BaseModel> implements IBaseDAO<T> {
         return result;
     }
 
-    async save(entity: T): Promise<T> {
-        return await this.repository.save(entity);
+    save(entity: T): Promise<T> {
+        return this.repository.save(entity);
     }
 }

@@ -3,5 +3,5 @@ export const USERGROUPPERMISSION_PATTERNS = {
     FIND_ONE: 'user-group-permissions.findOne',
     CREATE: 'user-group-permissions.create',
     UPDATE: 'user-group-permissions.update',
-    DELETE: 'user-group-permissions.remove'
+    DELETE: 'user-group-permissions.remove',
 };

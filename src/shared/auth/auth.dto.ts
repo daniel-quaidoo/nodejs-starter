@@ -6,7 +6,7 @@ export interface LoginContractDto {
 export interface LoginResponseContractDto {
     access_token: string;
     user_id: string;
-    email: string
+    email: string;
     first_name: string;
     last_name: string;
 }
@@ -38,7 +38,6 @@ export interface VerifyEmailContractDto {
     unsubscribe_link?: string;
     bcc?: string;
 }
-
 
 export interface MailActionContractDto {
     email: string;

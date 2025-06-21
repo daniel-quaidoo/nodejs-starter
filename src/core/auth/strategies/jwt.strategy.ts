@@ -23,7 +23,7 @@ export const createJwtStrategy = (userService: UserService): any => {
         },
         async (req: any, payload: any, done: any) => {
             try {
-                const user = await userService.findOne({where: {userId: payload.sub}});
+                const user = await userService.findOne({ where: { userId: payload.sub } });
                 if (!user) {
                     return done(null, false, { message: 'User not found' });
                 }

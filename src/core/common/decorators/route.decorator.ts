@@ -112,7 +112,7 @@ export function createMethodDecorator(
                     Object.keys(paramsParams).length > 0 &&
                     createValidationMiddleware('params', paramsParams),
             ].filter(Boolean) as RequestHandler[];
-            
+
             // Create the wrapped handler
             descriptor.value = async function (
                 req: Request,

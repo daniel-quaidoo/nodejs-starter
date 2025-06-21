@@ -36,7 +36,7 @@ export function Service(): ClassDecorator {
 }
 
 export function Inject(): PropertyDecorator {
-    return (target: any, propertyKey: string | symbol) => {
+    return (target: any, _propertyKey: string | symbol) => {
         Reflect.defineMetadata(INJECTABLE_METADATA_KEY, true, target);
         return target;
     };

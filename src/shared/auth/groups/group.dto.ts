@@ -1,7 +1,6 @@
 // dto
-import { UserGroupDto } from "./user-group.dto";
-import { PermissionDto } from "../permissions/permission.dto";
-
+import { UserGroupDto } from './user-group.dto';
+import { PermissionDto } from '../permissions/permission.dto';
 
 export class GroupDto {
     group_id: string;

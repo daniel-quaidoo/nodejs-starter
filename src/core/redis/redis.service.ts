@@ -1,10 +1,10 @@
 import Redis from 'ioredis';
 
 // decorator
-import { Service } from "../common/di/component.decorator";
+import { Service } from '../common/di/component.decorator';
 
 // service
-import { ConfigService } from "../../config/configuration";
+import { ConfigService } from '../../config/configuration';
 
 @Service()
 export class RedisService {
@@ -18,7 +18,7 @@ export class RedisService {
             db: this.configService.get('REDIS_DB'),
         });
 
-        this.client.on('error', (err) => {
+        this.client.on('error', err => {
             console.error('Redis error:', err);
         });
     }

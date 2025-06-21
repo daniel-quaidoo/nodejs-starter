@@ -1,18 +1,17 @@
-import Container from "typedi";
+import Container from 'typedi';
 import { DataSource, In } from 'typeorm';
 
 // model
-import { Role } from "./entities/role.entity";
+import { Role } from './entities/role.entity';
 
 // dao
-import { BaseDAO } from "../../../core/common/dao/base.dao";
+import { BaseDAO } from '../../../core/common/dao/base.dao';
 
 // interface
-import { IRoleRepository } from "./interfaces/role.interface";
+import { IRoleRepository } from './interfaces/role.interface';
 
 // decorator
-import { Repository } from "../../../core/common/di/component.decorator";
-
+import { Repository } from '../../../core/common/di/component.decorator';
 
 @Repository()
 export class RoleRepository extends BaseDAO<Role> implements IRoleRepository {
@@ -21,12 +20,13 @@ export class RoleRepository extends BaseDAO<Role> implements IRoleRepository {
         super(dataSource, Role);
     }
 
-    async findRolesByIds(roleIds: number[]): Promise<Role[]> {
-        if (!roleIds.length) return [];
+    public findRolesByIds(roleIds: number[]): Promise<Role[] | []> {
+        if (!roleIds.length) return Promise.resolve([]);
+
         return this.repository.find({
             where: {
-                role_id: In(roleIds)
-            }
+                role_id: In(roleIds),
+            },
         });
     }
 }

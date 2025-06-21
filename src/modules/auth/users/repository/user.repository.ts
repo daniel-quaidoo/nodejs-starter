@@ -54,10 +54,10 @@ export class UserRepository extends BaseDAO<User> implements IUserRepository {
         return count > 0;
     }
 
-    async findUserWithRoles(userId: string): Promise<User | null> {
+    public findUserWithRoles(userId: string): Promise<User | null> {
         return this.repository.findOne({
             where: { userId },
-            relations: ['roles']
+            relations: ['roles'],
         });
     }
 
@@ -83,16 +83,15 @@ export class UserRepository extends BaseDAO<User> implements IUserRepository {
             const roleRepository = this.repository.manager.getRepository('Role');
             const rolesToAdd = await roleRepository.find({
                 where: newRoleIds.map(id => ({
-                    role_id: id
-                }))
+                    role_id: id,
+                })),
             });
 
             if (rolesToAdd.length > 0) {
-                user.roles = [...user.roles, ...rolesToAdd as any];
+                user.roles = [...user.roles, ...(rolesToAdd as any)];
                 return this.save(user);
             }
         }
         return user;
     }
-    
 }

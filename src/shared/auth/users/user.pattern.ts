@@ -3,5 +3,5 @@ export const USER_PATTERNS = {
     FIND_ONE: 'user.findOne',
     CREATE: 'user.create',
     UPDATE: 'user.update',
-    DELETE: 'user.remove'
+    DELETE: 'user.remove',
 };

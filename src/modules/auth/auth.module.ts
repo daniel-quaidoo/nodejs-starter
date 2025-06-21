@@ -19,7 +19,6 @@ import { UserCredsRepository } from './users/repository/user-creds.repository';
     services: [TokenBlacklistService, UserCredsService, AuthService],
     controllers: [AuthController],
     repositories: [UserCredsRepository],
-    imports: [UserModule]
+    imports: [UserModule],
 })
-
-export class AuthModule { }
+export class AuthModule {}

@@ -52,5 +52,4 @@ export class UserDto {
     @IsArray()
     @Type(() => ContactDto)
     contacts: ContactDto[];
-
 }

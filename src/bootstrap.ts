@@ -100,7 +100,7 @@ export const bootstrap = async (): Promise<{ app: Express; dataSource: DataSourc
             RoleModule,
             UserModule,
             AuthModule,
-            HealthModule
+            HealthModule,
         ]);
 
         // Initialize Passport

@@ -1,20 +1,15 @@
-import {
-    Entity,
-    Column,
-    OneToOne,
-    PrimaryGeneratedColumn,
-} from "typeorm";
+import { Entity, Column, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 // entity
-import { User } from "./user.entity";
-import { BaseModel } from "../../../../core/common";
+import { User } from './user.entity';
+import { BaseModel } from '../../../../core/common';
 
-@Entity("user_credentials")
-export class UserCredentials  extends BaseModel {
-    @PrimaryGeneratedColumn("uuid")
+@Entity('user_credentials')
+export class UserCredentials extends BaseModel {
+    @PrimaryGeneratedColumn('uuid')
     userCredentialsId: string;
 
-    @OneToOne(() => User, (user) => user.credentials)
+    @OneToOne(() => User, user => user.credentials)
     user: User;
 
     @Column({ nullable: true })
@@ -50,10 +45,9 @@ export class UserCredentials  extends BaseModel {
     @Column({ default: false })
     isRejected?: boolean;
 
-    @Column({ type: "timestamptz", nullable: true })
+    @Column({ type: 'timestamptz', nullable: true })
     lastLoginTime: Date;
 
-    @Column({ type: "timestamptz", nullable: true })
+    @Column({ type: 'timestamptz', nullable: true })
     currentLoginTime: Date;
-
 }

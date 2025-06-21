@@ -22,8 +22,6 @@ export const authMiddleware = (options: { roles?: string[] } = {}): any => {
             const authService = Container.get(AuthService);
             const user = await authService.verifyToken(token);
 
-            console.log(user, "VERIFIED USER")
-
             if (!user) {
                 return res.status(401).json({ message: 'Invalid or expired token' });
             }
@@ -33,7 +31,9 @@ export const authMiddleware = (options: { roles?: string[] } = {}): any => {
 
             // Check roles if specified
             if (options.roles?.length) {
-                const extractRoleName = (role: string | { name: string } | undefined): string | null => {
+                const extractRoleName = (
+                    role: string | { name: string } | undefined
+                ): string | null => {
                     if (!role) return null;
                     const name = typeof role === 'string' ? role : role.name;
                     return name.toLowerCase();
@@ -42,9 +42,9 @@ export const authMiddleware = (options: { roles?: string[] } = {}): any => {
                 const userRoleNames = Array.isArray(user.roles)
                     ? user.roles.map(extractRoleName).filter((r): r is string => r !== null)
                     : [extractRoleName(user.roles)].filter((r): r is string => r !== null);
-                
+
                 const requiredRoles = options.roles.map(role => role.toLowerCase());
-                const hasRequiredRole = userRoleNames.some(roleName => 
+                const hasRequiredRole = userRoleNames.some(roleName =>
                     requiredRoles.includes(roleName)
                 );
 

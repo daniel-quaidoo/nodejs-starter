@@ -39,5 +39,4 @@ export class UpdateUserGroupPermissionDto {
     @IsOptional()
     @Type(() => Date)
     expires_at?: Date;
-
 }
