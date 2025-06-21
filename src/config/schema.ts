@@ -28,6 +28,15 @@ export const configSchema = Joi.object({
     CORS_ORIGIN: Joi.string().default('*'),
     CORS_METHODS: Joi.string().default('GET,HEAD,PUT,PATCH,POST,DELETE'),
     CORS_CREDENTIALS: Joi.boolean().default(true),
+
+    // Frontend
+    FE_BASE_URL: Joi.string().default('http://localhost:3000'),
+
+    // Redis
+    REDIS_HOST: Joi.string().default('127.0.0.1'),
+    REDIS_PORT: Joi.number().default(6379),
+    REDIS_PASSWORD: Joi.string().default(''),
+    REDIS_DB: Joi.number().default(0),
 });
 
 export type ConfigSchema = {
@@ -45,4 +54,11 @@ export type ConfigSchema = {
     CORS_ORIGIN: string;
     CORS_METHODS: string;
     CORS_CREDENTIALS: boolean;
+    FE_BASE_URL: string;
+    
+    // Redis
+    REDIS_HOST: string;
+    REDIS_PORT: number;
+    REDIS_PASSWORD?: string;
+    REDIS_DB: number;
 };

@@ -1,0 +1,30 @@
+{
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "john.doe@example.com",
+    "phone_number": "+1234567890",
+    "identification_number": "ID12345678",
+    "photo_url": "https://example.com/photos/john.jpg",
+    "gender": "MALE",
+    "date_of_birth": "1990-01-01",
+    "password": "SecurePassword123!",
+    "roles": [
+        {
+            "role_id": "1",
+            "name": "USER"
+        }
+    ],
+    "user_groups": [
+        {
+            "group_id": "1",
+            "name": "Premium"
+        }
+    ],
+    "contacts": [
+        {
+            "type": "EMERGENCY",
+            "value": "Jane Doe",
+            "details": "Spouse"
+        }
+    ]
+}

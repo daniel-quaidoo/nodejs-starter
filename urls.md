@@ -1,13 +1,13 @@
 # API Routes Documentation
 
 ## Authentication Module
-- `POST /auth`: User Login
-- `POST /auth/users`: Create user
-- `GET /auth/users`: List all users
-- `GET /auth/users/:userId`: Get user by ID
-- `PATCH /auth/users/:userId`: Update user
-- `PATCH /auth/users/:userId/roles`: Assign roles
-- `DELETE /auth/users/:userId/roles/:roleId`: Remove role
+- [x] `POST /auth`: User Login
+- [x] `POST /auth/users`: Create user
+- [x] `GET /auth/users`: List all users
+- [x] `GET /auth/users/:userId`: Get user by ID
+- [x] `PATCH /auth/users/:userId`: Update user
+- [x] `PATCH /auth/users/:userId/roles`: Assign roles
+- [x] `DELETE /auth/users/:userId/roles/:roleId`: Remove role
 
 ## Address Module
 ### Addresses

@@ -476,7 +476,7 @@ export const setupGlobalErrorHandler = (app: Express): void => {
                     ...err,
                     stack: err.stack,
                     method: req.method,
-                    details: err.stack,
+                    details: IS_DEV ? err.stack : undefined,
                 })
             );
         }

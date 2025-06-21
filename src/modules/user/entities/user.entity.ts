@@ -1,10 +1,13 @@
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 // model
 import { BaseModel } from '../../../core/common';
 
 @Entity('users')
 export class User extends BaseModel {
+    @PrimaryColumn('uuid')
+    id!: string;
+
     @Column()
     name!: string;
 

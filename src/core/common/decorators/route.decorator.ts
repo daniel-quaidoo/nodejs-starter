@@ -112,7 +112,7 @@ export function createMethodDecorator(
                     Object.keys(paramsParams).length > 0 &&
                     createValidationMiddleware('params', paramsParams),
             ].filter(Boolean) as RequestHandler[];
-
+            
             // Create the wrapped handler
             descriptor.value = async function (
                 req: Request,
@@ -306,4 +306,5 @@ export function getRouteMetadata(target: any): RouteMetadata[] {
 export const Get = createMethodDecorator('GET');
 export const Put = createMethodDecorator('PUT');
 export const Post = createMethodDecorator('POST');
+export const Patch = createMethodDecorator('PATCH');
 export const Delete = createMethodDecorator('DELETE');

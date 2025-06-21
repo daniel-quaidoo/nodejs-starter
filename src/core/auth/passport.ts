@@ -7,7 +7,7 @@ import { createJwtStrategy } from './strategies/jwt.strategy';
 import { createLocalStrategy } from './strategies/local.strategy';
 
 // service
-import { UserService } from '../../modules/user/service/user.service';
+import { UserService } from '../../modules/auth/users/service/user.service';
 
 // Initialize passport (since we don't have app.use in Lambda)
 export const initializePassport = () => {
@@ -32,7 +32,7 @@ export const configurePassport = (): any => {
     // deserialize user from the session
     passport.deserializeUser(async (id: string, done) => {
         try {
-            const user = await userService.findById(id);
+            const user = await userService.findOne(id);
             done(null, user);
         } catch (error) {
             done(error);

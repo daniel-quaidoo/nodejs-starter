@@ -6,14 +6,16 @@ import {
     FindOneOptions,
     FindOptionsWhere,
     Repository,
-    UpdateResult,
 } from 'typeorm';
 
 // model
 import { BaseModel } from '../entities/base.entity';
 
-// interfaces
+// interface
 import { IBaseDAO } from '../interfaces/base.dao.interface';
+
+// exception
+import { DuplicateEntryException } from '../exceptions/custom.exception';
 
 export abstract class BaseDAO<T extends BaseModel> implements IBaseDAO<T> {
     protected repository: Repository<T>;
@@ -26,13 +28,31 @@ export abstract class BaseDAO<T extends BaseModel> implements IBaseDAO<T> {
     }
 
     /**
+     * Returns the manager of the repository
+     */
+    get manager() {
+        return this.repository.manager;
+    }
+
+    /**
      * Creates a new entity in the database
      * @param entity The entity to create
      * @returns The created entity
      */
     async create(entity: DeepPartial<T>): Promise<T> {
-        const newEntity = await this.repository.create(entity);
-        return this.repository.save(newEntity);
+        try {
+            const newEntity = this.repository.create(entity);
+            return await this.repository.save(newEntity);
+        } catch (error: any) {
+            if (error.code === '23505' || 
+                error.code === 'ER_DUP_ENTRY' || 
+                error.name === 'QueryFailedError' ||
+                error.message?.includes('duplicate key')) {
+                throw DuplicateEntryException.fromError(error);
+            }
+            
+            throw error;
+        }
     }
 
     /**
@@ -109,7 +129,7 @@ export abstract class BaseDAO<T extends BaseModel> implements IBaseDAO<T> {
     async update(
         idOrConditions: string | number | FindOptionsWhere<T>,
         entity: DeepPartial<T>
-    ): Promise<UpdateResult | T | null> {
+    ): Promise<T | null> {
         const updateData = {
             ...entity,
             updatedAt: new Date(),
@@ -162,5 +182,9 @@ export abstract class BaseDAO<T extends BaseModel> implements IBaseDAO<T> {
             ...options,
         });
         return result;
+    }
+
+    async save(entity: T): Promise<T> {
+        return await this.repository.save(entity);
     }
 }

@@ -2,6 +2,7 @@ import { DataSourceOptions } from 'typeorm';
 
 // config
 import { BaseDatabaseConfig } from './base-database.config';
+import { SnakeNamingStrategy } from './snake-naming.strategy';
 
 export class PostgresConfig extends BaseDatabaseConfig {
     /**
@@ -21,6 +22,7 @@ export class PostgresConfig extends BaseDatabaseConfig {
             logging: process.env.NODE_ENV === 'development',
             migrations: [`${__dirname}/../../../migrations/*{.ts,.js}`],
             migrationsTableName: 'migrations',
+            namingStrategy: new SnakeNamingStrategy(),
         };
     }
 }

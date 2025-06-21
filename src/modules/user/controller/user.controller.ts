@@ -10,7 +10,7 @@ import { CreateUserDto } from '../dto/create-user.dto';
 
 // service
 import { UserService } from '../service/user.service';
-import { HealthService } from '../../../modules/health/service/health.service';
+import { HealthService } from '../../../modules/health/health.service';
 
 // guard
 import { authMiddleware } from '../../../core/auth/guards/local.guard';

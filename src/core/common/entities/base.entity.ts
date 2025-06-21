@@ -1,5 +1,4 @@
 import {
-    PrimaryGeneratedColumn,
     CreateDateColumn,
     UpdateDateColumn,
     DeleteDateColumn,
@@ -7,9 +6,6 @@ import {
 } from 'typeorm';
 
 export abstract class BaseModel extends BaseEntity {
-    @PrimaryGeneratedColumn('uuid')
-    id!: string;
-
     @CreateDateColumn({
         name: 'created_at',
         type: 'timestamptz',
@@ -29,7 +25,6 @@ export abstract class BaseModel extends BaseEntity {
 }
 
 export interface IBaseModel extends BaseModel {
-    id: string;
     createdAt: Date;
     updatedAt: Date;
     deletedAt?: Date | null;

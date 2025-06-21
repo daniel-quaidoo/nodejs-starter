@@ -12,7 +12,9 @@ import { ConfigService } from './config/configuration';
 
 // module
 import { AuthModule } from './modules/auth/auth.module';
-import { UserModule } from './modules/user/user.module';
+import { RedisModule } from './core/redis/redis.module';
+import { UserModule } from './modules/auth/users/user.module';
+import { RoleModule } from './modules/auth/roles/role.module';
 import { HealthModule } from './modules/health/health.module';
 
 // loader
@@ -93,7 +95,13 @@ export const bootstrap = async (): Promise<{ app: Express; dataSource: DataSourc
 
         // Initialize module loader
         const moduleLoader = new ModuleLoader(dataSource);
-        await moduleLoader.loadModules([UserModule, AuthModule, HealthModule]);
+        await moduleLoader.loadModules([
+            RedisModule,
+            RoleModule,
+            UserModule,
+            AuthModule,
+            HealthModule
+        ]);
 
         // Initialize Passport
         configurePassport();

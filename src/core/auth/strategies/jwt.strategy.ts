@@ -4,7 +4,7 @@ import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
 import { ConfigService } from '../../../config/configuration';
 
 // service
-import { UserService } from '../../../modules/user/service/user.service';
+import { UserService } from '../../../modules/auth/users/service/user.service';
 
 const configService = new ConfigService();
 
@@ -23,7 +23,7 @@ export const createJwtStrategy = (userService: UserService): any => {
         },
         async (req: any, payload: any, done: any) => {
             try {
-                const user = await userService.findById(payload.sub);
+                const user = await userService.findOne({where: {userId: payload.sub}});
                 if (!user) {
                     return done(null, false, { message: 'User not found' });
                 }

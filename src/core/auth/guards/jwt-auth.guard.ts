@@ -2,7 +2,7 @@ import Container from 'typedi';
 import { Response, NextFunction } from 'express';
 
 // service
-import { AuthService } from '../../../modules/auth/service/auth.service';
+import { AuthService } from '../../../modules/auth/auth.service';
 
 /**
  * JWT authentication guard

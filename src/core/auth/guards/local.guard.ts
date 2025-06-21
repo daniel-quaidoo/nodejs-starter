@@ -2,7 +2,7 @@ import { Container } from 'typedi';
 import { Request, Response, NextFunction } from 'express';
 
 // service
-import { AuthService } from '../../../modules/auth/service/auth.service';
+import { AuthService } from '../../../modules/auth/auth.service';
 
 /**
  * Authentication middleware
@@ -10,8 +10,7 @@ import { AuthService } from '../../../modules/auth/service/auth.service';
  * @returns The middleware function
  */
 export const authMiddleware = (options: { roles?: string[] } = {}): any => {
-    // TODO: fix type
-    return (req: Request, res: Response, next: NextFunction) => {
+    return async (req: Request, res: Response, next: NextFunction) => {
         try {
             const authHeader = req.headers.authorization || req.headers.Authorization;
 
@@ -21,19 +20,33 @@ export const authMiddleware = (options: { roles?: string[] } = {}): any => {
 
             const token = authHeader.toString().split(' ')[1];
             const authService = Container.get(AuthService);
-            const decoded = authService.verifyToken(token);
+            const user = await authService.verifyToken(token);
 
-            if (!decoded) {
+            console.log(user, "VERIFIED USER")
+
+            if (!user) {
                 return res.status(401).json({ message: 'Invalid or expired token' });
             }
 
             // Attach user to request
-            req.user = decoded;
+            req.user = user;
 
             // Check roles if specified
             if (options.roles?.length) {
-                const userRoles = Array.isArray(decoded.role) ? decoded.role : [decoded.role];
-                const hasRequiredRole = options.roles.some(role => userRoles.includes(role));
+                const extractRoleName = (role: string | { name: string } | undefined): string | null => {
+                    if (!role) return null;
+                    const name = typeof role === 'string' ? role : role.name;
+                    return name.toLowerCase();
+                };
+
+                const userRoleNames = Array.isArray(user.roles)
+                    ? user.roles.map(extractRoleName).filter((r): r is string => r !== null)
+                    : [extractRoleName(user.roles)].filter((r): r is string => r !== null);
+                
+                const requiredRoles = options.roles.map(role => role.toLowerCase());
+                const hasRequiredRole = userRoleNames.some(roleName => 
+                    requiredRoles.includes(roleName)
+                );
 
                 if (!hasRequiredRole) {
                     return res.status(403).json({

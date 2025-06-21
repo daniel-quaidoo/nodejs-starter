@@ -1,11 +1,11 @@
 // service
-import { HealthService } from './service/health.service';
+import { HealthService } from './health.service';
 
 // module
 import { Module } from '../../core/common/di/module.decorator';
 
 // controller
-import { HealthController } from './controller/health.controller';
+import { HealthController } from './health.controller';
 
 @Module({
     repositories: [],

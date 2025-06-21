@@ -1,14 +1,25 @@
-// service
-import { AuthService } from './service/auth.service';
+// module
+import { UserModule } from './users/user.module';
 
 // controller
-import { AuthController } from './controller/auth.controller';
+import { AuthController } from './auth.controller';
 
 // decorator
 import { Module } from '../../core/common/di/module.decorator';
 
+// service
+import { AuthService } from './auth.service';
+import { UserCredsService } from './users/service/user-creds.service';
+import { TokenBlacklistService } from './core/token-blacklist.service';
+
+// repository
+import { UserCredsRepository } from './users/repository/user-creds.repository';
+
 @Module({
-    services: [AuthService],
+    services: [TokenBlacklistService, UserCredsService, AuthService],
     controllers: [AuthController],
+    repositories: [UserCredsRepository],
+    imports: [UserModule]
 })
-export class AuthModule {}
+
+export class AuthModule { }
