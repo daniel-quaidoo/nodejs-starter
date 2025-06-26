@@ -2,6 +2,7 @@ import { DataSourceOptions } from 'typeorm';
 
 // config
 import { BaseDatabaseConfig } from './base-database.config';
+import { SnakeNamingStrategy } from './snake-naming.strategy';
 
 export class MySqlConfig extends BaseDatabaseConfig {
     /**
@@ -25,6 +26,7 @@ export class MySqlConfig extends BaseDatabaseConfig {
             charset: 'utf8mb4',
             supportBigNumbers: true,
             bigNumberStrings: false,
+            namingStrategy: new SnakeNamingStrategy(),
         };
     }
 }
