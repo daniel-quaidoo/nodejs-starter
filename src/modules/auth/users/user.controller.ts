@@ -53,8 +53,36 @@ export class UserController extends BaseController<User> {
         return response;
     }
 
+    @Post('email')
+    public async testFindByEmail(@Body() body: { email: string }): Promise<any> {
+        const start = Date.now();
+        const user = await this.userService.findOne(
+            { where: { email: body.email } },
+            {
+                relations: {
+                    roles: 'roles',
+                },
+            }
+        );
+        const duration = Date.now() - start;
+
+        return {
+            success: true,
+            duration: `${duration}ms`,
+            user: user
+                ? {
+                      id: user.userId,
+                      email: user.email,
+                      credentials: user.credentials,
+                      roles: user.roles,
+                      roleNames: user.roles?.map(r => r.name) || [],
+                  }
+                : null,
+        };
+    }
+
     @Get('')
-    @UseMiddleware(authMiddleware({ roles: ['USER'] }))
+    @UseMiddleware(authMiddleware({ roles: ['ADMIN'] }))
     public async findAllUsers(): Promise<ApiResponse<User[]>> {
         const page = 1;
         const limit = 10;
@@ -62,7 +90,11 @@ export class UserController extends BaseController<User> {
         const result = await this.userService.findAndCount({
             skip: (Number(page) - 1) * Number(limit),
             take: Number(limit),
-            relations: ['roles'],
+            relations: {
+                roles: {
+                    alias: 'r',
+                },
+            } as any,
         });
 
         const [users, count] = result;

@@ -1,14 +1,14 @@
 // dto
-import { GroupDto } from './group.dto';
-import { UserDto } from '../users/user.dto';
-import { PermissionDto } from '../permissions/permission.dto';
+import { GroupContractDto } from './group.dto';
+import { UserContractDto } from '../users/user.dto';
+import { PermissionContractDto } from '../permissions/permission.dto';
 
-export class UpdateUserGroupPermissionDto {
+export class UpdateUserGroupPermissionContractDto {
     user_group_permission_id?: string;
-    user?: UserDto;
-    group?: GroupDto;
-    permission?: PermissionDto;
-    granted_by?: UserDto;
+    user?: UserContractDto;
+    group?: GroupContractDto;
+    permission?: PermissionContractDto;
+    granted_by?: UserContractDto;
     granted_reason?: string;
     expires_at?: Date;
     created_at?: Date;

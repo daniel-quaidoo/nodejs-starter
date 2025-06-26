@@ -1,2 +1,2 @@
-export * from './controller/health.controller';
-export * from './service/health.service';
+export * from './health.controller';
+export * from './health.service';

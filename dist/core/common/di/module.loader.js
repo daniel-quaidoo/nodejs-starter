@@ -12,15 +12,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ModuleLoader = void 0;
 const typeorm_1 = require("typeorm");
 const typedi_1 = require("typedi");
-// decoratos
+// decorator
 const module_decorator_1 = require("./module.decorator");
 const component_decorator_1 = require("./component.decorator");
-const component_decorator_2 = require("./component.decorator");
 // router registry
 const controller_router_1 = require("./controller.router");
 const router_registry_1 = require("../router/router.registry");
 // logger
 const logger_service_1 = require("../../logging/logger.service");
+// interface
+const module_interface_1 = require("../interfaces/module.interface");
 const logger = typedi_1.Container.get(logger_service_1.LoggerService);
 let ModuleLoader = class ModuleLoader {
     constructor(dataSource) {
@@ -44,10 +45,10 @@ let ModuleLoader = class ModuleLoader {
         if (!metadata)
             return;
         // Register components in the correct order
-        await this.registerComponents(metadata.repositories || [], component_decorator_1.COMPONENT_TYPE.REPOSITORY);
-        await this.registerComponents(metadata.services || [], component_decorator_1.COMPONENT_TYPE.SERVICE);
-        await this.registerComponents(metadata.controllers || [], component_decorator_1.COMPONENT_TYPE.CONTROLLER);
-        await this.registerComponents(metadata.routers || [], component_decorator_1.COMPONENT_TYPE.ROUTER);
+        await this.registerComponents(metadata.repositories || [], module_interface_1.COMPONENT_TYPE.REPOSITORY);
+        await this.registerComponents(metadata.services || [], module_interface_1.COMPONENT_TYPE.SERVICE);
+        await this.registerComponents(metadata.controllers || [], module_interface_1.COMPONENT_TYPE.CONTROLLER);
+        await this.registerComponents(metadata.routers || [], module_interface_1.COMPONENT_TYPE.ROUTER);
     }
     /**
      * Registers components
@@ -56,20 +57,20 @@ let ModuleLoader = class ModuleLoader {
      */
     async registerComponents(components, type) {
         for (const Component of components) {
-            const metadata = (0, component_decorator_2.getComponentMetadata)(Component) || { type };
+            const metadata = (0, component_decorator_1.getComponentMetadata)(Component) || { type };
             if (metadata.type !== type)
                 continue;
             switch (metadata.type) {
-                case component_decorator_1.COMPONENT_TYPE.REPOSITORY:
+                case module_interface_1.COMPONENT_TYPE.REPOSITORY:
                     await this.registerRepository(Component);
                     break;
-                case component_decorator_1.COMPONENT_TYPE.SERVICE:
+                case module_interface_1.COMPONENT_TYPE.SERVICE:
                     this.registerService(Component);
                     break;
-                case component_decorator_1.COMPONENT_TYPE.CONTROLLER:
+                case module_interface_1.COMPONENT_TYPE.CONTROLLER:
                     this.registerController(Component);
                     break;
-                case component_decorator_1.COMPONENT_TYPE.ROUTER:
+                case module_interface_1.COMPONENT_TYPE.ROUTER:
                     this.registerRouter(Component);
                     break;
             }

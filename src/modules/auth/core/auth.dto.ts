@@ -27,6 +27,10 @@ export class LoginResponseDto {
 }
 
 // Logout
+/**
+ * @deprecated Use the logout endpoint instead
+ * Fetch the token from the Authorization header
+ */
 export class LogoutDto {
     @IsString()
     @IsNotEmpty()

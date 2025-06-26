@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PostgresConfig = void 0;
 // config
 const base_database_config_1 = require("./base-database.config");
+const snake_naming_strategy_1 = require("./snake-naming.strategy");
 class PostgresConfig extends base_database_config_1.BaseDatabaseConfig {
     /**
      * Retrieves the PostgreSQL connection configuration
@@ -21,6 +22,7 @@ class PostgresConfig extends base_database_config_1.BaseDatabaseConfig {
             logging: process.env.NODE_ENV === 'development',
             migrations: [`${__dirname}/../../../migrations/*{.ts,.js}`],
             migrationsTableName: 'migrations',
+            namingStrategy: new snake_naming_strategy_1.SnakeNamingStrategy(),
         };
     }
 }

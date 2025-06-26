@@ -425,7 +425,7 @@ const setupGlobalErrorHandler = (app) => {
                 ...err,
                 stack: err.stack,
                 method: req.method,
-                details: err.stack,
+                details: IS_DEV ? err.stack : undefined,
             }));
         }
         logger.error('Invalid response object in error handler');

@@ -1,12 +1,18 @@
 import { Type } from 'class-transformer';
 import { IsDate, IsOptional, IsString } from 'class-validator';
 
+// mapper
+import { BaseMapper } from '../../../../core/common/mappers/base.mapper';
+
 // dto
 import { UserDto } from '../../users/dto/user.dto';
 import { GroupDto } from '../../groups/dto/group.dto';
 import { PermissionDto } from '../../permissions/dto/permission.dto';
+import { CreatePermissionContractDto } from '../../../../shared/auth/permissions/create-permission.dto';
 
-export class CreateUserGroupPermissionDto {
+export class CreateUserGroupPermissionDto extends BaseMapper<CreatePermissionContractDto> {
+    protected ContractClass = CreatePermissionContractDto;
+
     @IsString()
     user_group_permission_id: string;
 

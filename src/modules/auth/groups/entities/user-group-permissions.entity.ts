@@ -1,24 +1,16 @@
-import {
-    Entity,
-    PrimaryGeneratedColumn,
-    ManyToOne,
-    Unique,
-    JoinColumn,
-    CreateDateColumn,
-    UpdateDateColumn,
-    Column,
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, ManyToOne, Unique, JoinColumn, Column } from 'typeorm';
 
 // entity
 import { Group } from './group.entity';
+import { BaseModel } from '../../../../core/common';
 import { User } from '../../users/entities/user.entity';
 import { Permission } from '../../permissions/entities/permission.entity';
 
 @Entity('user_group_permissions')
 @Unique(['user', 'group', 'permission']) // prevent duplicate entries
-export class UserGroupPermission {
+export class UserGroupPermission extends BaseModel {
     @PrimaryGeneratedColumn('uuid')
-    user_group_permission_id: string;
+    userGroupPermissionId: string;
 
     @ManyToOne(() => User, { eager: true, onDelete: 'CASCADE' })
     @JoinColumn({ name: 'user_id' })
@@ -35,19 +27,13 @@ export class UserGroupPermission {
     // Who granted the permission (admin or system user)
     @ManyToOne(() => User, { eager: true, nullable: true })
     @JoinColumn({ name: 'granted_by' })
-    granted_by: User;
+    grantedBy: User;
 
     // Reason or justification for permission
     @Column({ type: 'text', nullable: true })
-    granted_reason?: string;
+    grantedReason?: string;
 
     // Optional expiry timestamp for temporary permissions
     @Column({ type: 'timestamp with time zone', nullable: true })
-    expires_at?: Date;
-
-    @CreateDateColumn()
-    created_at: Date;
-
-    @UpdateDateColumn()
-    updated_at: Date;
+    expiresAt?: Date;
 }

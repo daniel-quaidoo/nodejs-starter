@@ -1,13 +1,14 @@
 import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 // entity
+import { BaseModel } from '../../../../core/common';
 import { Role } from '../../roles/entities/role.entity';
 import { Group } from '../../groups/entities/group.entity';
 
 @Entity({ name: 'permission' })
-export class Permission {
+export class Permission extends BaseModel {
     @PrimaryGeneratedColumn('uuid')
-    permission_id: string;
+    permissionId: string;
 
     @Column({ type: 'varchar', length: 80, unique: true })
     name: string;

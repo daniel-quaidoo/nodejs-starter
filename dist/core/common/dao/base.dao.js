@@ -1,11 +1,25 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BaseDAO = void 0;
+const node_cache_1 = __importDefault(require("node-cache"));
+// Optional: Simple in-memory cache
+const cache = new node_cache_1.default({ stdTTL: 300 }); // 5 minute TTL
+// exception
 class BaseDAO {
     constructor(dataSource, entity) {
         this.dataSource = dataSource;
         this.entity = entity;
+        this.cache = cache;
         this.repository = this.dataSource.getRepository(this.entity);
+    }
+    /**
+     * Returns the manager of the repository
+     */
+    get manager() {
+        return this.repository.manager;
     }
     /**
      * Creates a new entity in the database
@@ -13,8 +27,21 @@ class BaseDAO {
      * @returns The created entity
      */
     async create(entity) {
-        const newEntity = await this.repository.create(entity);
-        return this.repository.save(newEntity);
+        try {
+            const newEntity = this.repository.create(entity);
+            return await this.repository.save(newEntity);
+        }
+        catch (error) {
+            // if (
+            //     error.code === '23505' ||
+            //     error.code === 'ER_DUP_ENTRY' ||
+            //     error.name === 'QueryFailedError' ||
+            //     error.message?.includes('duplicate key')
+            // ) {
+            //     throw DuplicateEntryException.fromError(error);
+            // }
+            throw error;
+        }
     }
     /**
      * Finds all entities in the database
@@ -43,18 +70,121 @@ class BaseDAO {
      * @returns Array of entities and total count
      */
     async findAndCount(options) {
-        const result = await this.repository.findAndCount({
-            where: { deletedAt: null, ...options?.where },
-            ...options,
-        });
-        return result;
+        const query = this.repository.createQueryBuilder('entity');
+        if (options?.withDeleted) {
+            query.withDeleted();
+        }
+        if (options?.where) {
+            query.where(options.where);
+        }
+        // handle relations
+        if (options?.relations) {
+            if (Array.isArray(options.relations)) {
+                options.relations.forEach(relation => {
+                    query.leftJoinAndSelect(`entity.${relation}`, relation);
+                });
+            }
+            else if (typeof options.relations === 'object') {
+                Object.entries(options.relations).forEach(([relation, config]) => {
+                    if (typeof config === 'string') {
+                        query.leftJoinAndSelect(`entity.${relation}`, relation);
+                    }
+                    else if (config && typeof config === 'object') {
+                        query.leftJoinAndSelect(`entity.${relation}`, config.alias || relation, config.condition, config.parameters);
+                    }
+                });
+            }
+        }
+        // handle pagination
+        if (options?.skip) {
+            query.offset(options.skip);
+        }
+        if (options?.take) {
+            query.limit(options.take);
+        }
+        // handle sorting
+        if (options?.order) {
+            Object.entries(options.order).forEach(([key, value]) => {
+                query.addOrderBy(`entity.${key}`, value);
+            });
+        }
+        const [items, total] = await Promise.all([
+            query.getMany(),
+            query.getCount()
+        ]);
+        return [items, total];
+    }
+    /**
+     * Finds a single entity by ID or options
+     * @param options Find options
+     * @returns The found entity or null
+     */
+    async findOneWithRelations(options) {
+        const query = this.repository.createQueryBuilder('entity')
+            .where(options.where);
+        if (options.relations) {
+            Object.entries(options.relations).forEach(([relation, config]) => {
+                if (typeof config === 'string') {
+                    query.leftJoinAndSelect(`entity.${relation}`, relation);
+                }
+                else {
+                    query.leftJoinAndSelect(`entity.${relation}`, config.alias, config.condition, config.parameters);
+                }
+            });
+        }
+        return query.getOne();
     }
     /**
      * Finds a single entity by ID or options
      * @param idOrOptions ID or find options
      * @returns The found entity or null
      */
-    async findOne(idOrOptions) {
+    async findOne(idOrOptions, options = {}) {
+        const { relations, withDeleted = false } = options;
+        const query = this.repository.createQueryBuilder('entity');
+        // Handle different input types
+        if (typeof idOrOptions === 'string' || typeof idOrOptions === 'number') {
+            // Single ID case
+            const primaryColumns = this.repository.metadata.primaryColumns;
+            if (primaryColumns.length === 1) {
+                const primaryColumn = primaryColumns[0].propertyName;
+                query.where(`entity.${primaryColumn} = :id`, { id: idOrOptions });
+            }
+            else {
+                throw new Error('Entity uses composite primary keys. Please provide a complete where condition object.');
+            }
+        }
+        else if (idOrOptions !== null && typeof idOrOptions === 'object') {
+            if ('where' in idOrOptions) {
+                // Handle FindOneOptions
+                query.where(idOrOptions.where);
+            }
+            else {
+                // Handle FindOptionsWhere or plain object
+                query.where(idOrOptions);
+            }
+        }
+        // Handle soft deletes
+        if (!withDeleted) {
+            query.andWhere('entity.deletedAt IS NULL');
+        }
+        // Handle relations
+        if (relations) {
+            Object.entries(relations).forEach(([relation, config]) => {
+                if (typeof config === 'string') {
+                    query.leftJoinAndSelect(`entity.${relation}`, relation);
+                }
+                else {
+                    query.leftJoinAndSelect(`entity.${relation}`, config.alias, config.condition, config.parameters);
+                }
+            });
+        }
+        return query.getOne();
+    }
+    /**
+     * @deprecated Use findOne or findOneWithRelations instead
+     */
+    async findOneV1(idOrOptions) {
         if (typeof idOrOptions === 'string' || typeof idOrOptions === 'number') {
             const result = await this.repository.findOne({
                 where: { id: idOrOptions, deletedAt: null },
@@ -126,6 +256,9 @@ class BaseDAO {
             ...options,
         });
         return result;
+    }
+    save(entity) {
+        return this.repository.save(entity);
     }
 }
 exports.BaseDAO = BaseDAO;

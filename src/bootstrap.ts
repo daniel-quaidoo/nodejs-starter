@@ -5,7 +5,7 @@ import session from 'express-session';
 import express, { Express } from 'express';
 
 // logger
-import { LoggerService } from './core/logging';
+// import { LoggerService } from './core/logging';
 
 // config
 import { ConfigService } from './config/configuration';
@@ -16,6 +16,7 @@ import { RedisModule } from './core/redis/redis.module';
 import { UserModule } from './modules/auth/users/user.module';
 import { RoleModule } from './modules/auth/roles/role.module';
 import { HealthModule } from './modules/health/health.module';
+import { PermissionModule } from './modules/auth/permissions/permission.module';
 
 // loader
 import { ModuleLoader } from './core/common/di/module.loader';
@@ -44,10 +45,11 @@ import {
     setupGlobalErrorHandler,
     setupNotFoundHandler,
 } from './shared/utils';
+import { GroupModule } from './modules/auth/groups/group.module';
 
 let isWarm = false;
 let dataSource: DataSource;
-const logger = Container.get(LoggerService);
+// const logger = Container.get(LoggerService);
 
 /**
  * Initializes the application services, database connections, etc.
@@ -97,9 +99,11 @@ export const bootstrap = async (): Promise<{ app: Express; dataSource: DataSourc
         const moduleLoader = new ModuleLoader(dataSource);
         await moduleLoader.loadModules([
             RedisModule,
+            PermissionModule,
             RoleModule,
             UserModule,
             AuthModule,
+            GroupModule,
             HealthModule,
         ]);
 
@@ -120,10 +124,10 @@ export const bootstrap = async (): Promise<{ app: Express; dataSource: DataSourc
         // 404 handler
         setupNotFoundHandler(app);
 
-        logger.info('Application bootstrapped successfully');
+        // logger.info('Application bootstrapped successfully');
         return { app, dataSource };
     } catch (error) {
-        logger.error('Failed to bootstrap application:', error as Record<string, any>);
+        // logger.error('Failed to bootstrap application:', error as Record<string, any>);
         throw error;
     }
 };

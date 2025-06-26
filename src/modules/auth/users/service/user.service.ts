@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import { Inject } from 'typedi';
-import { FindOneOptions, FindOptionsWhere, DeepPartial, IsNull } from 'typeorm';
+import { FindOneOptions, FindOptionsWhere, DeepPartial, IsNull, ObjectLiteral } from 'typeorm';
 
 // model
 import { User } from '../entities/user.entity';
@@ -99,15 +99,31 @@ export class UserService extends BaseService<User> {
     }
 
     public async findOne(
-        idOrOptions: string | number | FindOneOptions<User> | FindOptionsWhere<User>
+        idOrOptions:
+            | string
+            | number
+            | FindOneOptions<User>
+            | FindOptionsWhere<User>
+            | ObjectLiteral,
+        options: {
+            relations?: Record<
+                string,
+                | {
+                      alias: string;
+                      condition?: string;
+                      parameters?: ObjectLiteral;
+                  }
+                | string
+            >;
+            withDeleted?: boolean;
+        } = {}
     ): Promise<User> {
-        const user = await this.userRepository.findOne(idOrOptions);
+        const user = await this.userRepository.findOne(idOrOptions, options);
 
         if (!user) throw new NotFoundException('User not found');
 
         return user;
     }
-
     async updateUser(
         userId: string,
         updateData: UpdateUserContractDto | DeepPartial<User>
@@ -144,10 +160,21 @@ export class UserService extends BaseService<User> {
         email: string,
         withCredentials = false
     ): Promise<Omit<User, 'credentials'> | User | null> {
-        const user = await this.userRepository.findOne({
-            where: { email },
-            relations: withCredentials ? ['credentials', 'roles'] : ['roles'],
-        });
+        const user = await this.findOne(
+            { where: { email } },
+            withCredentials
+                ? {
+                      relations: {
+                          roles: 'roles',
+                          credentials: 'credentials',
+                      },
+                  }
+                : {
+                      relations: {
+                          roles: 'roles',
+                      },
+                  }
+        );
 
         if (!user) {
             return null;

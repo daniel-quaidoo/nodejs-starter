@@ -1,12 +1,12 @@
 // dto
-import { CreateUserDto } from '../users/create-user.dto';
-import { CreatePermissionDto } from '../permissions/create-permission.dto';
+import { CreateUserContractDto } from '../users/create-user.dto';
+import { CreatePermissionContractDto } from '../permissions/create-permission.dto';
 
-export class RoleDto {
+export class RoleContractDto {
     role_id: number;
     name: string;
     alias: string;
     description: string;
-    users: CreateUserDto[];
-    permissions: CreatePermissionDto[];
+    users: CreateUserContractDto[];
+    permissions: CreatePermissionContractDto[];
 }

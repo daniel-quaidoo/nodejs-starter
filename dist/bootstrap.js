@@ -43,13 +43,16 @@ const typeorm_1 = require("typeorm");
 const express_session_1 = __importDefault(require("express-session"));
 const express_1 = __importDefault(require("express"));
 // logger
-const logging_1 = require("./core/logging");
+// import { LoggerService } from './core/logging';
 // config
 const configuration_1 = require("./config/configuration");
 // module
 const auth_module_1 = require("./modules/auth/auth.module");
-const user_module_1 = require("./modules/user/user.module");
+const redis_module_1 = require("./core/redis/redis.module");
+const user_module_1 = require("./modules/auth/users/user.module");
+const role_module_1 = require("./modules/auth/roles/role.module");
 const health_module_1 = require("./modules/health/health.module");
+const permission_module_1 = require("./modules/auth/permissions/permission.module");
 // loader
 const module_loader_1 = require("./core/common/di/module.loader");
 // factory
@@ -66,7 +69,7 @@ const passport_1 = require("./core/auth/passport");
 const utils_1 = require("./shared/utils");
 let isWarm = false;
 let dataSource;
-const logger = typedi_1.Container.get(logging_1.LoggerService);
+// const logger = Container.get(LoggerService);
 /**
  * Initializes the application services, database connections, etc.
  * @returns Promise<{ app: Express; dataSource: DataSource }> - Returns the Express app and DataSource
@@ -103,7 +106,14 @@ const bootstrap = async () => {
         typedi_1.Container.set(typeorm_1.DataSource, dataSource);
         // Initialize module loader
         const moduleLoader = new module_loader_1.ModuleLoader(dataSource);
-        await moduleLoader.loadModules([user_module_1.UserModule, auth_module_1.AuthModule, health_module_1.HealthModule]);
+        await moduleLoader.loadModules([
+            redis_module_1.RedisModule,
+            permission_module_1.PermissionModule,
+            role_module_1.RoleModule,
+            user_module_1.UserModule,
+            auth_module_1.AuthModule,
+            health_module_1.HealthModule,
+        ]);
         // Initialize Passport
         (0, passport_1.configurePassport)();
         app.use(passport_1.passportMiddleware);
@@ -116,11 +126,11 @@ const bootstrap = async () => {
         (0, utils_1.setupGlobalErrorHandler)(app);
         // 404 handler
         (0, utils_1.setupNotFoundHandler)(app);
-        logger.info('Application bootstrapped successfully');
+        // logger.info('Application bootstrapped successfully');
         return { app, dataSource };
     }
     catch (error) {
-        logger.error('Failed to bootstrap application:', error);
+        // logger.error('Failed to bootstrap application:', error as Record<string, any>);
         throw error;
     }
 };

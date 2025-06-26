@@ -4,4 +4,5 @@ export interface JwtPayload {
     iat: number;
     exp: number;
     roles: any[];
+    token_version: number;
 }

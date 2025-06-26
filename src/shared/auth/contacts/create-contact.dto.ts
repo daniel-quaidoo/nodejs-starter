@@ -1,8 +1,8 @@
 // dto
-import { UserDto } from '../users/user.dto';
+import { UserContractDto } from '../users/user.dto';
 
 export class CreateContactDto {
-    user: UserDto;
+    user: UserContractDto;
     first_name: string;
     last_name: string;
     email: string;

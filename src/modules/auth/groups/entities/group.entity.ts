@@ -1,22 +1,14 @@
-import {
-    Column,
-    CreateDateColumn,
-    Entity,
-    JoinTable,
-    ManyToMany,
-    OneToMany,
-    PrimaryGeneratedColumn,
-    UpdateDateColumn,
-} from 'typeorm';
+import { Column, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 // entity
 import { UserGroup } from './user-group.entity';
+import { BaseModel } from '../../../../core/common';
 import { Permission } from '../../permissions/entities/permission.entity';
 
 @Entity('groups')
-export class Group {
+export class Group extends BaseModel {
     @PrimaryGeneratedColumn('uuid')
-    group_id: string;
+    groupId: string;
 
     @Column({ length: 80 })
     name: string;
@@ -24,20 +16,14 @@ export class Group {
     @Column({ type: 'text', nullable: true })
     description: string;
 
-    @CreateDateColumn()
-    created_at: Date;
-
-    @UpdateDateColumn()
-    updated_at: Date;
-
     @OneToMany(() => UserGroup, userGroup => userGroup.group)
     userGroups: UserGroup[];
 
     @ManyToMany(() => Permission, permission => permission.groups)
     @JoinTable({
         name: 'group_permissions',
-        joinColumn: { name: 'group_id', referencedColumnName: 'group_id' },
-        inverseJoinColumn: { name: 'permission_id', referencedColumnName: 'permission_id' },
+        joinColumn: { name: 'group_id', referencedColumnName: 'groupId' },
+        inverseJoinColumn: { name: 'permission_id', referencedColumnName: 'permissionId' },
     })
     permissions: Permission[];
 }

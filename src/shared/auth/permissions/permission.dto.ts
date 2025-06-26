@@ -1,12 +1,12 @@
 // dto
-import { CreateRoleDto } from '../roles/create-role.dto';
-import { CreateGroupDto } from '../groups/create-group.dto';
+import { CreateRoleContractDto } from '../roles/create-role.dto';
+import { CreateGroupContractDto } from '../groups/create-group.dto';
 
-export class PermissionDto {
+export class PermissionContractDto {
     permission_id: string;
     name: string;
     alias: string;
     description: string;
-    roles: CreateRoleDto[];
-    groups: CreateGroupDto[];
+    roles: CreateRoleContractDto[];
+    groups: CreateGroupContractDto[];
 }

@@ -9,6 +9,7 @@ export interface LoginResponseContractDto {
     email: string;
     first_name: string;
     last_name: string;
+    token_version: number;
 }
 
 export interface LoginValidateContractDto {
@@ -17,6 +18,7 @@ export interface LoginValidateContractDto {
     first_name: string;
     last_name: string;
     roles: any[];
+    token_version: number;
 }
 
 export interface ResetPasswordContractDto {

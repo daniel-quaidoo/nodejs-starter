@@ -21,7 +21,7 @@ export class UserRepository extends BaseDAO<User> implements IUserRepository {
     }
 
     async findByEmail(email: string): Promise<User | null> {
-        const user = await this.repository.findOne({
+        const user = await this.findOne({
             where: {
                 email,
                 deletedAt: IsNull(),
@@ -31,7 +31,7 @@ export class UserRepository extends BaseDAO<User> implements IUserRepository {
     }
 
     async findActiveUsers(): Promise<User[]> {
-        const users = await this.repository.find({
+        const [users, _] = await this.findAll({
             where: {
                 isActive: true,
                 deletedAt: IsNull(),
@@ -54,29 +54,45 @@ export class UserRepository extends BaseDAO<User> implements IUserRepository {
         return count > 0;
     }
 
-    public findUserWithRoles(userId: string): Promise<User | null> {
-        return this.repository.findOne({
-            where: { userId },
-            relations: ['roles'],
-        });
+    public async findUserWithRoles(userId: string, withCredentials = false): Promise<User | null> {
+        const user = await this.findOne(
+            {
+                where: { userId },
+            },
+            withCredentials
+                ? {
+                      relations: {
+                          roles: 'roles',
+                          credentials: 'credentials',
+                      },
+                  }
+                : {
+                      relations: {
+                          roles: 'roles',
+                      },
+                  }
+        );
+
+        return user;
     }
 
     async removeRoleFromUser(userId: string, roleId: string): Promise<User> {
-        const user = await this.findUserWithRoles(userId);
+        const user = await this.findUserWithRoles(userId, true);
         if (!user) {
             throw new Error('User not found');
         }
 
         user.roles = user.roles.filter(role => role.role_id !== roleId);
+        user.credentials.tokenVersion += 1;
         return this.save(user);
     }
 
     async addRolesToUser(userId: string, roleIds: string[]): Promise<User> {
-        const user = await this.findUserWithRoles(userId);
+        const user = await this.findUserWithRoles(userId, true);
         if (!user) {
             throw new Error('User not found');
         }
-        const existingRoleIds = user.roles.map(role => role.role_id.toString());
+        const existingRoleIds = user.roles?.map(role => role.role_id.toString()) || [];
         const newRoleIds = roleIds.filter(id => !existingRoleIds.includes(id));
 
         if (newRoleIds.length > 0) {
@@ -88,7 +104,8 @@ export class UserRepository extends BaseDAO<User> implements IUserRepository {
             });
 
             if (rolesToAdd.length > 0) {
-                user.roles = [...user.roles, ...(rolesToAdd as any)];
+                user.roles = [...(user.roles || []), ...(rolesToAdd as any)];
+                user.credentials.tokenVersion += 1;
                 return this.save(user);
             }
         }

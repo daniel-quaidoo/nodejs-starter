@@ -4,7 +4,7 @@ import { DataSource } from 'typeorm';
 import { Container, Service } from 'typedi';
 
 // interface
-import { HealthCheckResult } from '../interface/health.interface';
+import { HealthCheckResult } from './interface/health.interface';
 
 @Service()
 export class HealthService {

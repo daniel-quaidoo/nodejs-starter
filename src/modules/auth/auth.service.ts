@@ -2,8 +2,29 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { Inject } from 'typedi';
 
+// entity
+import { User } from './users/entities/user.entity';
+
+// dto
+import {
+    LoginContractDto,
+    MailActionContractDto,
+    ResetPasswordContractDto,
+    LoginResponseContractDto,
+    LoginValidateContractDto,
+    ChangePasswordContractDto,
+} from '../../shared/auth/auth.dto';
+import { CreateUserContractDto } from '@/shared/auth/users/create-user.dto';
+
 // interface
 import { JwtPayload } from './core/auth.interface';
+
+// exception
+import {
+    BadRequestException,
+    NotFoundException,
+    UnauthorizedException,
+} from '../../core/common/exceptions/http.exception';
 
 // config
 import { ConfigService } from '../../config/configuration';
@@ -15,23 +36,6 @@ import { Service } from '../../core/common/di/component.decorator';
 import { UserService } from './users/service/user.service';
 import { UserCredsService } from './users/service/user-creds.service';
 import { TokenBlacklistService } from './core/token-blacklist.service';
-
-// exception
-import {
-    BadRequestException,
-    NotFoundException,
-    UnauthorizedException,
-} from '../../core/common/exceptions/http.exception';
-
-// dto
-import {
-    ChangePasswordContractDto,
-    MailActionContractDto,
-    ResetPasswordContractDto,
-    LoginResponseContractDto,
-    LoginContractDto,
-    LoginValidateContractDto,
-} from '../../shared/auth/auth.dto';
 
 @Service()
 export class AuthService {
@@ -48,6 +52,13 @@ export class AuthService {
         this.JWT_EXPIRES_IN = this.configService.get('JWT_EXPIRES_IN');
     }
 
+    // register endpoint
+    public register(dto: CreateUserContractDto): Promise<User> {
+        const user = this.userService.createUser(dto);
+
+        return user;
+    }
+
     public async verifyToken(token: string): Promise<JwtPayload> {
         if (!token) {
             throw new UnauthorizedException('No token provided');
@@ -58,12 +69,23 @@ export class AuthService {
         }
 
         try {
-            return jwt.verify(token, this.JWT_SECRET) as JwtPayload;
+            const decoded = jwt.verify(token, this.JWT_SECRET) as JwtPayload;
+            const user = await this.userService.findUserByEmail(decoded.email, true);
+
+            if (!user || !('credentials' in user)) {
+                throw new UnauthorizedException('User not found');
+            }
+
+            if (user.credentials.tokenVersion !== decoded.token_version) {
+                throw new UnauthorizedException('Token revoked');
+            }
+
+            return decoded;
         } catch (error: any) {
             if (error?.name === 'TokenExpiredError') {
                 throw new UnauthorizedException('Token has expired');
             }
-            throw new UnauthorizedException('Invalid token');
+            throw error;
         }
     }
 
@@ -91,6 +113,7 @@ export class AuthService {
                 first_name: user.firstName,
                 last_name: user.lastName,
                 roles: user.roles,
+                token_version: user.credentials.tokenVersion,
             };
         }
 
@@ -118,6 +141,7 @@ export class AuthService {
             user_id: user.user_id,
             first_name: user.first_name,
             last_name: user.last_name,
+            token_version: user.token_version,
         };
     }
 

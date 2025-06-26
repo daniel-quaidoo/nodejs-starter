@@ -45,6 +45,9 @@ export class UserCredentials extends BaseModel {
     @Column({ default: false })
     isRejected?: boolean;
 
+    @Column({ default: 0 })
+    tokenVersion: number;
+
     @Column({ type: 'timestamptz', nullable: true })
     lastLoginTime: Date;
 

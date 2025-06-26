@@ -1,11 +1,16 @@
 import { Type } from 'class-transformer';
 import { IsArray, IsDate, IsOptional, IsString } from 'class-validator';
 
+// mapper
+import { BaseMapper } from '../../../../core/common/mappers/base.mapper';
+
 // dto
 import { UserGroupDto } from '../../groups/dto/user-group.dto';
 import { PermissionDto } from '../../permissions/dto/permission.dto';
+import { UpdateGroupContractDto } from '../../../../shared/auth/groups/update-group.dto';
 
-export class UpdateGroupDto {
+export class UpdateGroupDto extends BaseMapper<UpdateGroupContractDto> {
+    protected ContractClass = UpdateGroupContractDto;
     @IsString()
     @IsOptional()
     group_id?: string;

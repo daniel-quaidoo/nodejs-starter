@@ -1,45 +1,49 @@
 module.exports = {
     preset: 'ts-jest',
     testEnvironment: 'node',
-    roots: ['<rootDir>/src'],
+    roots: ['<rootDir>/src', '<rootDir>/test'],
     testMatch: [
-      '**/__tests__/**/*.ts?(x)',
-      '**/?(*.)+(spec|test).ts?(x)'
+        '**/test/**/*.test.ts',
+        '**/test/**/*.test.tsx',
+        '**/test/**/*.spec.ts',
+        '**/test/**/*.spec.tsx',
+        '**/__tests__/**/*.ts?(x)',
+        '**/?(*.)+(spec|test).ts?(x)'
     ],
+    setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
     transform: {
-      '^.+\\.tsx?$': 'ts-jest',
+        '^.+\\.tsx?$': [
+            'ts-jest',
+            {
+                tsconfig: 'tsconfig.test.json',
+                useESM: false
+            }
+        ]
     },
     moduleFileExtensions: [
-      'ts',
-      'tsx',
-      'js',
-      'jsx',
-      'json',
-      'node'
+        'ts',
+        'tsx',
+        'js',
+        'jsx',
+        'json',
+        'node'
     ],
     collectCoverage: true,
     coverageDirectory: 'coverage',
     coverageReporters: [
-      'text',
-      'lcov'
+        'text',
+        'lcov'
     ],
     coveragePathIgnorePatterns: [
-      '/node_modules/',
-      '/dist/',
-      '/src/__tests__/'
+        '/node_modules/',
+        '/dist/',
+        '/src/__tests__/'
     ],
-    globals: {
-      'ts-jest': {
-        tsconfig: 'tsconfig.test.json',
-        isolatedModules: true,
-      },
-    },
     setupFilesAfterEnv: [
-      '<rootDir>/src/__tests__/setup.ts'
+        '<rootDir>/test/setup.ts'
     ],
     testPathIgnorePatterns: [
-      '/node_modules/',
-      '<rootDir>/src/__tests__/setup\\.ts$'
+        '/node_modules/',
+        '<rootDir>/src/__tests__/setup\\.ts$'
     ],
-  };
-  
+};

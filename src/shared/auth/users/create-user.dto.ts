@@ -2,9 +2,9 @@
 import { Gender } from './enums/gender.enum';
 
 // dto
-import { RoleDto } from '../roles/role.dto';
-import { ContactDto } from '../contacts/contact.dto';
-import { UserGroupDto } from '../groups/user-group.dto';
+import { RoleContractDto } from '../roles/role.dto';
+import { ContactContractDto } from '../contacts/contact.dto';
+import { UserGroupContractDto } from '../groups/user-group.dto';
 import { CreateRoleContractDto } from '../roles/create-role.dto';
 import { CreateContactDto } from '../contacts/create-contact.dto';
 import { CreateUserGroupDto } from '../groups/create-user-group.dto';
@@ -20,7 +20,7 @@ export class CreateUserContractDto {
     photoUrl?: string;
     gender: Gender;
     dateOfBirth: Date;
-    roles?: CreateRoleContractDto[] | RoleDto[] | string[];
-    userGroups?: CreateUserGroupDto[] | UserGroupDto[] | string[];
-    contacts?: CreateContactDto[] | ContactDto[] | string[];
+    roles?: CreateRoleContractDto[] | RoleContractDto[] | string[];
+    userGroups?: CreateUserGroupDto[] | UserGroupContractDto[] | string[];
+    contacts?: CreateContactDto[] | ContactContractDto[] | string[];
 }

@@ -154,9 +154,22 @@ export function createMethodDecorator(
                     // Call the original method with transformed parameters
                     const result = await originalMethod.apply(this, args);
 
-                    // If the method returns a value and response hasn't been sent, send it
-                    if (!res.headersSent && result !== undefined) {
-                        res.json(result);
+                    // Handle both Promise and non-Promise returns
+                    if (result && typeof result.then === 'function') {
+                        // If it's a Promise, handle it
+                        return result
+                            .then((data: any) => {
+                                if (!res?.headersSent && data !== undefined) {
+                                    res.json(data);
+                                }
+                            })
+                            .catch(next);
+                    } else {
+                        // If it's a synchronous return
+                        if (!res?.headersSent && result !== undefined) {
+                            res.json(result);
+                        }
+                        return result;
                     }
                 } catch (error) {
                     next(error);

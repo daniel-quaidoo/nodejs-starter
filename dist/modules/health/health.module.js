@@ -8,11 +8,11 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HealthModule = void 0;
 // service
-const health_service_1 = require("./service/health.service");
+const health_service_1 = require("./health.service");
 // module
 const module_decorator_1 = require("../../core/common/di/module.decorator");
 // controller
-const health_controller_1 = require("./controller/health.controller");
+const health_controller_1 = require("./health.controller");
 let HealthModule = class HealthModule {
 };
 exports.HealthModule = HealthModule;

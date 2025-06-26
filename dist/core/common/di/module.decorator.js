@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MODULE_METADATA_KEY = void 0;
 exports.Module = Module;
 exports.getModuleMetadata = getModuleMetadata;
 require("reflect-metadata");
-exports.MODULE_METADATA_KEY = 'module:components';
+// constant
+const di_token_constant_1 = require("./di-token.constant");
 /**
  * Decorator to define a module
  * @param metadata Metadata for the module
@@ -23,7 +23,7 @@ function Module(metadata) {
             exports: [],
             ...metadata,
         };
-        Reflect.defineMetadata(exports.MODULE_METADATA_KEY, normalizedMetadata, target);
+        Reflect.defineMetadata(di_token_constant_1.MODULE_METADATA_KEY, normalizedMetadata, target);
         return target;
     };
 }
@@ -33,6 +33,6 @@ function Module(metadata) {
  * @returns The module metadata
  */
 function getModuleMetadata(target) {
-    return Reflect.getMetadata(exports.MODULE_METADATA_KEY, target);
+    return Reflect.getMetadata(di_token_constant_1.MODULE_METADATA_KEY, target);
 }
 //# sourceMappingURL=module.decorator.js.map
