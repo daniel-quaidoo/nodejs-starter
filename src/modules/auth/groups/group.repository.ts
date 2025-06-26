@@ -73,9 +73,7 @@ export class GroupRepository extends BaseDAO<Group> {
         return this.userGroupRepository.save(newUserGroup);
     }
 
-    createGroupPermission(
-        permission: Partial<UserGroupPermission>
-    ): Promise<UserGroupPermission> {
+    createGroupPermission(permission: Partial<UserGroupPermission>): Promise<UserGroupPermission> {
         const newPermission = this.userGroupPermissionRepository.create(permission);
         return this.userGroupPermissionRepository.save(newPermission);
     }
