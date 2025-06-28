@@ -33,7 +33,7 @@
         "src/**/*.ts",
         "src/**/*.d.ts",
         "../misc/local.ts"
-    ],
+, "src/shared/ticketing/ticketing.modulets"    ],
     "exclude": [
         "node_modules",
         "dist",

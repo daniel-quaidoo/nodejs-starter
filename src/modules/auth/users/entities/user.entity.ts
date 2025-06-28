@@ -17,8 +17,10 @@ import { BaseModel } from '../../../../core/common';
 import { Role } from '../../roles/entities/role.entity';
 import { UserCredentials } from './user-credentials.entity';
 import { Contact } from '../../contacts/entities/contact.entity';
-// import { Media } from "../../../resources/entities/media.entity";
+import { Media } from '../../../resources/media/entities/media.entity';
 import { UserGroup } from '../../groups/entities/user-group.entity';
+import { PastRentalHistory } from '../../../properties/entities/rental-history.entity';
+import { PropertyAssignment } from '../../../../modules/properties/entities/property-assignment.entity';
 // import { Subscription } from "../../../billing/subscription/entities/subscription.entity";
 
 @Entity({ name: 'user' })
@@ -63,12 +65,20 @@ export class User extends BaseModel {
     @OneToMany(() => Contact, contact => contact.user)
     contacts: Contact[];
 
-    // @OneToMany(()=> Media, (media)  => media.uploaded_by)
-    // media: Media[]
+    @OneToMany(() => Media, media => media.uploadedBy)
+    media: Media[];
 
     @OneToOne(() => UserCredentials, { cascade: true })
     @JoinColumn({ name: 'credentials_id' })
     credentials: UserCredentials;
+
+    @OneToMany(() => PastRentalHistory, rentalHistory => rentalHistory.user)
+    @JoinColumn({ name: 'user_id' })
+    pastRentalHistories: PastRentalHistory[];
+
+    @OneToMany(() => PropertyAssignment, propertyAssignment => propertyAssignment.user)
+    @JoinColumn({ name: 'user_id' })
+    propertyAssignments: PropertyAssignment[];
 
     // @OneToMany(() => Subscription, (subscription) => subscription.user)
     // subscriptions: Subscription[];
