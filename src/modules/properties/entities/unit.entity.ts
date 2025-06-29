@@ -16,10 +16,6 @@ export class Unit extends PropertyUnitAssoc {
     @Column({ type: 'int' })
     propertyFloorId: number;
 
-    @ManyToOne(() => Property, property => property.units, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'property_id' })
-    property: Property;
-
     @Column({ name: 'property_id', type: 'uuid' })
     propertyId: string;
 }

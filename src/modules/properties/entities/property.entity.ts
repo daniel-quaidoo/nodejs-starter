@@ -1,11 +1,15 @@
-import { Column, Entity, Index, OneToMany } from 'typeorm';
+import { Column, Entity, Index, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
 
 // entity
-import { Unit } from './unit.entity';
 import { PropertyUnitAssoc } from './property-unit-assoc.entity';
+import { PropertyType } from './property-type.entity';
+import { Unit } from './unit.entity';
+import { Amenity } from './amenity.entity';
+import { EntityAmenities } from './entity-amenities.entity';
+import { Media } from './media.entity';
 
 // enum
-import { PropertyType } from '../../../shared/properties/properties.enum';
+import { PropertyType as PropertyTypeEnum } from '../../../shared/properties/properties.enum';
 
 @Index('IDX_PROPERTY_STATUS', ['propertyStatus'])
 @Index('IDX_PROPERTY_AMOUNT', ['amount'])
@@ -17,9 +21,21 @@ export class Property extends PropertyUnitAssoc {
 
     @Column({
         type: 'enum',
-        enum: PropertyType,
+        enum: PropertyTypeEnum,
     })
-    propertyType: PropertyType;
+    propertyType: PropertyTypeEnum;
+
+    @Column({ type: 'decimal', precision: 10, scale: 2 })
+    amount: number;
+
+    @Column({ type: 'decimal', precision: 10, scale: 2 })
+    securityDeposit: number;
+
+    @Column({ type: 'decimal', precision: 10, scale: 2 })
+    commission: number;
+
+    @Column({ type: 'decimal', precision: 8, scale: 2 })
+    floorSpace: number;
 
     @Column({ type: 'int' })
     numUnits: number;
@@ -39,6 +55,16 @@ export class Property extends PropertyUnitAssoc {
     @Column({ type: 'boolean', default: false })
     petsAllowed: boolean;
 
-    @OneToMany(() => Unit, unit => unit.property)
-    units: Unit[];
+    @Column({ type: 'text', nullable: true })
+    description: string | null;
+
+    @ManyToOne(() => PropertyType, propertyType => propertyType.properties)
+    @JoinColumn({ name: 'property_type_id' })
+    propertyTypeEntity: PropertyType;
+
+    @OneToMany(() => EntityAmenities, entityAmenities => entityAmenities.entity)
+    amenities: EntityAmenities[];
+
+    @OneToMany(() => Media, media => media.property)
+    media: Media[];
 }
