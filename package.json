@@ -65,6 +65,7 @@
         "joi": "^17.13.3",
         "jsonwebtoken": "^9.0.2",
         "morgan": "^1.10.0",
+        "mysql": "^2.18.1",
         "node-cache": "^5.1.2",
         "passport": "^0.7.0",
         "passport-jwt": "^4.0.1",
@@ -124,7 +125,10 @@
             },
             "preset": "ts-jest",
             "testEnvironment": "node",
-            "roots": ["<rootDir>/src", "<rootDir>/test"],
+            "roots": [
+                "<rootDir>/src",
+                "<rootDir>/test"
+            ],
             "testMatch": [
                 "**/test/**/*.test.ts",
                 "**/test/**/*.test.tsx",
