@@ -1,5 +1,3 @@
-// Unused imports removed for cleaner code
-
 // mapper
 import { BaseMapper } from '../../../../core/common/mappers/base.mapper';
 
