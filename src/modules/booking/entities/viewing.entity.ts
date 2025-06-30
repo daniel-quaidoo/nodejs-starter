@@ -4,7 +4,7 @@ import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 't
 import { BaseModel } from '../../../core/common';
 import { User } from '../../auth/users/entities/user.entity';
 import { Contact } from '../../auth/contacts/entities/contact.entity';
-import { PropertyUnitAssoc } from '../../properties/entities/property-unit-assoc.entity';
+import { PropertyUnitAssoc } from '../../properties/property/entities/property-unit-assoc.entity';
 
 // enum
 import { ViewingType, ViewingStatus } from '../../../shared/booking/enums/booking.enum';

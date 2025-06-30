@@ -1,9 +1,9 @@
 import { Repository } from 'typeorm';
 import { Property } from '../entities/property.entity';
-import { Connection } from 'typeorm';
+import { DataSource } from 'typeorm';
 
 export class PropertyRepository extends Repository<Property> {
-    constructor(connection: Connection) {
+    constructor(connection: DataSource) {
         super(Property, connection.createEntityManager());
     }
 
@@ -19,7 +19,7 @@ export class PropertyRepository extends Repository<Property> {
         return [properties, total];
     }
 
-    async findOneWithRelations(id: string): Promise<Property | null> {
+    public findOneWithRelations(id: string): Promise<Property | null> {
         return this.createQueryBuilder('property')
             .where('property.propertyId = :id', { id })
             .leftJoinAndSelect('property.propertyTypeEntity', 'propertyType')

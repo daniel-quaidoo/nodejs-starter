@@ -1,11 +1,11 @@
-import { IsString, IsOptional } from 'class-validator';
-
-// mapper
-import { BaseMapper } from '../../../core/common/mappers/base.mapper';
 import { ClassConstructor } from 'class-transformer';
+import { IsString, IsOptional } from 'class-validator';
 
 // entity
 import { Amenity } from '../entities/amenity.entity';
+
+// mapper
+import { BaseMapper } from '../../../../core/common/mappers/base.mapper';
 
 export class CreateAmenityDto {
     @IsString()

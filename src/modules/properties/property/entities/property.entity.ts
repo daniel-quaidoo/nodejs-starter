@@ -1,15 +1,13 @@
 import { Column, Entity, Index, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
 
 // entity
-import { PropertyUnitAssoc } from './property-unit-assoc.entity';
 import { PropertyType } from './property-type.entity';
-import { Unit } from './unit.entity';
-import { Amenity } from './amenity.entity';
-import { EntityAmenities } from './entity-amenities.entity';
-import { Media } from './media.entity';
+import { PropertyUnitAssoc } from './property-unit-assoc.entity';
+import { Media } from '../../../resources/media/entities/media.entity';
+import { EntityAmenities } from '../../amenities/entities/entity-amenities.entity';
 
 // enum
-import { PropertyType as PropertyTypeEnum } from '../../../shared/properties/properties.enum';
+import { PropertyType as PropertyTypeEnum } from '../../../../shared/properties/properties.enum';
 
 @Index('IDX_PROPERTY_STATUS', ['propertyStatus'])
 @Index('IDX_PROPERTY_AMOUNT', ['amount'])

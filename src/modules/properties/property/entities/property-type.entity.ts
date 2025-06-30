@@ -1,7 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 
 // entity
-import { BaseModel } from '../../../core/common';
+import { BaseModel } from '../../../../core/common';
 import { Property } from './property.entity';
 
 @Entity('property_type')

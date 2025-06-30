@@ -11,6 +11,7 @@ import {
 // entity
 import { BaseModel } from '../../../../core/common';
 import { User } from '../../../auth/users/entities/user.entity';
+import { Property } from '../../../properties/property/entities/property.entity';
 
 // enum
 import { MediaTypeEnum } from '../../../../shared/media/enums/media.enum';
@@ -38,6 +39,12 @@ export class Media extends BaseModel {
     })
     mediaType: MediaTypeEnum;
 
+    @Column({ type: 'boolean', default: false })
+    isThumbnail: boolean;
+
+    @Column({ type: 'varchar', name: 'caption' })
+    caption: string | null;
+
     @Column({
         type: 'varchar',
         unique: true,
@@ -64,4 +71,8 @@ export class Media extends BaseModel {
 
     @CreateDateColumn({ name: 'uploaded_at' })
     uploadedAt: Date;
+
+    @ManyToOne(() => Property, property => property.media)
+    @JoinColumn({ name: 'property_unit_assoc_id' })
+    property: Property;
 }

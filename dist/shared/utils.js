@@ -420,7 +420,7 @@ const setupGlobalErrorHandler = (app) => {
         }
         // Check if we have a valid response object
         if (res && typeof res.status === 'function') {
-            return res.status(err.statusCode || 500).json((0, exports.createErrorResponse)(500, err.message, req, {
+            return res.status(err.statusCode || 500).json((0, exports.createErrorResponse)(err.statusCode || 500, err.message, req, {
                 error: err.message,
                 ...err,
                 stack: err.stack,

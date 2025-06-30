@@ -1,7 +1,7 @@
 // Unused imports removed for cleaner code
 
 // mapper
-import { BaseMapper } from '../../../core/common/mappers/base.mapper';
+import { BaseMapper } from '../../../../core/common/mappers/base.mapper';
 
 // entity
 import { Property } from '../entities/property.entity';

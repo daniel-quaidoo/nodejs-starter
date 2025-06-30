@@ -1,8 +1,7 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, Index } from 'typeorm';
 
 // entity
-import { Property } from './property.entity';
-import { PropertyUnitAssoc } from './property-unit-assoc.entity';
+import { PropertyUnitAssoc } from '../../property/entities/property-unit-assoc.entity';
 
 @Index('IDX_UNIT_PROPERTY_ID', ['propertyId'])
 @Index('IDX_UNIT_CODE', ['propertyUnitCode'])

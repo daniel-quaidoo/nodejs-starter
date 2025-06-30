@@ -1,12 +1,12 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, Index } from 'typeorm';
 
 // entity
-import { BaseModel } from '../../../core/common';
-import { User } from '../../auth/users/entities/user.entity';
+import { BaseModel } from '../../../../core/common';
+import { User } from '../../../auth/users/entities/user.entity';
 import { PropertyUnitAssoc } from './property-unit-assoc.entity';
 
 // enum
-import { PropertyAssignmentType } from '../../../shared/properties/properties.enum';
+import { PropertyAssignmentType } from '../../../../shared/properties/properties.enum';
 
 @Index('IDX_ASSIGNMENT_PROPERTY_USER', ['propertyUnitAssocId', 'userId'])
 @Index('IDX_ASSIGNMENT_TYPE', ['assignmentType'])

@@ -67,6 +67,7 @@ const request_logger_middleware_1 = require("./core/logging/request-logger.middl
 const passport_1 = require("./core/auth/passport");
 // utils
 const utils_1 = require("./shared/utils");
+const group_module_1 = require("./modules/auth/groups/group.module");
 let isWarm = false;
 let dataSource;
 // const logger = Container.get(LoggerService);
@@ -112,6 +113,7 @@ const bootstrap = async () => {
             role_module_1.RoleModule,
             user_module_1.UserModule,
             auth_module_1.AuthModule,
+            group_module_1.GroupModule,
             health_module_1.HealthModule,
         ]);
         // Initialize Passport

@@ -2,7 +2,7 @@ import { IsString, IsOptional } from 'class-validator';
 import { ClassConstructor } from 'class-transformer';
 
 // mapper
-import { BaseMapper } from '../../../core/common/mappers/base.mapper';
+import { BaseMapper } from '../../../../core/common/mappers/base.mapper';
 
 // entity
 import { PropertyType } from '../entities/property-type.entity';

@@ -1,7 +1,7 @@
 import { IsString, IsUUID } from 'class-validator';
 
 // mapper
-import { BaseMapper } from '../../../core/common/mappers/base.mapper';
+import { BaseMapper } from '../../../../core/common/mappers/base.mapper';
 
 // entity
 import { EntityAmenities } from '../entities/entity-amenities.entity';

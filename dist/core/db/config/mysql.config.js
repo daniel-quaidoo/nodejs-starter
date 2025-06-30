@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MySqlConfig = void 0;
 // config
 const base_database_config_1 = require("./base-database.config");
+const snake_naming_strategy_1 = require("./snake-naming.strategy");
 class MySqlConfig extends base_database_config_1.BaseDatabaseConfig {
     /**
      * Retrieves the MySQL connection configuration
@@ -25,6 +26,7 @@ class MySqlConfig extends base_database_config_1.BaseDatabaseConfig {
             charset: 'utf8mb4',
             supportBigNumbers: true,
             bigNumberStrings: false,
+            namingStrategy: new snake_naming_strategy_1.SnakeNamingStrategy(),
         };
     }
 }

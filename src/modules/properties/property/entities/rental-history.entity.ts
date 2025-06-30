@@ -1,8 +1,8 @@
 import { Entity, Column, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 // entity
-import { BaseModel } from '../../../core/common';
-import { User } from '../../auth/users/entities/user.entity';
+import { BaseModel } from '../../../../core/common';
+import { User } from '../../../auth/users/entities/user.entity';
 
 @Index('IDX_RENTAL_HISTORY_USER', ['userId'])
 @Index('IDX_RENTAL_HISTORY_DATES', ['startDate', 'endDate'])

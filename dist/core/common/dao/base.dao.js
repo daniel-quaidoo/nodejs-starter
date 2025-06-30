@@ -108,10 +108,7 @@ class BaseDAO {
                 query.addOrderBy(`entity.${key}`, value);
             });
         }
-        const [items, total] = await Promise.all([
-            query.getMany(),
-            query.getCount()
-        ]);
+        const [items, total] = await Promise.all([query.getMany(), query.getCount()]);
         return [items, total];
     }
     /**
@@ -119,9 +116,8 @@ class BaseDAO {
      * @param options Find options
      * @returns The found entity or null
      */
-    async findOneWithRelations(options) {
-        const query = this.repository.createQueryBuilder('entity')
-            .where(options.where);
+    findOneWithRelations(options) {
+        const query = this.repository.createQueryBuilder('entity').where(options.where);
         if (options.relations) {
             Object.entries(options.relations).forEach(([relation, config]) => {
                 if (typeof config === 'string') {
@@ -139,7 +135,7 @@ class BaseDAO {
      * @param idOrOptions ID or find options
      * @returns The found entity or null
      */
-    async findOne(idOrOptions, options = {}) {
+    findOne(idOrOptions, options = {}) {
         const { relations, withDeleted = false } = options;
         const query = this.repository.createQueryBuilder('entity');
         // Handle different input types

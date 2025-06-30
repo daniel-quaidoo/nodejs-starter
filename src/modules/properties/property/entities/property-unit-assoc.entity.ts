@@ -8,11 +8,11 @@ import {
 } from 'typeorm';
 
 // entity
-import { BaseModel } from '../../../core/common';
+import { BaseModel } from '../../../../core/common';
 import { PropertyAssignment } from './property-assignment.entity';
 
 // enum
-import { PropertyStatus } from '../../../shared/properties/properties.enum';
+import { PropertyStatus } from '../../../../shared/properties/properties.enum';
 
 @Entity('property_unit_assoc')
 @TableInheritance({ column: { type: 'varchar', name: 'type' } })

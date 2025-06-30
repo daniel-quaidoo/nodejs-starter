@@ -1,7 +1,7 @@
 import { IsString } from 'class-validator';
 
 // mapper
-import { BaseMapper } from '../../../core/common/mappers/base.mapper';
+import { BaseMapper } from '../../../../core/common/mappers/base.mapper';
 
 // entity
 import { UnitType } from '../entities/unit-type.entity';

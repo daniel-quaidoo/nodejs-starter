@@ -1,6 +1,8 @@
 import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
-import { Property } from './property.entity';
+
+// entity
 import { Amenity } from './amenity.entity';
+import { Property } from '../../property/entities/property.entity';
 
 @Entity('entity_amenities')
 export class EntityAmenities {

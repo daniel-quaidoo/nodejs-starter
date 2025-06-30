@@ -1,7 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 // entity
-import { BaseModel } from '../../../core/common';
+import { BaseModel } from '../../../../core/common';
 
 @Entity('unit_type')
 export class UnitType extends BaseModel {

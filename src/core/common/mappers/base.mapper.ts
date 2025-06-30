@@ -29,6 +29,15 @@ export abstract class BaseMapper<T> {
         return plainToInstance(this.ContractClass, result);
     }
 
+    static toContract<T extends BaseMapper<U>, U>(this: new () => T, entity: any): T | any {
+        const result: any = {};
+        for (const [key, value] of Object.entries(entity)) {
+            const camelKey = snakeToCamel(key);
+            result[camelKey] = value;
+        }
+        return plainToInstance(this as any, result);
+    }
+
     static fromContract<T extends BaseMapper<U>, U>(this: new () => T, contract: any): T | any {
         const result: any = {};
 

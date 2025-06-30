@@ -91,7 +91,7 @@ export const bootstrap = async (): Promise<{ app: Express; dataSource: DataSourc
 
     try {
         // Initialize database connection
-        const dbConfig = DatabaseFactory.createDatabaseConfig(DatabaseType.MYSQL);
+        const dbConfig = DatabaseFactory.createDatabaseConfig(DatabaseType.POSTGRES);
         dataSource = await dbConfig.initialize();
         Container.set(DataSource, dataSource);
 
