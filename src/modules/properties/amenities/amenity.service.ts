@@ -14,10 +14,13 @@ import {
     CreateEntityAmenitiesDto,
     EntityAmenitiesDto,
 } from '../amenities/dto/entity-amenities.dto';
+import { BaseService } from '@/core/common';
 
 @Service()
-export class AmenityService {
-    constructor(private readonly amenityRepository: AmenityRepository) {}
+export class AmenityService extends BaseService<Amenity> {
+    constructor(private readonly amenityRepository: AmenityRepository) {
+        super(amenityRepository);
+    }
 
     // Amenity Methods
     async createAmenity(dto: CreateAmenityDto): Promise<AmenityDto> {

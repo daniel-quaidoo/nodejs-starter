@@ -124,7 +124,8 @@ export class UserService extends BaseService<User> {
 
         return user;
     }
-    async updateUser(
+
+    public async updateUser(
         userId: string,
         updateData: UpdateUserContractDto | DeepPartial<User>
     ): Promise<User> {

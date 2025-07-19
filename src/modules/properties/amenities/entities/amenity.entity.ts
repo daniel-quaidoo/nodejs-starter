@@ -7,9 +7,10 @@ import {
     UpdateDateColumn,
 } from 'typeorm';
 import { EntityAmenities } from './entity-amenities.entity';
+import { BaseModel } from '../../../../core/common';
 
 @Entity('amenities')
-export class Amenity {
+export class Amenity extends BaseModel {
     @PrimaryGeneratedColumn('uuid')
     amenityId: string;
 
