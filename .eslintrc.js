@@ -18,7 +18,22 @@ module.exports = {
       node: true,
       jest: true,
     },
-    ignorePatterns: ['.eslintrc.js'],
+    ignorePatterns: [
+      '.eslintrc.js',
+      'node_modules/',
+      'REFERENCE',
+      'dist/',
+      'build/',
+      'coverage/',
+      '**/*.d.ts',
+      '**/*.js',
+      '**/migrations/*',
+      '**/seeds/*',
+      '**/test/*',
+      '**/tests/*',
+      '**/__mocks__/*',
+      '**/__tests__/*'
+    ],
     rules: {
       'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': [
@@ -60,4 +75,3 @@ module.exports = {
       },
     ],
   };
-  
