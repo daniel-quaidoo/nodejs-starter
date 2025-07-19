@@ -10,10 +10,7 @@ import { EntityAmenities } from './entities/entity-amenities.entity';
 
 // dto
 import { AmenityDto, CreateAmenityDto } from './dto/amenity.dto';
-import {
-    CreateEntityAmenitiesDto,
-    EntityAmenitiesDto,
-} from '../amenities/dto/entity-amenities.dto';
+import { CreateEntityAmenitiesDto, EntityAmenitiesDto } from './dto/entity-amenities.dto';
 
 @Service()
 export class AmenityService {

@@ -6,7 +6,7 @@ import { BaseMapper } from '../../../../core/common/mappers/base.mapper';
 
 // dto
 import { UserDto } from '../../users/dto/user.dto';
-import { GroupDto } from '../../groups/dto/group.dto';
+import { GroupDto } from './group.dto';
 import { CreateGroupContractDto } from '../../../../shared/auth/groups/create-group.dto';
 
 export class CreateUserGroupDto extends BaseMapper<CreateGroupContractDto> {

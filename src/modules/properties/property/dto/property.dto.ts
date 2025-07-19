@@ -1,13 +1,10 @@
-// mapper
-import { BaseMapper } from '../../../../core/common/mappers/base.mapper';
-
-// entity
-import { Property } from '../entities/property.entity';
+import { ClassConstructor } from 'class-transformer';
 
 // dto
 import { CreatePropertyDto } from './create-property.dto';
 
-import { ClassConstructor } from 'class-transformer';
+// mapper
+import { BaseMapper } from '../../../../core/common/mappers/base.mapper';
 
 export class PropertyDto extends BaseMapper<CreatePropertyDto> {
     protected ContractClass: ClassConstructor<CreatePropertyDto> = CreatePropertyDto;
@@ -28,25 +25,4 @@ export class PropertyDto extends BaseMapper<CreatePropertyDto> {
     floorSpace: number;
     createdAt: Date;
     updatedAt: Date;
-
-    public static toContract(property: Property): PropertyDto {
-        const dto = new PropertyDto();
-        dto.propertyUnitAssocId = property.propertyUnitAssocId;
-        dto.name = property.name;
-        dto.propertyType = property.propertyType;
-        dto.numUnits = property.numUnits;
-        dto.numBathrooms = property.numBathrooms;
-        dto.numGarages = property.numGarages;
-        dto.hasBalconies = property.hasBalconies;
-        dto.hasParkingSpace = property.hasParkingSpace;
-        dto.petsAllowed = property.petsAllowed;
-        dto.description = property.description || undefined;
-        dto.amount = property.amount;
-        dto.securityDeposit = property.securityDeposit;
-        dto.commission = property.commission;
-        dto.floorSpace = property.floorSpace;
-        dto.createdAt = property.createdAt;
-        dto.updatedAt = property.updatedAt;
-        return dto;
-    }
 }

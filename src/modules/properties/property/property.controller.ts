@@ -3,9 +3,10 @@ import { PropertyService } from './property.service';
 
 // dto
 import { PropertyDto } from './dto/property.dto';
+import { PropertyTypeDto } from './dto/property-type.dto';
 import { CreatePropertyDto } from './dto/create-property.dto';
+import { CreatePropertyTypeDto } from './dto/create-property-type.dto';
 import { CreateUnitTypeDto, UnitTypeDto } from '../units/dto/unit-type.dto';
-import { CreatePropertyTypeDto, PropertyTypeDto } from './dto/property-type.dto';
 
 // decorator
 import { Body, Param } from '../../../core/common/decorators/param.decorator';

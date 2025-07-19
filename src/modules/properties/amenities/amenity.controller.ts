@@ -3,10 +3,7 @@ import { AmenityService } from './amenity.service';
 
 // dto
 import { CreateAmenityDto, AmenityDto } from './dto/amenity.dto';
-import {
-    CreateEntityAmenitiesDto,
-    EntityAmenitiesDto,
-} from '../amenities/dto/entity-amenities.dto';
+import { CreateEntityAmenitiesDto, EntityAmenitiesDto } from './dto/entity-amenities.dto';
 
 // decorator
 import { Body, Param } from '../../../core/common/decorators/param.decorator';

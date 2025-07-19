@@ -5,7 +5,7 @@ import { IsArray, IsOptional, IsString } from 'class-validator';
 import { BaseMapper } from '../../../../core/common/mappers/base.mapper';
 
 // dto
-import { UserGroupDto } from '../../groups/dto/user-group.dto';
+import { UserGroupDto } from './user-group.dto';
 import { PermissionDto } from '../../permissions/dto/permission.dto';
 import { CreateGroupContractDto } from '../../../../shared/auth/groups/create-group.dto';
 

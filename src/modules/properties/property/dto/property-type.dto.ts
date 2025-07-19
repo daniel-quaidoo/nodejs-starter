@@ -1,20 +1,13 @@
-import { IsString, IsOptional } from 'class-validator';
 import { ClassConstructor } from 'class-transformer';
-
-// mapper
-import { BaseMapper } from '../../../../core/common/mappers/base.mapper';
 
 // entity
 import { PropertyType } from '../entities/property-type.entity';
 
-export class CreatePropertyTypeDto {
-    @IsString()
-    name: string;
+// dto
+import { CreatePropertyTypeDto } from './create-property-type.dto';
 
-    @IsString()
-    @IsOptional()
-    description?: string;
-}
+// mapper
+import { BaseMapper } from '../../../../core/common/mappers/base.mapper';
 
 export class PropertyTypeDto extends BaseMapper<CreatePropertyTypeDto> {
     protected ContractClass: ClassConstructor<CreatePropertyTypeDto> = CreatePropertyTypeDto;

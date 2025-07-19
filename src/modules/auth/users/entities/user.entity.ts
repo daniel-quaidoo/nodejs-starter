@@ -19,8 +19,8 @@ import { UserCredentials } from './user-credentials.entity';
 import { Contact } from '../../contacts/entities/contact.entity';
 import { Media } from '../../../resources/media/entities/media.entity';
 import { UserGroup } from '../../groups/entities/user-group.entity';
-import { PastRentalHistory } from '../../../../modules/properties/property/entities/rental-history.entity';
-import { PropertyAssignment } from '../../../../modules/properties/property/entities/property-assignment.entity';
+import { PastRentalHistory } from '../../../properties/property/entities/rental-history.entity';
+import { PropertyAssignment } from '../../../properties/property/entities/property-assignment.entity';
 // import { Subscription } from "../../../billing/subscription/entities/subscription.entity";
 
 @Entity({ name: 'user' })
