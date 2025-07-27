@@ -13,30 +13,21 @@
         "moduleResolution": "node",
         "resolveJsonModule": true,
         "sourceMap": true,
-        "typeRoots": [
-            "./node_modules/@types"
-        ],
-        "types": [
-            "node",
-            "express",
-            "jest"
-        ],
+        "typeRoots": ["./node_modules/@types"],
+        "types": ["node", "express", "jest"],
         "baseUrl": ".",
         "paths": {
-            "@/*": [
-                "src/*"
-            ]
+            "@/*": ["src/*"]
         },
-        "strictPropertyInitialization": false
+        "strictPropertyInitialization": false,
+        "useDefineForClassFields": false,
+        "downlevelIteration": true
     },
     "include": [
         "src/**/*.ts",
         "src/**/*.d.ts",
-        "../misc/local.ts"
-, "src/shared/ticketing/ticketing.modulets"    ],
-    "exclude": [
-        "node_modules",
-        "dist",
-        "**/node_modules/aws-sdk/**/*"
-    ]
+        "../misc/local.ts",
+        "src/shared/ticketing/ticketing.modulets"
+    ],
+    "exclude": ["node_modules", "dist", "**/node_modules/aws-sdk/**/*"]
 }
